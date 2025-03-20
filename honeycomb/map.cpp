@@ -6,14 +6,14 @@
 int HoneyCombo[mapW][mapH] = {
     {0,0,0,0,0,0,0,0,0,0},
     {0,0,0,0,0,0,0,0,0,0},
-    {0,1,1,1,1,1,1,1,1,0},
-    {0,1,1,1,1,1,1,1,1,0},
-    {0,1,1,1,1,1,1,1,1,0},
-    {0,1,1,1,1,1,1,1,1,0},
-    {0,1,1,1,1,1,1,1,1,0},
-    {0,1,1,1,1,1,1,1,1,0},
+    {0,1,1,1,1,1,1,1,0,0},
+    {0,1,1,1,1,1,1,1,0,0},
+    {0,1,1,1,1,1,1,1,0,0},
+    {0,1,1,1,1,1,1,1,0,0},
+    {0,1,1,1,1,1,1,1,0,0},
+    {0,1,1,1,1,1,1,1,0,0},
     {0,0,0,0,0,0,0,0,0,0},
-    {0,0,0,0,0,0,0,0,0,0}
+    {0,0,0,0,1,0,0,0,0,0}
 };
 
 Honeycomb::Honeycomb(Vector2 center, float radiusX, float radiusY)
@@ -41,14 +41,14 @@ void Honeycomb::CalculatePoints(int x,int y,bool evenNum) {
         float angle = PI / 3 * i;
 
         
-        if (evenNum == true) {
+        if (evenNum == true && HoneyCombo[x][y]== land) {
             points[i] = {
            (x * 2 * radiusX * 3 / 4) + center.x + radiusX * cos(angle),
            (radiusY / 2 * root3) + (y * 2 * (radiusY / 2 * root3)) + center.y + radiusY * sin(angle)
 
             };
         }
-        else {
+        else if(HoneyCombo[x][y] == land) {
             points[i] = {
             (x * 2 * radiusX * 3 / 4) + center.x + radiusX * cos(angle),
             (y * 2 * (radiusY / 2 * root3)) + center.y + radiusY * sin(angle)

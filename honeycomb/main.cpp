@@ -9,7 +9,7 @@ int main() {
     InitWindow(screenWidth, screenHeight, "Honeycomb");
     SetTargetFPS(60);
 
-    Vector2 Fcenter = { screenWidth / 5, screenHeight / 5 };
+    Vector2 Fcenter = { 100, 100 };
     float radiusX = 60.0f;
     float radiusY = 60.0f;
 
@@ -18,7 +18,7 @@ int main() {
     while (!WindowShouldClose()) {
         BeginDrawing();
         ClearBackground(RAYWHITE);
-
+        
         honeycomb.SetPoint();
 
         EndDrawing();
