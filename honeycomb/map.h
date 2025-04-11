@@ -1,38 +1,33 @@
-//map.h
-#ifndef MAP_H
-#define MAP_H
+// map.h
 
+#pragma once
 #include "raylib.h"
 
+const int mapW = 10;
+const int mapH = 10;
+const int land = 1;
 
-#define mapH  10
-#define mapW  10
-
-#define land 1
-
-extern int HoneyCombo[mapW][mapH];
-
-class Honeycomb {
+class Map {
 public:
-    Honeycomb(Vector2 center, float radiusX, float radiusY);
-    ~Honeycomb();
+    Map(Vector2 center, float radiusX, float radiusY);
+    ~Map();
+
+    void Update();
     void Draw();
-    bool IsMouseOver();
     void SetPoint();
+    bool IsMouseOver();
 
 private:
-    int NewX;
-    int NewY;
     Vector2 center;
     float radiusX;
     float radiusY;
-    Vector2 points[6];
-    
-    void CalculatePoints(int x, int y, bool evenNum);
-    void DrawHexagon(Color color);
-    bool IsPointInHexagon(Vector2 point);
-    Color on = RED;
-    Color off = BLUE;
-};
+    float squashFactor;
 
-#endif
+    Vector2 points[6];
+
+    void CalculatePoints(int x, int y, bool evenNum);
+    bool IsPointInHexagon(Vector2 point) const;
+    void UpdateMapPosition();
+    void DrawHexagon(Color color);
+    void HandleMouseWheelInput();
+};
