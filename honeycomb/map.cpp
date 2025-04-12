@@ -52,13 +52,16 @@ void Map::CalculatePoints(int x, int y, bool evenNum) {
     }
 }
 
-bool Map::IsPointInHexagon(Vector2 point) const {
+bool Map::IsPointInHexagon(Vector2 point) const 
+{
     int intersections = 0;
-    for (int i = 0; i < 6; i++) {
+    for (int i = 0; i < 6; i++) 
+    {
         Vector2 p1 = points[i];
         Vector2 p2 = points[(i + 1) % 6];
 
-        if ((p1.y > point.y) != (p2.y > point.y)) {
+        if ((p1.y > point.y) != (p2.y > point.y)) 
+        {
             float slope = (p2.x - p1.x) / (p2.y - p1.y);
             float intersectionX = p1.x + slope * (point.y - p1.y);
             if (point.x < intersectionX) intersections++;
@@ -67,61 +70,74 @@ bool Map::IsPointInHexagon(Vector2 point) const {
     return (intersections % 2) == 1;
 }
 
-void Map::UpdateMapPosition() {
+void Map::UpdateMapPosition() 
+{
     static Vector2 lastMousePos = { 0, 0 };
     static bool isDragging = false;
 
     Vector2 mousePos = GetMousePosition();
 
-    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) 
+    {
         lastMousePos = mousePos;
         isDragging = true;
     }
 
-    if (isDragging && IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
+    if (isDragging && IsMouseButtonDown(MOUSE_BUTTON_LEFT)) 
+    {
         Vector2 delta = { mousePos.x - lastMousePos.x, mousePos.y - lastMousePos.y };
         center.x += delta.x;
         center.y += delta.y;
         lastMousePos = mousePos;
     }
 
-    if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
+    if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) 
+    {
         isDragging = false;
     }
 }
 
-void Map::DrawHexagon(Color color) {
-    for (int i = 0; i < 6; i++) {
+void Map::DrawHexagon(Color color) 
+{
+    for (int i = 0; i < 6; i++) 
+    {
         DrawLineV(points[i], points[(i + 1) % 6], color);
     }
 }
 
 void Map::Draw() {
-    if (IsMouseOver()) {
+    if (IsMouseOver()) 
+    {
         DrawHexagon(RED);
     }
-    else {
+    else 
+    {
         DrawHexagon(BLUE);
     }
 }
 
-void Map::SetPoint() {
+void Map::SetPoint() 
+{
     bool IsEvenNumber;
-    for (int x = 0; x < mapW; x++) {
+    for (int x = 0; x < mapW; x++) 
+    {
         IsEvenNumber = (x % 2 == 0);
-        for (int y = 0; y < mapH; y++) {
+        for (int y = 0; y < mapH; y++) 
+        {
             CalculatePoints(x, y, IsEvenNumber);
             Draw();
         }
     }
 }
 
-bool Map::IsMouseOver() {
+bool Map::IsMouseOver() 
+{
     Vector2 mousePos = GetMousePosition();
     return IsPointInHexagon(mousePos);
 }
 
-void Map::HandleMouseWheelInput() {
+void Map::HandleMouseWheelInput() 
+{
     float wheel = GetMouseWheelMove();
     if (wheel != 0.0f) {
         squashFactor -= wheel * 0.05f;
