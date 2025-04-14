@@ -142,6 +142,15 @@
     <ClInclude Include="Sprite.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="Unit.h" />
+    <ClCompile Include="Battlemap.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="map.cpp" />
+    <ClCompile Include="Soldier.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Battlemap.h" />
+    <ClInclude Include="map.h" />
+    <ClInclude Include="Soldier.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

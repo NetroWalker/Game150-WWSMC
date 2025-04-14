@@ -1,20 +1,19 @@
 // main.cpp
 #include "raylib.h"
 #include "map.h"
-#include <cmath> // sqrtf »ç¿ëÀ» À§ÇØ ÇÊ¿ä
+#include <cmath> // sqrtf ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ê¿ï¿½
+#include "Battlemap.h"
 
 
-#define screenWidth 1500
-#define screenHeight 1000
 
-// ¿ÞÂÊ À§ ¸ð¼­¸®ÀÇ À°°¢Çü À§Ä¡¿¡ ¸Â´Â Áß½É ÁÂÇ¥ °è»ê ÇÔ¼ö
+// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ð¼­¸ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡ï¿½ï¿½ ï¿½Â´ï¿½ ï¿½ß½ï¿½ ï¿½ï¿½Ç¥ ï¿½ï¿½ï¿½ ï¿½Ô¼ï¿½
 Vector2 GetTopLeftCenter(float radiusX, float radiusY, float squashFactor = 0.3f) {
     float root3 = sqrtf(3.0f);
     float offsetY = (radiusY / 2 * root3);
     float y = offsetY * squashFactor;
 
-    // ¿©±â¿¡¼­ ¿À¸¥ÂÊ(+x), ¾Æ·¡ÂÊ(+y)À¸·Î ÀÌµ¿
-    float paddingX = 300.0f; // Àû´çÈ÷ Á¶Á¤ °¡´É
+    // ï¿½ï¿½ï¿½â¿¡ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(+x), ï¿½Æ·ï¿½ï¿½ï¿½(+y)ï¿½ï¿½ï¿½ï¿½ ï¿½Ìµï¿½
+    float paddingX = 300.0f; // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     float paddingY = 200.0f;
 
     return { radiusX + paddingX, y + paddingY };
@@ -31,6 +30,29 @@ int main() {
     Vector2 Fcenter = GetTopLeftCenter(radiusX, radiusY, squashFactor);
 
     Map map(Fcenter, radiusX, radiusY);
+    const int screenWidth = 1280;
+    const int screenHeight = 720;
+    const int lineCount = 4;
+
+    InitWindow(screenWidth, screenHeight, "Honeycomb");
+    SetTargetFPS(60);
+
+    //Vector2 Fcenter = { 100, 100 };
+    //float radiusX = 60.0f;
+    //float radiusY = 60.0f;
+
+    //Honeycomb honeycomb(Fcenter, radiusX, radiusY);
+
+    //while (!WindowShouldClose()) {
+    //    BeginDrawing();
+    //    ClearBackground(RAYWHITE);
+    //    
+    //    honeycomb.SetPoint();
+
+    //    EndDrawing();
+    //}
+
+    BattleMap map(screenWidth, screenHeight, lineCount);
 
     while (!WindowShouldClose()) {
         BeginDrawing();
@@ -38,6 +60,7 @@ int main() {
 
         map.Update();
         map.SetPoint();
+        map.Draw();
 
         EndDrawing();
     }
