@@ -138,13 +138,10 @@
   <ItemGroup>
     <ClInclude Include="Battlesystem.h" />
     <ClInclude Include="General.h" />
-    <ClInclude Include="map.h" />
     <ClInclude Include="Sprite.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="Unit.h" />
     <ClCompile Include="Battlemap.cpp" />
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="map.cpp" />
     <ClCompile Include="Soldier.cpp" />
   </ItemGroup>
   <ItemGroup>

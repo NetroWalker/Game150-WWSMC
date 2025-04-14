@@ -1,9 +1,8 @@
-// main.cpp
+﻿// main.cpp
 #include "raylib.h"
 #include "map.h"
 #include <cmath> // sqrtf ����� ���� �ʿ�
 #include "Battlemap.h"
-
 
 
 // ���� �� �𼭸��� ������ ��ġ�� �´� �߽� ��ǥ ��� �Լ�
@@ -20,6 +19,8 @@ Vector2 GetTopLeftCenter(float radiusX, float radiusY, float squashFactor = 0.3f
 }
 
 int main() {
+    const int screenWidth = 1280;
+    const int screenHeight = 720;
     InitWindow(screenWidth, screenHeight, "NoName");
     SetTargetFPS(60);
 
@@ -30,8 +31,7 @@ int main() {
     Vector2 Fcenter = GetTopLeftCenter(radiusX, radiusY, squashFactor);
 
     Map map(Fcenter, radiusX, radiusY);
-    const int screenWidth = 1280;
-    const int screenHeight = 720;
+
     const int lineCount = 4;
 
     InitWindow(screenWidth, screenHeight, "Honeycomb");
@@ -52,7 +52,7 @@ int main() {
     //    EndDrawing();
     //}
 
-    BattleMap map(screenWidth, screenHeight, lineCount);
+    BattleMap Map(screenWidth, screenHeight, lineCount);
 
     while (!WindowShouldClose()) {
         BeginDrawing();
