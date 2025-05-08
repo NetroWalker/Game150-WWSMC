@@ -1,0 +1,6 @@
+Assets/asteroid.png
+FrameSize 87 88
+Hotspot 43 0
+NumFrames 3
+Anim Assets/AsteroidLand.anm
+Anim Assets/None.anm
