@@ -1,0 +1,24 @@
+Team Name
+A corn
+
+Game Name
+TactiTails
+
+Team Member List + Roles
+
+Junwoo Lee – Tech Lead
+
+Sungwoo Yang – Test Lead (QA)
+
+Yeonseo Kim – Producer
+
+Chanwoong Moon – Design Lead
+
+Jeonghun Byeon – Technical Art
+
+Compilation Instructions
+"Open Visual Studio and build the project."
+
+Game Explanation
+TactiTails is a tactical adventure game where players explore a tile-based map that transitions into a battle map when combat begins. Currently, players can navigate the map using the mouse and adjust the map's viewing angle with the mouse wheel.
+
