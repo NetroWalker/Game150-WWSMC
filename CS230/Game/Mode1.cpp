@@ -1,16 +1,13 @@
 ﻿#include "States.h"
 #include "Mode1.h"
-#include "Asteroid.h"
-#include "Crates.h"
-#include "Robot.h"
 #include "Fonts.h"
 #include "../Engine/Vec2.h"
 
 Mode1::Mode1() :
     camera({ { 0.15 * Engine::GetWindow().GetSize().x, 0 },
              { 0.35 * Engine::GetWindow().GetSize().x, 0 } }),
-    hexMap(nullptr) {
-}
+    hexMap(nullptr) 
+{ }
 
 void Mode1::Load()
 {
@@ -30,7 +27,8 @@ void Mode1::Update(double dt)
     camera.Update(mapCenter);
 
 
-    if (Engine::GetInput().KeyJustReleased(CS230::Input::Keys::Escape)) {
+    if (Engine::GetInput().KeyJustReleased(CS230::Input::Keys::Escape)) 
+    {
         Engine::GetGameStateManager().SetNextGameState(static_cast<int>(States::MainMenu));
     }
 }
@@ -43,7 +41,8 @@ void Mode1::Draw()
     Math::TransformationMatrix camera_matrix = camera.GetMatrix();
     gameobjectmanager.DrawAll(camera_matrix);
 }
-//error test1
+
+
 void Mode1::Unload()
 {
     delete hexMap;
