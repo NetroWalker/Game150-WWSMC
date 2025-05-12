@@ -43,7 +43,7 @@ void Mode1::Draw()
     Math::TransformationMatrix camera_matrix = camera.GetMatrix();
     gameobjectmanager.DrawAll(camera_matrix);
 }
-
+//error test1
 void Mode1::Unload()
 {
     delete hexMap;
