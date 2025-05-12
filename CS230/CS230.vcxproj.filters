@@ -82,8 +82,13 @@
     <ClCompile Include="Engine\TextureManager.cpp">
       <Filter>Engine</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Font.cpp" />
     <ClCompile Include="Game\Menu.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Font.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GAM150\Game\map.cpp">
       <Filter>Game</Filter>
     </ClCompile>
   </ItemGroup>
@@ -169,9 +174,16 @@
     <ClInclude Include="Engine\TextureManager.h">
       <Filter>Engine</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Font.h" />
-    <ClInclude Include="Game\Fonts.h" />
     <ClInclude Include="Game\Menu.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Font.h">
+      <Filter>Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\Fonts.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GAM150\Game\map.h">
       <Filter>Game</Filter>
     </ClInclude>
   </ItemGroup>

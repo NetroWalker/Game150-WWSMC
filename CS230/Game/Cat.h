@@ -10,9 +10,7 @@ Created:    March 24, 2025
 
 #pragma once
 #include"..\Engine\GameObject.h"
-//#include "..\Engine\Sprite.h"
 #include "..\Engine\Input.h"
-//#include "..\Engine\Vec2.h"
 #include "..\Engine\Camera.h"
 #include "..\Engine\Matrix.h"
 #include <string> 

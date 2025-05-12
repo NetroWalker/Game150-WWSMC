@@ -24,8 +24,7 @@ void Menu::Load()
 
     menulists.clear();
 
-    menulists.push_back({ "Side Scroller", {window_center.x, window_center.y + item_spacing} });
-    menulists.push_back({ "Space Shooter", {window_center.x, window_center.y} });
+    menulists.push_back({ "Game Start", {window_center.x, window_center.y + item_spacing} });
     menulists.push_back({ "Exit",          {window_center.x, window_center.y - item_spacing} });
 
     for (auto& item : menulists) {
@@ -54,15 +53,13 @@ void Menu::Update([[maybe_unused]]double dt)
         }
     }
 
-    if (Engine::GetInput().KeyJustReleased(CS230::Input::Keys::Enter)) {
+    if (Engine::GetInput().KeyJustReleased(CS230::Input::Keys::Enter)) 
+    {
         Engine::GetLogger().LogDebug("Enter pressed. Selected index: " + std::to_string(index));
         if (index == 0) {
             Engine::GetGameStateManager().SetNextGameState(static_cast<int>(States::Mode1));
         }
         else if (index == 1) {
-            Engine::GetGameStateManager().SetNextGameState(static_cast<int>(States::Mode2));
-        }
-        else if (index == 2) {
             Engine::GetGameStateManager().ClearNextGameState();
         }
     }
