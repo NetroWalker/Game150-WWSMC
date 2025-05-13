@@ -19,7 +19,7 @@ Updated:    March 23, 2025
 int main() {
     try {
         Engine& engine = Engine::Instance();
-        engine.Start("Assignment 8 - Junwoo Lee");
+        engine.Start("A corn: Why is it not working?");
 
         engine.AddFont("Assets/Font_Simple.png");
         engine.AddFont("Assets/Font_Outlined.png");
