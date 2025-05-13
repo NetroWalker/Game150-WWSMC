@@ -19,7 +19,6 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\GAM150\Game\map.cpp" />
     <ClCompile Include="Engine\Animation.cpp" />
     <ClCompile Include="Engine\Camera.cpp" />
     <ClCompile Include="Engine\Engine.cpp" />
@@ -39,6 +38,7 @@
     <ClCompile Include="Game\Background.cpp" />
     <ClCompile Include="Game\Cat.cpp" />
     <ClCompile Include="Game\Crates.cpp" />
+    <ClCompile Include="Game\map.cpp" />
     <ClCompile Include="Game\Menu.cpp" />
     <ClCompile Include="Game\Meteor.cpp" />
     <ClCompile Include="Game\Mode1.cpp" />
@@ -49,7 +49,6 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\GAM150\Game\map.h" />
     <ClInclude Include="Engine\Animation.h" />
     <ClInclude Include="Engine\Camera.h" />
     <ClInclude Include="Engine\Engine.h" />
@@ -72,6 +71,7 @@
     <ClInclude Include="Game\Cat.h" />
     <ClInclude Include="Game\Crates.h" />
     <ClInclude Include="Game\Fonts.h" />
+    <ClInclude Include="Game\map.h" />
     <ClInclude Include="Game\Menu.h" />
     <ClInclude Include="Game\Meteor.h" />
     <ClInclude Include="Game\Mode1.h" />

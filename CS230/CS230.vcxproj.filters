@@ -88,7 +88,7 @@
     <ClCompile Include="Engine\Font.cpp">
       <Filter>Engine</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\GAM150\Game\map.cpp">
+    <ClCompile Include="Game\map.cpp">
       <Filter>Game</Filter>
     </ClCompile>
   </ItemGroup>
@@ -183,7 +183,7 @@
     <ClInclude Include="Game\Fonts.h">
       <Filter>Game</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\GAM150\Game\map.h">
+    <ClInclude Include="Game\map.h">
       <Filter>Game</Filter>
     </ClInclude>
   </ItemGroup>
