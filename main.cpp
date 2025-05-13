@@ -1,8 +1,9 @@
 #include "raylib.h"
 #include "Game/map.h"
 #include "Game/Battlemap.h"
-#include <cmath>
 #include "Game/General.h"
+#include "Engine/TurnManager.h"
+#include <cmath>
 
 #define screenWidth 1500
 #define screenHeight 1000
@@ -61,15 +62,14 @@ int main() {
     Map map(Fcenter, radiusX, radiusY);
     map.SetPoint();
 
-    General* general = new General(map.GetTiles()[0].center);
-    General* general2 = nullptr;
-    Texture2D general2Texture;
-
     HexTile* tile33 = map.GetTileAt(3, 3);
-    if (tile33) {
-        general2 = new General(tile33->center);
-        general2Texture = LoadTexture("assets/General1.png");
-    }
+
+    General* player1 = new General(map.GetTiles()[0].center, "Assets/General.png");
+    General* player2 = new General(tile33->center, "Assets/General1.png");
+
+    std::vector<General*> player;
+    player.push_back(player1);
+    player.push_back(player2);
 
     BattleMap battleMap(screenWidth, screenHeight, 4);
 
@@ -77,6 +77,8 @@ int main() {
     std::vector<HexTile> movableTiles;
 
     GameState currentState = STATE_MAIN_MAP;
+
+    TurnManager turnmanager;
 
     while (!WindowShouldClose()) {
         BeginDrawing();
@@ -86,27 +88,57 @@ int main() {
             map.Update();
             map.SetPoint();
 
+            Turn turn = turnmanager.GetCurrentTurn();
             Vector2 mouse = GetMousePosition();
 
-            if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && !general->IsMoving()) {
-                if (CheckCollisionPointCircle(mouse, general->GetPosition(), 50)) {
-                    if (!generalSelected) {
-                        generalSelected = true;
-                        HexTile* from = map.GetTileAtPosition(general->GetFootPosition());
-                        movableTiles = GetMovableTiles(map, from);
+            if (turn == Turn::P1) {
+                if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && !player[0]->IsMoving()) {
+                    if (CheckCollisionPointCircle(mouse, player[0]->GetPosition(), 50)) {
+                        generalSelected = !generalSelected;
+                        if (generalSelected) {
+                            HexTile* from = map.GetTileAtPosition(player[0]->GetFootPosition());
+                            movableTiles = GetMovableTiles(map, from);
+                        }
+                        else {
+                            movableTiles.clear();
+                        }
                     }
-                    else {
-                        generalSelected = false;
-                        movableTiles.clear();
+                    else if (generalSelected) {
+                        for (auto& tile : movableTiles) {
+                            if (CheckCollisionPointCircle(mouse, tile.center, radiusX * 0.8f)) {
+                                player[0]->SetPosition(tile.center);
+                                generalSelected = false;
+                                movableTiles.clear();
+                                turnmanager.EndTurn();
+                                turnmanager.StartTurn();
+                                break;
+                            }
+                        }
                     }
                 }
-                else if (generalSelected) {
-                    for (auto& tile : movableTiles) {
-                        if (CheckCollisionPointCircle(mouse, tile.center, radiusX * 0.8f)) {
-                            general->SetPosition(tile.center);
-                            generalSelected = false;
+            }
+            else if (turn == Turn::P2) {
+                if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && !player[1]->IsMoving()) {
+                    if (CheckCollisionPointCircle(mouse, player[1]->GetPosition(), 50)) {
+                        generalSelected = !generalSelected;
+                        if (generalSelected) {
+                            HexTile* from = map.GetTileAtPosition(player[1]->GetFootPosition());
+                            movableTiles = GetMovableTiles(map, from);
+                        }
+                        else {
                             movableTiles.clear();
-                            break;
+                        }
+                    }
+                    else if (generalSelected) {
+                        for (auto& tile : movableTiles) {
+                            if (CheckCollisionPointCircle(mouse, tile.center, radiusX * 0.8f)) {
+                                player[1]->SetPosition(tile.center);
+                                generalSelected = false;
+                                movableTiles.clear();
+                                turnmanager.EndTurn();
+                                turnmanager.StartTurn();
+                                break;
+                            }
                         }
                     }
                 }
@@ -116,29 +148,15 @@ int main() {
                 DrawCircleV(tile.center, 30, Fade(BLUE, 0.4f));
             }
 
-            general->Update();
-            general->Draw();
-
-            if (general2) {
-                Vector2 pos = general2->GetPosition();
-                float scale = 0.3f;
-                float width = general2Texture.width * scale;
-                float height = general2Texture.height * scale;
-                float positionOffset = 20.0f;
-
-                DrawTexturePro(
-                    general2Texture,
-                    { 0, 0, (float)general2Texture.width, (float)general2Texture.height },
-                    { pos.x, pos.y + positionOffset, width, height },
-                    { width / 2.0f, height },
-                    0.0f,
-                    WHITE
-                );
+            for (int i = 0; i < player.size(); ++i) {
+                player[i]->Update();
+                player[i]->Draw();
             }
 
-            if (!general->IsMoving() && general2 && !general2->IsMoving()) {
-                Vector2 pos1 = general->GetFootPosition();
-                Vector2 pos2 = general2->GetFootPosition();
+            // 전투맵 진입 조건
+            if (!player[0]->IsMoving() && !player[1]->IsMoving()) {
+                Vector2 pos1 = player[0]->GetFootPosition();
+                Vector2 pos2 = player[1]->GetFootPosition();
                 float dx = pos1.x - pos2.x;
                 float dy = pos1.y - pos2.y;
                 float dist = sqrtf(dx * dx + dy * dy);
@@ -156,9 +174,8 @@ int main() {
         EndDrawing();
     }
 
-    delete general;
-    if (general2) delete general2;
-    UnloadTexture(general2Texture);
+    delete player1;
+    delete player2;
     CloseWindow();
     return 0;
 }

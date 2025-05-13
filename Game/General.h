@@ -3,7 +3,7 @@
 
 class General {
 public:
-    General(Vector2 position);
+    General(Vector2 position, const char* text_path);
     ~General();
 
     void Draw() const;

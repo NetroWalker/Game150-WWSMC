@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Engine\TurnManager.cpp" />
     <ClCompile Include="Game\BattleMap.cpp" />
     <ClCompile Include="Game\General.cpp" />
     <ClCompile Include="Game\map.cpp" />
@@ -26,6 +27,7 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Engine\TurnManager.h" />
     <ClInclude Include="Game\BattleMap.h" />
     <ClInclude Include="Game\General.h" />
     <ClInclude Include="Game\map.h" />

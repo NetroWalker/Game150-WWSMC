@@ -1,9 +1,9 @@
 #include "General.h"
 
-General::General(Vector2 pos)
+General::General(Vector2 pos, const char* text_path)
     : position(pos), targetPos(pos), startPos(pos)
 {
-    sprite = LoadTexture("assets/General.png");
+    sprite = LoadTexture(text_path);
 }
 
 General::~General() {
