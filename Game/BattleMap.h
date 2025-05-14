@@ -1,40 +1,33 @@
 #pragma once
-#include <vector>
 #include "raylib.h"
-#include "Soldier.h"
+#include <vector>
+
+struct UnitIcon {
+    Texture2D texture;
+    Vector2 position;
+    Vector2 originalPosition;
+    bool dragging = false;
+    bool placed = false;
+};
 
 class BattleMap {
 public:
-    BattleMap(int screenWidth, int screenHeight, int lineCount);
+    BattleMap(int screenWidth, int screenHeight);
     ~BattleMap();
 
     void Update();
     void Draw();
 
-    float GetDistance(Vector2 a, Vector2 b);
-
 private:
-    int screenWidth;
-    int screenHeight;
-    int lineCount;
-    int lineHeight;
-    int boxWidth;
-    int boxHeight;
+    Texture2D background;
+    Texture2D placementTileTexture;
 
-    std::vector<Soldier> LeftBoxSoldiers;
-    std::vector<Soldier> RightBoxSoldiers;
-    Soldier* SelectedSoldier = nullptr;
+    std::vector<UnitIcon> unitIcons;
+    std::vector<Vector2> slotPositions;
+    std::vector<bool> slotOccupied;
 
-    std::vector<bool> lineOccupied;
+    Rectangle startButton;
 
-    Texture2D backgroundTexture;
-    bool battleStarted = false;
-    float attackTimer = 0.0f;
-    Rectangle battleStartButton;
-
-    std::vector<Vector2> leftInitialPositions;
-    Vector2 leftAreaCenter;
-
-    void DrawLines();
-    void DrawSideUI();
+    bool draggingSomething = false;
+    int draggingIndex = -1;
 };

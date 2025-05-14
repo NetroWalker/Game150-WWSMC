@@ -8,7 +8,6 @@ Mode0::Mode0(Vector2 center, float rX, float rY)
     float xOffset = rX * 1.5f;
     float yOffset = rY * root3;
     float squash = 0.5f;
-
     float totalWidth = (3 - 1) * xOffset;
 
     std::vector<HexTile>& tiles = const_cast<std::vector<HexTile>&>(tutorialMap.GetTiles());
@@ -27,25 +26,98 @@ Mode0::Mode0(Vector2 center, float rX, float rY)
     tutorialGeneral = new General(tiles[0].center, "Assets/General.png");
     staticGeneral = new General(tiles[2].center, "Assets/General1.png");
 
-    chatWindowTexture = LoadTexture("Assets/chat_window.png");  // ✅ 설명창 이미지 로드
+    chatWindowTexture = LoadTexture("Assets/chat_window.png");
 }
 
 Mode0::~Mode0() {
     delete tutorialGeneral;
     delete staticGeneral;
-    UnloadTexture(chatWindowTexture);  // ✅ 텍스처 해제
+    UnloadTexture(chatWindowTexture);
+}
+
+void Mode0::SetDialogueStep(int step) {
+    dialogueStep = step;
+    waitingForSpace = false;
+    delayTimer = 0.0f;
+    canMove = false;  // ✅ 기본은 이동 불가
+
+    switch (step) {
+    case 0:
+        fullDialogue = "Hello, you're the new general, aren't you?";
+        waitingForSpace = true;
+        break;
+    case 1:
+        fullDialogue = "Your mission is to help our tribe thrive by driving out the other tribes from this vast land!";
+        waitingForSpace = true;
+        break;
+    case 2:
+        fullDialogue = "You can move the general to any tile you want using the mouse!";
+        canMove = true;  // ✅ 여기서 이동 가능
+        break;
+    case 3:
+        fullDialogue = "Good!!!";
+        break;
+    case 4:
+        fullDialogue = "Normally, you can only move once per turn.";
+        waitingForSpace = true;
+        break;
+    case 5:
+        fullDialogue = "But just this time, I'll let you move once more.";
+        waitingForSpace = true;
+        canMove = true;  // ✅ 다시 이동 허용
+        break;
+    case 6:
+        fullDialogue = "When your general encounters an enemy general, a battle will begin!";
+        waitingForSpace = true;\
+        canMove = true;
+        break;
+    case 7:
+        tutorialDone = true;
+        return;
+    }
+
+    currentDialogue.clear();
+    dialogueCharIndex = 0;
+    dialogueCharTimer = 0.0f;
 }
 
 void Mode0::Update() {
     tutorialTimer += GetFrameTime();
 
-    // ✅ 설명창 등장 타이밍 이후 밝기 증가
     if (tutorialTimer >= 2.0f && chatAlpha < 1.0f) {
-        chatAlpha += GetFrameTime();  // 초당 1씩 증가 → 약 1초 fade-in
-        if (chatAlpha > 1.0f) chatAlpha = 1.0f;
+        chatAlpha += GetFrameTime();
+        if (chatAlpha >= 1.0f) {
+            chatAlpha = 1.0f;
+            dialogueShown = true;
+            SetDialogueStep(0);
+        }
     }
 
-    if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && !tutorialGeneral->IsMoving()) {
+    if (dialogueShown && dialogueCharIndex < (int)fullDialogue.length()) {
+        dialogueCharTimer += GetFrameTime();
+        if (dialogueCharTimer >= 0.03f) {
+            currentDialogue += fullDialogue[dialogueCharIndex++];
+            dialogueCharTimer = 0.0f;
+        }
+    }
+
+    if (dialogueShown && waitingForSpace && IsKeyPressed(KEY_SPACE) && dialogueCharIndex == (int)fullDialogue.length()) {
+        SetDialogueStep(dialogueStep + 1);
+    }
+
+    if (dialogueStep == 2 && tutorialGeneral->GetFootPosition().x == tutorialMap.GetTiles()[1].center.x) {
+        SetDialogueStep(3);
+    }
+
+    if (dialogueStep == 3 && dialogueCharIndex == (int)fullDialogue.length()) {
+        delayTimer += GetFrameTime();
+        if (delayTimer >= 2.0f) {
+            SetDialogueStep(4);
+        }
+    }
+
+    // ✅ General 이동 가능 여부를 canMove로 제어
+    if (dialogueShown && canMove && IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && !tutorialGeneral->IsMoving()) {
         Vector2 mouse = GetMousePosition();
 
         if (CheckCollisionPointCircle(mouse, tutorialGeneral->GetPosition(), 50)) {
@@ -79,10 +151,6 @@ void Mode0::Update() {
                     tutorialGeneral->SetPosition(tile.center);
                     generalSelected = false;
                     movableTiles.clear();
-
-                    if (tile.x == 2) {
-                        tutorialDone = true;
-                    }
                     break;
                 }
             }
@@ -94,7 +162,7 @@ void Mode0::Update() {
 
 void Mode0::Draw() {
     ClearBackground(BLACK);
-    tutorialMap.Draw();
+    tutorialMap.Draw(tutorialGeneral);
 
     for (const auto& tile : movableTiles) {
         DrawCircleV(tile.center, 30, Fade(BLUE, 0.4f));
@@ -103,7 +171,6 @@ void Mode0::Draw() {
     tutorialGeneral->Draw();
     staticGeneral->Draw();
 
-    // ✅ 설명창 페이드인 출력
     if (tutorialTimer >= 2.0f) {
         float scale = 1.0f;
         float width = chatWindowTexture.width * scale;
@@ -115,6 +182,12 @@ void Mode0::Draw() {
         };
 
         DrawTexture(chatWindowTexture, (int)pos.x, (int)pos.y, Fade(WHITE, chatAlpha));
+
+        if (dialogueShown) {
+            Font font = GetFontDefault();
+            Vector2 textPos = { 120, 635 };
+            DrawTextEx(font, currentDialogue.c_str(), textPos, 30, 2.0f, Fade(BLACK, chatAlpha));
+        }
     }
 }
 

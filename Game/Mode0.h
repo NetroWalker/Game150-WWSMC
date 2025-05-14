@@ -3,6 +3,7 @@
 #include "map.h"
 #include "General.h"
 #include <vector>
+#include <string>
 
 class Mode0 {
 public:
@@ -22,8 +23,21 @@ private:
     float radiusX;
     bool tutorialDone = false;
 
-    // 설명창 관련
     float tutorialTimer = 0.0f;
-    float chatAlpha = 0.0f;               // ✅ fade-in 투명도
+    float chatAlpha = 0.0f;
+    bool dialogueShown = false;
     Texture2D chatWindowTexture;
+
+    std::string fullDialogue = "";
+    std::string currentDialogue = "";
+    float dialogueCharTimer = 0.0f;
+    int dialogueCharIndex = 0;
+
+    int dialogueStep = -1;
+    bool waitingForSpace = false;
+    float delayTimer = 0.0f;
+
+    bool canMove = false;  // General 움직임 허용 여부
+
+    void SetDialogueStep(int step);
 };

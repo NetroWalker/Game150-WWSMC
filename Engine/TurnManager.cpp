@@ -8,12 +8,13 @@ TurnManager::TurnManager()
 
 // 턴 종료 버튼 입력 시
 void TurnManager::EndTurn() {
+    currentTurn = (currentTurn == Turn::P1) ? Turn::P2 : Turn::P1;
     intrasition = true;
 }
 
 // 턴 전환 화면에서 START 버튼 입력 시
 void TurnManager::StartTurn() {
-    currentTurn = (currentTurn == Turn::P1) ? Turn::P2 : Turn::P1;
+    
     move_count = 1;
     intrasition = false;
 }

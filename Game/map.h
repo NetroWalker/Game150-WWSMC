@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "raylib.h"
 #include <vector>
+#include "General.h"
 
 struct HexTile {
     int x, y;
@@ -13,7 +14,8 @@ public:
     ~Map();
 
     void Update();
-    void Draw();
+    void Draw();                      // 기본 출력용
+    void Draw(General* general);      // 장군 포함 이동 범위 강조용
     void SetPoint();
     bool IsMouseOver();
 
@@ -28,8 +30,8 @@ private:
     float squashFactor;
     bool autoTile;
 
-    int mapW;  // 🔹 맵 가로 타일 수
-    int mapH;  // 🔹 맵 세로 타일 수
+    int mapW;
+    int mapH;
 
     Vector2 points[6];
     std::vector<HexTile> tiles;
@@ -38,5 +40,7 @@ private:
     bool IsPointInHexagon(Vector2 point) const;
     void UpdateMapPosition();
     void HandleMouseWheelInput();
+
     Texture2D tileTexture;
+    Texture2D tile1;
 };

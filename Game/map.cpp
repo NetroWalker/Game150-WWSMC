@@ -1,22 +1,23 @@
-﻿// map.cpp
-#include "map.h"
+﻿#include "map.h"
 #include <cmath>
 
 Map::Map(Vector2 center, float radiusX, float radiusY, int width, int height, bool autoTile)
     : center(center), radiusX(radiusX), radiusY(radiusY),
     squashFactor(0.5f), autoTile(autoTile), mapW(width), mapH(height) {
     tileTexture = LoadTexture("assets/150map.png");
+    tile1 = LoadTexture("Assets/Tile1.png"); // 기본 타일
 }
 
 Map::~Map() {
     UnloadTexture(tileTexture);
+    UnloadTexture(tile1);
 }
 
 void Map::Update() {
     HandleMouseWheelInput();
     UpdateMapPosition();
 }
-                              
+
 void Map::SetPoint() {
     tiles.clear();
 
@@ -36,7 +37,6 @@ void Map::SetPoint() {
     }
 }
 
-
 bool Map::IsPointInHexagon(Vector2 point) const {
     int intersections = 0;
     for (int i = 0; i < 6; i++) {
@@ -53,26 +53,7 @@ bool Map::IsPointInHexagon(Vector2 point) const {
 }
 
 void Map::UpdateMapPosition() {
-   /* static Vector2 lastMousePos = {0, 0};
-    static bool isDragging = false;
-
-    Vector2 mousePos = GetMousePosition();
-
-    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-        lastMousePos = mousePos;
-        isDragging = true;
-    }
-
-    if (isDragging && IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
-        Vector2 delta = { mousePos.x - lastMousePos.x, mousePos.y - lastMousePos.y };
-        center.x += delta.x;
-        center.y += delta.y;
-        lastMousePos = mousePos;
-    }
-
-    if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
-        isDragging = false;
-    }*/
+    // 끔: 맵 드래그 비활성
 }
 
 void Map::DrawHexagon(Color color) {
@@ -82,9 +63,8 @@ void Map::DrawHexagon(Color color) {
 }
 
 void Map::Draw() {
-    if (autoTile) SetPoint();  // ✅ 일반맵일 때만 자동 생성
+    if (autoTile) SetPoint();
 
-    float root3 = sqrtf(3.0f);
     for (const auto& tile : tiles) {
         Rectangle source = { 0, 0, (float)tileTexture.width, (float)tileTexture.height };
         Rectangle dest = {
@@ -95,44 +75,83 @@ void Map::Draw() {
         };
         Vector2 origin = { radiusX, radiusY * squashFactor };
 
-        DrawTexturePro(tileTexture, source, dest, origin, 0.0f, WHITE);
+        DrawTexturePro(tile1, source, dest, origin, 0.0f, WHITE);  // 기본 돌 타일
         DrawHexagon(DARKGREEN);
     }
 }
 
+void Map::Draw(General* general) {
+    if (autoTile) SetPoint();
+
+    // 기본 타일 먼저 출력
+    for (const auto& tile : tiles) {
+        Rectangle source = { 0, 0, (float)tileTexture.width, (float)tileTexture.height };
+        Rectangle dest = {
+            tile.center.x,
+            tile.center.y,
+            radiusX * 2.0f,
+            radiusY * 2.0f * squashFactor
+        };
+        Vector2 origin = { radiusX, radiusY * squashFactor };
+
+        DrawTexturePro(tile1, source, dest, origin, 0.0f, WHITE);
+        DrawHexagon(DARKGREEN);
+    }
+
+    // 장군 주변 강조
+    Vector2 generalPos = general->GetFootPosition();
+    HexTile* generalTile = GetTileAtPosition(generalPos);
+    if (!generalTile) return;
+
+    for (const auto& tile : tiles) {
+        int dx = tile.x - generalTile->x;
+        int dy = tile.y - generalTile->y;
+
+        bool isEven = (generalTile->x % 2 == 0);
+        bool isNeighbor = false;
+
+        if ((dx == 0 && dy == 1) || (dx == 0 && dy == -1) ||
+            (dx == 1 && dy == 0) || (dx == -1 && dy == 0) ||
+            (dx == 1 && ((isEven && dy == -1) || (!isEven && dy == 1))) ||
+            (dx == -1 && ((isEven && dy == -1) || (!isEven && dy == 1))) ||
+            (dx == 0 && dy == 0)) {
+            isNeighbor = true;
+        }
+
+        if (isNeighbor) {
+            Rectangle source = { 0, 0, (float)tileTexture.width, (float)tileTexture.height };
+            Rectangle dest = {
+                tile.center.x,
+                tile.center.y,
+                radiusX * 2.0f,
+                radiusY * 2.0f * squashFactor
+            };
+            Vector2 origin = { radiusX, radiusY * squashFactor };
+
+            DrawTexturePro(tileTexture, source, dest, origin, 0.0f, WHITE);
+            DrawHexagon(DARKGREEN);
+        }
+    }
+}
 
 bool Map::IsMouseOver() {
     Vector2 mousePos = GetMousePosition();
-    return IsPointInHexagon(mousePos); 
+    return IsPointInHexagon(mousePos);
 }
 
 void Map::HandleMouseWheelInput() {
     float wheel = GetMouseWheelMove();
     if (wheel != 0.0f) {
         Vector2 screenCenter = { (float)GetScreenWidth() / 2, (float)GetScreenHeight() / 2 };
-
-        // squashFactor 변경 전의 기준 y 계산
         float oldY = center.y + (screenCenter.y - center.y) * squashFactor;
-
-        //float oldSquash = squashFactor;
-        //squashFactor -= wheel * 0.05f;
-        //if (squashFactor < 0.5f) squashFactor = 0.5f;
-        //if (squashFactor > 1.0f) squashFactor = 1.0f;
-
-        // squashFactor 변경 후의 기준 y 계산
         float newY = center.y + (screenCenter.y - center.y) * squashFactor;
-
-        // 변경 전후의 차이만큼 center를 반대로 이동
         center.y += (oldY - newY);
     }
 }
 
-
 HexTile* Map::GetTileAt(int x, int y) {
     for (auto& tile : tiles) {
-        if (tile.x == x && tile.y == y) {
-            return &tile;
-        }
+        if (tile.x == x && tile.y == y) return &tile;
     }
     return nullptr;
 }
@@ -148,5 +167,3 @@ HexTile* Map::GetTileAtPosition(Vector2 pos) {
     }
     return nullptr;
 }
-
-

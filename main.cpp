@@ -57,8 +57,8 @@ int main() {
         screenHeight / 2.0f - ((5 - 1) * radiusY * sqrtf(3.0f) * squashFactor) / 2.0f
     };
 
-    Map map(Fcenter, radiusX, radiusY, 5, 5, true);  // ✅ 일반 맵
-    map.SetPoint();  // ✅ 반드시 타일 초기화
+    Map map(Fcenter, radiusX, radiusY, 5, 5, true);
+    map.SetPoint();
 
     HexTile* tile33 = map.GetTileAt(3, 3);
     if (!tile33) {
@@ -71,13 +71,13 @@ int main() {
     General* player2 = new General(tile33->center, "Assets/General1.png");
     std::vector<General*> player = { player1, player2 };
 
-    BattleMap battleMap(screenWidth, screenHeight, 4);
+    BattleMap battleMap(screenWidth, screenHeight);
     TurnManager turnmanager;
 
     bool generalSelected = false;
     std::vector<HexTile> movableTiles;
 
-    Mode0* mode0 = new Mode0({ screenWidth / 2.0f, screenHeight / 2.0f }, radiusX, radiusY);  // ✅ 튜토리얼 맵
+    Mode0* mode0 = new Mode0({ screenWidth / 2.0f, screenHeight / 2.0f }, radiusX, radiusY);
     GameState currentState = STATE_TUTORIAL;
 
     while (!WindowShouldClose()) {
@@ -87,68 +87,111 @@ int main() {
         if (currentState == STATE_TUTORIAL) {
             mode0->Update();
             mode0->Draw();
-
             if (mode0->IsTutorialDone()) {
                 currentState = STATE_MAIN_MAP;
                 delete mode0;
             }
         }
+
         else if (currentState == STATE_MAIN_MAP) {
-            map.Update();
-            map.Draw();  // ✅ 일반 맵 타일 그리기
-
-            Turn turn = turnmanager.GetCurrentTurn();
             Vector2 mouse = GetMousePosition();
+            Turn turn = turnmanager.GetCurrentTurn();
 
-            int playerIndex = (turn == Turn::P1) ? 0 : 1;
-            General* currentGeneral = player[playerIndex];
+            if (!turnmanager.IsTransitioning()) {
+                int playerIndex = (turn == Turn::P1) ? 0 : 1;
+                General* currentGeneral = player[playerIndex];
+                int enemyIndex = (turn == Turn::P1) ? 1 : 0;
+                General* enemyGeneral = player[enemyIndex];
 
-            if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && !currentGeneral->IsMoving()) {
-                if (CheckCollisionPointCircle(mouse, currentGeneral->GetPosition(), 50)) {
-                    generalSelected = !generalSelected;
-                    if (generalSelected) {
-                        HexTile* from = map.GetTileAtPosition(currentGeneral->GetFootPosition());
-                        movableTiles = GetMovableTiles(map, from);
-                    }
-                    else {
-                        movableTiles.clear();
-                    }
-                }
-                else if (generalSelected) {
-                    for (auto& tile : movableTiles) {
-                        if (CheckCollisionPointCircle(mouse, tile.center, radiusX * 0.8f)) {
-                            currentGeneral->SetPosition(tile.center);
-                            generalSelected = false;
-                            movableTiles.clear();
-                            turnmanager.EndTurn();
-                            turnmanager.StartTurn();
-                            break;
+                map.Update();
+                map.Draw(currentGeneral);
+
+                HexTile* currentTile = map.GetTileAtPosition(currentGeneral->GetFootPosition());
+                HexTile* enemyTile = map.GetTileAtPosition(enemyGeneral->GetFootPosition());
+
+                if (turnmanager.CanMove()) {
+                    if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && !currentGeneral->IsMoving()) {
+                        if (CheckCollisionPointCircle(mouse, currentGeneral->GetPosition(), 50)) {
+                            generalSelected = !generalSelected;
+                            if (generalSelected) {
+                                HexTile* from = map.GetTileAtPosition(currentGeneral->GetFootPosition());
+                                movableTiles = GetMovableTiles(map, from);
+                            }
+                            else {
+                                movableTiles.clear();
+                            }
+                        }
+                        else if (generalSelected) {
+                            for (auto& tile : movableTiles) {
+                                if (CheckCollisionPointCircle(mouse, tile.center, radiusX * 0.8f)) {
+                                    currentGeneral->SetPosition(tile.center);
+                                    generalSelected = false;
+                                    movableTiles.clear();
+                                    turnmanager.Move();
+                                    break;
+                                }
+                            }
                         }
                     }
                 }
+
+                for (const auto& tile : movableTiles) {
+                    DrawCircleV(tile.center, 30, Fade(BLUE, 0.4f));
+                }
+
+                currentGeneral->Update();
+                currentGeneral->Draw();
+
+                // 인접 시에만 적 캐릭터 보임
+                if (map.GetTileAtPosition(currentGeneral->GetFootPosition()) &&
+                    map.GetTileAtPosition(enemyGeneral->GetFootPosition())) {
+                    HexTile* cTile = map.GetTileAtPosition(currentGeneral->GetFootPosition());
+                    HexTile* eTile = map.GetTileAtPosition(enemyGeneral->GetFootPosition());
+                    if (abs(cTile->x - eTile->x) <= 1 && abs(cTile->y - eTile->y) <= 1) {
+                        enemyGeneral->Update();
+                        enemyGeneral->Draw();
+                    }
+                }
+
+                if (!player[0]->IsMoving() && !player[1]->IsMoving()) {
+                    Vector2 pos1 = player[0]->GetFootPosition();
+                    Vector2 pos2 = player[1]->GetFootPosition();
+                    float dx = pos1.x - pos2.x;
+                    float dy = pos1.y - pos2.y;
+                    float dist = sqrtf(dx * dx + dy * dy);
+                    if (dist < 1.0f) {
+                        currentState = STATE_BATTLE_MAP;
+                    }
+                }
+
+                Rectangle moveRect = { 1200, 750, 40, 40 };
+                Color moveColor = turnmanager.CanMove() ? GREEN : RED;
+                DrawRectangleRec(moveRect, moveColor);
+                DrawText("Move", 1200, 795, 20, DARKGRAY);
+
+                Rectangle endTurnButton = { 1260, 750, 110, 40 };
+                DrawRectangleRec(endTurnButton, LIGHTGRAY);
+                DrawText("TurnEnd", endTurnButton.x + 10, endTurnButton.y + 10, 20, BLACK);
+                if (CheckCollisionPointRec(mouse, endTurnButton) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+                    turnmanager.EndTurn();
+                }
             }
+            else {
+                DrawRectangle(0, 0, screenWidth, screenHeight, GRAY);
+                const char* turnText = (turnmanager.GetCurrentTurn() == Turn::P1) ? "P1 TURN" : "P2 TURN";
+                int textWidth = MeasureText(turnText, 60);
+                DrawText(turnText, screenWidth / 2 - textWidth / 2, screenHeight / 2 - 100, 60, DARKBLUE);
 
-            for (const auto& tile : movableTiles) {
-                DrawCircleV(tile.center, 30, Fade(BLUE, 0.4f));
-            }
-
-            for (auto& g : player) {
-                g->Update();
-                g->Draw();
-            }
-
-            if (!player[0]->IsMoving() && !player[1]->IsMoving()) {
-                Vector2 pos1 = player[0]->GetFootPosition();
-                Vector2 pos2 = player[1]->GetFootPosition();
-                float dx = pos1.x - pos2.x;
-                float dy = pos1.y - pos2.y;
-                float dist = sqrtf(dx * dx + dy * dy);
-
-                if (dist < 1.0f) {
-                    currentState = STATE_BATTLE_MAP;
+                Rectangle startButton = { screenWidth / 2 - 100, screenHeight / 2 + 50, 200, 60 };
+                bool hovering = CheckCollisionPointRec(mouse, startButton);
+                DrawRectangleRec(startButton, hovering ? DARKGRAY : LIGHTGRAY);
+                DrawText("START", startButton.x + 60, startButton.y + 15, 30, BLACK);
+                if (hovering && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+                    turnmanager.StartTurn();
                 }
             }
         }
+
         else if (currentState == STATE_BATTLE_MAP) {
             battleMap.Update();
             battleMap.Draw();
