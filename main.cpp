@@ -153,14 +153,14 @@ int main() {
                     }
                 }
 
-                if (!player[0]->IsMoving() && !player[1]->IsMoving()) 
+                if (!player[0]->IsMoving() && !player[1]->IsMoving())
                 {
                     Vector2 pos1 = player[0]->GetFootPosition();
                     Vector2 pos2 = player[1]->GetFootPosition();
                     float dx = pos1.x - pos2.x;
                     float dy = pos1.y - pos2.y;
                     float dist = sqrtf(dx * dx + dy * dy);
-                    if (dist < 1.0f) 
+                    if (dist < 1.0f)
                     {
                         currentState = STATE_BATTLE_MAP;
                         battleMap.LoadSoldiersForTurn(turnmanager.GetCurrentTurn());  // ✅ 병사 에셋 결정
