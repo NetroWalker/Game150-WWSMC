@@ -6,10 +6,14 @@ Map::Map(Vector2 center, float radiusX, float radiusY, int width, int height, bo
     : center(center), radiusX(radiusX), radiusY(radiusY),
     squashFactor(0.5f), autoTile(autoTile), mapW(width), mapH(height) {
     tileTexture = LoadTexture("assets/150map.png");
+    meTexture = LoadTexture("assets/castle_me.png");
+    enemeTexture = LoadTexture("assets/castle_eneme.png");
 }
 
 Map::~Map() {
     UnloadTexture(tileTexture);
+    UnloadTexture(meTexture);
+    UnloadTexture(enemeTexture);
 }
 
 void Map::Update() {
@@ -85,6 +89,7 @@ void Map::Draw() {
     if (autoTile) SetPoint();  // ✅ 일반맵일 때만 자동 생성
 
     float root3 = sqrtf(3.0f);
+    
     for (const auto& tile : tiles) {
         Rectangle source = { 0, 0, (float)tileTexture.width, (float)tileTexture.height };
         Rectangle dest = {
@@ -96,6 +101,25 @@ void Map::Draw() {
         Vector2 origin = { radiusX, radiusY * squashFactor };
 
         DrawTexturePro(tileTexture, source, dest, origin, 0.0f, WHITE);
+        // 타일 중심 좌표 유지
+
+        // 시작 성 크기
+        float castleWidth = radiusX * 2.0f * 0.8f;
+        float castleHeight = radiusY * 2.0f * squashFactor * 1.1f;
+
+        Rectangle castleDest = {
+            tile.center.x,
+            tile.center.y,
+            castleWidth,
+            castleHeight
+        };
+        
+        if (tile.x == 0 && tile.y == 0) {
+            DrawTexturePro(meTexture, source, castleDest, origin, 0.0f, WHITE);
+        }
+        else if (tile.x == 4 && tile.y == 4) {
+            DrawTexturePro(enemeTexture, source, castleDest, origin, 0.0f, WHITE);
+        }
         DrawHexagon(DARKGREEN);
     }
 }

@@ -39,4 +39,6 @@ private:
     void UpdateMapPosition();
     void HandleMouseWheelInput();
     Texture2D tileTexture;
+    Texture2D meTexture;
+    Texture2D enemeTexture;
 };
