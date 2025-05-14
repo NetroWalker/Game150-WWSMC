@@ -116,7 +116,7 @@ void Map::Draw() {
         isMapInitialized = true;  // 이후에는 다시 호출 안 됨
     }
 
-    float root3 = sqrtf(3.0f);
+    //float root3 = sqrtf(3.0f);
     
     for (const auto& tile : tiles) {
         Rectangle source = { 0, 0, (float)tileTexture.width, (float)tileTexture.height };
@@ -132,34 +132,34 @@ void Map::Draw() {
         // 타일 중심 좌표 유지
 
         // 시작 성 크기
-        float castleWidth = radiusX * 2.0f * 0.8f;
-        float castleHeight = radiusY * 2.0f * squashFactor * 1.1f;
-
-        Rectangle castleDest = {
-            tile.center.x,
-            tile.center.y,
-            castleWidth,
-            castleHeight
-        };
+        //float castleWidth = radiusX * 2.0f * 0.8f;
+        //float castleHeight = radiusY * 2.0f * squashFactor * 1.1f;
+        //
+        //Rectangle castleDest = {
+        //    tile.center.x,
+        //    tile.center.y,
+        //    castleWidth,
+        //    castleHeight
+        //};
         
-        //아군 성 그리기
-        if (tile.x == 0 && tile.y == 0) {
-            DrawTexturePro(meTexture, source, castleDest, origin, 0.0f, WHITE);
-        }
-        //적 성 그리기
-        else if (tile.x == 4 && tile.y == 4) {
-            DrawTexturePro(enemeTexture, source, castleDest, origin, 0.0f, WHITE);
-        }
-
-        // 성 있는 타일 그리기
-        if (tile.hasCastle) {
-            Texture2D castleTex = (tile.castleOwner == 0) ? meTexture : enemeTexture;
-            Vector2 pos = {
-                tile.center.x - castleTex.width / 2.0f,
-                tile.center.y - castleTex.height / 2.0f
-            };
-            DrawTextureV(castleTex, pos, WHITE);
-        }
+        ////아군 성 그리기
+        //if (tile.x == 0 && tile.y == 0) {
+        //    DrawTexturePro(meTexture, source, castleDest, origin, 0.0f, WHITE);
+        //}
+        ////적 성 그리기
+        //else if (tile.x == 4 && tile.y == 4) {
+        //    DrawTexturePro(enemeTexture, source, castleDest, origin, 0.0f, WHITE);
+        //}
+        //
+        //// 성 있는 타일 그리기
+        //if (tile.hasCastle) {
+        //    Texture2D castleTex = (tile.castleOwner == 0) ? meTexture : enemeTexture;
+        //    Vector2 pos = {
+        //        tile.center.x - castleTex.width / 2.0f,
+        //        tile.center.y - castleTex.height / 2.0f
+        //    };
+        //    DrawTextureV(castleTex, pos, WHITE);
+        //}
 
         //돌 자원 그리기
         if (tile.stoneCount > 0) {

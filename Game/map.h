@@ -29,6 +29,13 @@ public:
     HexTile* GetTileAtPosition(Vector2 pos);
     void DistributeResources();
 
+    // --- 성 그리기에 필요한 정보 Getter 추가 ---
+    float GetRadiusX() const { return radiusX; }
+    float GetRadiusY() const { return radiusY; }
+    float GetSquashFactor() const { return squashFactor; }
+    Texture2D GetMeTexture() const { return meTexture; } // 아군 성 텍스처
+    Texture2D GetEnemeTexture() const { return enemeTexture; } // 적군 성 텍스처
+
 private:
     Vector2 center;
     float radiusX;

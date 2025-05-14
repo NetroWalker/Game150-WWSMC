@@ -142,6 +142,25 @@ int main() {
                 g->Update();
                 g->Draw();
             }
+
+            // Map 객체로부터 성 그리는 데 필요한 정보들을 가져옵니다.
+            float castleWidth = map.GetRadiusX() * 2.0f * 0.8f;
+            float castleHeight = map.GetRadiusY() * 2.0f * map.GetSquashFactor() * 1.1f;
+            Texture2D meTexture = map.GetMeTexture();     // 아군 성 텍스처
+            Texture2D enemeTexture = map.GetEnemeTexture(); // 적군 성 텍스처
+            for (const auto& tile : map.GetTiles()) {
+                if (tile.hasCastle) {
+                    // 타일 소유자에 따라 사용할 텍스처를 결정
+                    Texture2D castleTex = (tile.castleOwner == 0) ? meTexture : enemeTexture;
+                    Vector2 pos = {
+                        tile.center.x - castleTex.width / 2.0f,
+                        tile.center.y - castleTex.height / 2.0f
+                    };
+
+                    // 성 텍스처를 그립니다.
+                    DrawTextureV(castleTex, pos, WHITE);
+                }
+            }
             // main.cpp - STATE_MAIN_MAP 안에 HUD 그리기 추가
             DrawText(TextFormat("P1 - Wood: %d  Stone: %d", player1->GetWood(), player1->GetStone()), 10, 10, 20, DARKGREEN);
             DrawText(TextFormat("P2 - Wood: %d  Stone: %d", player2->GetWood(), player2->GetStone()), screenWidth - 250, screenHeight - 40, 20, DARKBLUE);
