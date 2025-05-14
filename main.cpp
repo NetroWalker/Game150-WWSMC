@@ -59,6 +59,7 @@ int main() {
 
     Map map(Fcenter, radiusX, radiusY, 5, 5, true);  // ✅ 일반 맵
     map.SetPoint();  // ✅ 반드시 타일 초기화
+    //map.DistributeResources();
 
     HexTile* tile33 = map.GetTileAt(3, 3);
     if (!tile33) {

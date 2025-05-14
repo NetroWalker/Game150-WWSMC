@@ -5,6 +5,11 @@
 struct HexTile {
     int x, y;
     Vector2 center;
+
+    int stoneCount = 0;
+    int woodCount = 0;
+
+    bool hasCastle = false;
 };
 
 class Map {
@@ -20,6 +25,7 @@ public:
     const std::vector<HexTile>& GetTiles() const { return tiles; }
     HexTile* GetTileAt(int x, int y);
     HexTile* GetTileAtPosition(Vector2 pos);
+    void DistributeResources();
 
 private:
     Vector2 center;
@@ -30,6 +36,7 @@ private:
 
     int mapW;  // 🔹 맵 가로 타일 수
     int mapH;  // 🔹 맵 세로 타일 수
+    bool isMapInitialized = false;
 
     Vector2 points[6];
     std::vector<HexTile> tiles;

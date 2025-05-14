@@ -38,8 +38,21 @@ void Map::SetPoint() {
             tiles.push_back(tile);
         }
     }
-}
+    HexTile* castleTile1 = GetTileAt(0, 0);
+    if (castleTile1) castleTile1->hasCastle = true;
 
+    HexTile* castleTile2 = GetTileAt(4, 4);
+    if (castleTile2) castleTile2->hasCastle = true;
+}
+//자원배치
+void Map::DistributeResources() {
+    for (auto& tile : tiles) {
+        if (tile.hasCastle) continue;  // 성 있는 타일은 제외
+
+        tile.stoneCount = GetRandomValue(3, 8);  // 돌 3~8개
+        tile.woodCount = GetRandomValue(2, 5);   // 나무 2~5개
+    }
+}
 
 bool Map::IsPointInHexagon(Vector2 point) const {
     int intersections = 0;
@@ -86,7 +99,11 @@ void Map::DrawHexagon(Color color) {
 }
 
 void Map::Draw() {
-    if (autoTile) SetPoint();  // ✅ 일반맵일 때만 자동 생성
+    if (autoTile && !isMapInitialized) {
+        SetPoint();
+        DistributeResources();
+        isMapInitialized = true;  // 이후에는 다시 호출 안 됨
+    }
 
     float root3 = sqrtf(3.0f);
     
@@ -120,8 +137,16 @@ void Map::Draw() {
         else if (tile.x == 4 && tile.y == 4) {
             DrawTexturePro(enemeTexture, source, castleDest, origin, 0.0f, WHITE);
         }
+        if (tile.stoneCount > 0) {
+            DrawText(TextFormat("Stone: %d", tile.stoneCount), tile.center.x - 40, tile.center.y - 10, 10, DARKGRAY);
+        }
+        if (tile.woodCount > 0) {
+            DrawText(TextFormat("Wood: %d", tile.woodCount), tile.center.x - 40, tile.center.y + 10, 10, DARKGREEN);
+        }
         DrawHexagon(DARKGREEN);
+        
     }
+    
 }
 
 
