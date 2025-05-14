@@ -29,6 +29,9 @@ public:
     HexTile* GetTileAtPosition(Vector2 pos);
     void DistributeResources();
 
+    int GetMapW() const { return mapW; }
+    int GetMapH() const { return mapH; }
+
     // --- 성 그리기에 필요한 정보 Getter 추가 ---
     float GetRadiusX() const { return radiusX; }
     float GetRadiusY() const { return radiusY; }

@@ -13,7 +13,8 @@
 enum GameState {
     STATE_TUTORIAL,
     STATE_MAIN_MAP,
-    STATE_BATTLE_MAP
+    STATE_BATTLE_MAP,
+    STATE_WIN_SCREEN
 };
 
 std::vector<HexTile> GetMovableTiles(Map& map, HexTile* from) {
@@ -61,6 +62,8 @@ int main() {
     Map map(Fcenter, radiusX, radiusY, 5, 5, true);  // ✅ 일반 맵
     map.SetPoint();  // ✅ 반드시 타일 초기화
     //map.DistributeResources();
+
+    int winningPlayerIndex = -1; // -1: 아직 승리자 없음, 0: player[0] 승리, 1: player[1] 승리
 
     HexTile* tile33 = map.GetTileAt(3, 3);
     if (!tile33) {
@@ -139,7 +142,42 @@ int main() {
             }
 
             for (auto& g : player) {
-                g->Update();
+                bool wasMoving = g->IsMoving(); // Update 전 상태 저장
+                g->Update(); // 장군 위치 업데이트
+                bool isNowMoving = g->IsMoving(); // Update 후 상태 저장
+
+                // 장군 이동이 방금 끝났다면
+                if (wasMoving && !isNowMoving) {
+                    // 장군이 도달한 타일을 가져옵니다.
+                    HexTile* landedTile = map.GetTileAtPosition(g->GetFootPosition());
+                    if (landedTile != nullptr) {
+                        // 어떤 플레이어의 장군인지 확인합니다.
+                        int movedPlayerIndex = -1;
+                        if (g == player[0]) movedPlayerIndex = 0;
+                        else if (g == player[1]) movedPlayerIndex = 1;
+
+                        // 플레이어 장군이 맞다면 승리 조건 체크
+                        if (movedPlayerIndex != -1) {
+                            // --- 승리 조건 체크 ---
+                            // player[0] (인덱스 0)이 상대방 성 타일 (맵의 우하단: mapW-1, mapH-1)에 도달했다면 승리
+                            if (movedPlayerIndex == 0) {
+                                if (landedTile->x == map.GetMapW() - 1 && landedTile->y == map.GetMapH() - 1) {
+                                    winningPlayerIndex = 0; // player[0] 승리
+                                    currentState = STATE_WIN_SCREEN; // 승리 화면 상태로 전환
+                                    DrawText("Player 1 wins!!", GetScreenWidth() / 2, GetScreenHeight() / 2, 20, BLUE);
+                                }
+                            }
+                            // player[1] (인덱스 1)이 상대방 성 타일 (맵의 좌상단: 0,0)에 도달했다면 승리
+                            else if (movedPlayerIndex == 1) {
+                                if (landedTile->x == 0 && landedTile->y == 0) {
+                                    winningPlayerIndex = 1; // player[1] 승리
+                                    currentState = STATE_WIN_SCREEN; // 승리 화면 상태로 전환
+                                    DrawText("Player 2 wins!!", GetScreenWidth() / 2, GetScreenHeight() / 2, 20, RED);
+                                }
+                            }
+                        }
+                    }
+                }
                 g->Draw();
             }
 
@@ -225,6 +263,15 @@ int main() {
         else if (currentState == STATE_BATTLE_MAP) {
             battleMap.Update();
             battleMap.Draw();
+        }
+        else if (currentState == STATE_WIN_SCREEN) {
+            if (winningPlayerIndex == 0) {
+                DrawText("Player 1 wins!!", GetScreenWidth() / 2, GetScreenHeight() / 2, 100, RED);
+            }
+            else {
+                DrawText("Player 2 wins!!", GetScreenWidth() / 2, GetScreenHeight() / 2, 100, BLUE);
+            }
+
         }
 
         EndDrawing();
