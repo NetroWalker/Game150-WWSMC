@@ -28,6 +28,9 @@
     <ClCompile Include="Game\Mode0.cpp">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="Game\Menu.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game\map.h">
@@ -46,6 +49,9 @@
       <Filter>Engine</Filter>
     </ClInclude>
     <ClInclude Include="Game\Mode0.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\Menu.h">
       <Filter>Game</Filter>
     </ClInclude>
   </ItemGroup>
