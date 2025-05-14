@@ -2,8 +2,9 @@
 #include "map.h"
 #include <cmath>
 
-Map::Map(Vector2 center, float radiusX, float radiusY)
-    : center(center), radiusX(radiusX), radiusY(radiusY), squashFactor(0.5f) {
+Map::Map(Vector2 center, float radiusX, float radiusY, int width, int height, bool autoTile)
+    : center(center), radiusX(radiusX), radiusY(radiusY),
+    squashFactor(0.5f), autoTile(autoTile), mapW(width), mapH(height) {
     tileTexture = LoadTexture("assets/150map.png");
 }
 
@@ -17,7 +18,7 @@ void Map::Update() {
 }
                               
 void Map::SetPoint() {
-    tiles.clear(); // 중복 저장 방지
+    tiles.clear();
 
     float root3 = sqrt(3.0f);
     float xOffset = radiusX * 1.5f;
@@ -27,44 +28,13 @@ void Map::SetPoint() {
         for (int y = 0; y < mapH; y++) {
             float hexX = center.x + x * xOffset;
             float hexY = center.y + y * yOffset + ((x % 2) * (yOffset / 2.0f));
-
-            // squash 기준 변경: center.y 제거 → 화면에 더 위쪽에 뜸
             float squashedHexY = hexY * squashFactor;
 
-            // 타일 정보 저장
-            HexTile tile;
-            tile.x = x;
-            tile.y = y;
-            tile.center = { hexX, squashedHexY };
+            HexTile tile = { x, y, { hexX, squashedHexY } };
             tiles.push_back(tile);
-
-            // 꼭짓점 계산 (그리기용)
-            for (int i = 0; i < 6; i++) {
-                float angle = PI / 3 * i;
-                float px = hexX + radiusX * cosf(angle);
-                float py = hexY + radiusY * sinf(angle);
-
-                points[i] = {
-                    px,
-                    py * squashFactor // 여기도 동일하게 squash 적용
-                };
-            }
-
-            Rectangle source = { 0, 0, (float)tileTexture.width, (float)tileTexture.height };
-            Rectangle dest = {
-                hexX,
-                squashedHexY,
-                radiusX * 2.0f,
-                radiusY * 2.0f * squashFactor
-            };
-            Vector2 origin = { radiusX, radiusY * squashFactor };
-
-            DrawTexturePro(tileTexture, source, dest, origin, 0.0f, WHITE);
-            DrawHexagon(DARKGREEN);
         }
     }
 }
-
 
 
 bool Map::IsPointInHexagon(Vector2 point) const {
@@ -112,8 +82,24 @@ void Map::DrawHexagon(Color color) {
 }
 
 void Map::Draw() {
-    SetPoint(); 
+    if (autoTile) SetPoint();  // ✅ 일반맵일 때만 자동 생성
+
+    float root3 = sqrtf(3.0f);
+    for (const auto& tile : tiles) {
+        Rectangle source = { 0, 0, (float)tileTexture.width, (float)tileTexture.height };
+        Rectangle dest = {
+            tile.center.x,
+            tile.center.y,
+            radiusX * 2.0f,
+            radiusY * 2.0f * squashFactor
+        };
+        Vector2 origin = { radiusX, radiusY * squashFactor };
+
+        DrawTexturePro(tileTexture, source, dest, origin, 0.0f, WHITE);
+        DrawHexagon(DARKGREEN);
+    }
 }
+
 
 bool Map::IsMouseOver() {
     Vector2 mousePos = GetMousePosition();

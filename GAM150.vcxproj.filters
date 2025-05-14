@@ -25,6 +25,9 @@
     <ClCompile Include="Engine\TurnManager.cpp">
       <Filter>Engine</Filter>
     </ClCompile>
+    <ClCompile Include="Game\Mode0.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game\map.h">
@@ -41,6 +44,9 @@
     </ClInclude>
     <ClInclude Include="Engine\TurnManager.h">
       <Filter>Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\Mode0.h">
+      <Filter>Game</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

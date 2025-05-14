@@ -2,9 +2,6 @@
 #include "raylib.h"
 #include <vector>
 
-const int mapW = 5;
-const int mapH = 5;
-
 struct HexTile {
     int x, y;
     Vector2 center;
@@ -12,7 +9,7 @@ struct HexTile {
 
 class Map {
 public:
-    Map(Vector2 center, float radiusX, float radiusY);
+    Map(Vector2 center, float radiusX, float radiusY, int width, int height, bool autoTile = true);
     ~Map();
 
     void Update();
@@ -29,6 +26,10 @@ private:
     float radiusX;
     float radiusY;
     float squashFactor;
+    bool autoTile;
+
+    int mapW;  // 🔹 맵 가로 타일 수
+    int mapH;  // 🔹 맵 세로 타일 수
 
     Vector2 points[6];
     std::vector<HexTile> tiles;

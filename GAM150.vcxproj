@@ -23,6 +23,7 @@
     <ClCompile Include="Game\BattleMap.cpp" />
     <ClCompile Include="Game\General.cpp" />
     <ClCompile Include="Game\map.cpp" />
+    <ClCompile Include="Game\Mode0.cpp" />
     <ClCompile Include="Game\Soldier.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
@@ -31,6 +32,7 @@
     <ClInclude Include="Game\BattleMap.h" />
     <ClInclude Include="Game\General.h" />
     <ClInclude Include="Game\map.h" />
+    <ClInclude Include="Game\Mode0.h" />
     <ClInclude Include="Game\Soldier.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
