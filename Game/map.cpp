@@ -21,6 +21,8 @@ void Map::Update() {
     UpdateMapPosition();
 }
                               
+// map.cpp
+
 void Map::SetPoint() {
     tiles.clear();
 
@@ -38,11 +40,20 @@ void Map::SetPoint() {
             tiles.push_back(tile);
         }
     }
-    HexTile* castleTile1 = GetTileAt(0, 0);
-    if (castleTile1) castleTile1->hasCastle = true;
 
-    HexTile* castleTile2 = GetTileAt(4, 4);
-    if (castleTile2) castleTile2->hasCastle = true;
+    // --- 초기 성의 소유자 설정 ---
+    HexTile* castleTile1 = GetTileAt(0, 0);
+    if (castleTile1) {
+        castleTile1->hasCastle = true;
+        castleTile1->castleOwner = 0; // 플레이어 1 (player[0])이 타일 (0,0) 성 소유
+    }
+
+    HexTile* castleTile2 = GetTileAt(mapW - 1, mapH - 1); // 맵 크기가 5x5라면 (4,4)
+    if (castleTile2) {
+        castleTile2->hasCastle = true;
+        castleTile2->castleOwner = 1; // 플레이어 2 (player[1])가 타일 (mapW-1, mapH-1) 성 소유
+    }
+    // --- 초기 성 소유자 설정 끝 ---
 }
 //자원배치
 void Map::DistributeResources() {
@@ -131,15 +142,30 @@ void Map::Draw() {
             castleHeight
         };
         
+        //아군 성 그리기
         if (tile.x == 0 && tile.y == 0) {
             DrawTexturePro(meTexture, source, castleDest, origin, 0.0f, WHITE);
         }
+        //적 성 그리기
         else if (tile.x == 4 && tile.y == 4) {
             DrawTexturePro(enemeTexture, source, castleDest, origin, 0.0f, WHITE);
         }
+
+        // 성 있는 타일 그리기
+        if (tile.hasCastle) {
+            Texture2D castleTex = (tile.castleOwner == 0) ? meTexture : enemeTexture;
+            Vector2 pos = {
+                tile.center.x - castleTex.width / 2.0f,
+                tile.center.y - castleTex.height / 2.0f
+            };
+            DrawTextureV(castleTex, pos, WHITE);
+        }
+
+        //돌 자원 그리기
         if (tile.stoneCount > 0) {
             DrawText(TextFormat("Stone: %d", tile.stoneCount), tile.center.x - 40, tile.center.y - 10, 10, DARKGRAY);
         }
+        //목재 자원 그리기
         if (tile.woodCount > 0) {
             DrawText(TextFormat("Wood: %d", tile.woodCount), tile.center.x - 40, tile.center.y + 10, 10, DARKGREEN);
         }

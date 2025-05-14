@@ -1,4 +1,5 @@
-﻿#pragma once
+﻿//map.h
+#pragma once
 #include "raylib.h"
 #include <vector>
 
@@ -10,6 +11,7 @@ struct HexTile {
     int woodCount = 0;
 
     bool hasCastle = false;
+    int castleOwner = -1;  // 0: player1, 1: player2, -1: 없음
 };
 
 class Map {
