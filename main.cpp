@@ -46,7 +46,8 @@ std::vector<HexTile> GetMovableTiles(Map& map, HexTile* from) {
     return result;
 }
 
-int main() {
+int main() 
+{
     InitWindow(screenWidth, screenHeight, "NoName");
     SetTargetFPS(60);
 
@@ -54,7 +55,8 @@ int main() {
     float radiusY = 200.0f;
     float squashFactor = 0.3f;
 
-    Vector2 Fcenter = {
+    Vector2 Fcenter = 
+    {
         screenWidth / 2.0f - ((5 - 1) * radiusX * 1.5f) / 2.0f,
         screenHeight / 2.0f - ((5 - 1) * radiusY * sqrtf(3.0f) * squashFactor) / 2.0f
     };
@@ -66,7 +68,8 @@ int main() {
     int winningPlayerIndex = -1; // -1: 아직 승리자 없음, 0: player[0] 승리, 1: player[1] 승리
 
     HexTile* tile33 = map.GetTileAt(3, 3);
-    if (!tile33) {
+    if (!tile33) 
+    {
         TraceLog(LOG_ERROR, "tile33 not found. Exiting.");
         CloseWindow();
         return -1;
@@ -89,7 +92,8 @@ int main() {
     float onScreenMessageTimer = 0.0f;
     const float ON_SCREEN_MESSAGE_DURATION = 3.0f;
 
-    while (!WindowShouldClose()) {
+    while (!WindowShouldClose()) 
+    {
         BeginDrawing();
         ClearBackground(RAYWHITE);
 
@@ -102,11 +106,13 @@ int main() {
             }
         }
 
-        else if (currentState == STATE_MAIN_MAP) {
+        else if (currentState == STATE_MAIN_MAP) 
+        {
             Vector2 mouse = GetMousePosition();
             Turn turn = turnmanager.GetCurrentTurn();
 
-            if (!turnmanager.IsTransitioning()) {
+            if (!turnmanager.IsTransitioning()) 
+            {
                 int playerIndex = (turn == Turn::P1) ? 0 : 1;
                 General* currentGeneral = player[playerIndex];
                 int enemyIndex = (turn == Turn::P1) ? 1 : 0;
@@ -118,21 +124,30 @@ int main() {
                 HexTile* currentTile = map.GetTileAtPosition(currentGeneral->GetFootPosition());
                 HexTile* enemyTile = map.GetTileAtPosition(enemyGeneral->GetFootPosition());
 
-                if (turnmanager.CanMove()) {
-                    if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && !currentGeneral->IsMoving()) {
-                        if (CheckCollisionPointCircle(mouse, currentGeneral->GetPosition(), 50)) {
+                if (turnmanager.CanMove()) 
+                {
+                    if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && !currentGeneral->IsMoving()) 
+                    {
+                        if (CheckCollisionPointCircle(mouse, currentGeneral->GetPosition(), 50)) 
+                        {
                             generalSelected = !generalSelected;
-                            if (generalSelected) {
+                            if (generalSelected) 
+                            {
                                 HexTile* from = map.GetTileAtPosition(currentGeneral->GetFootPosition());
                                 movableTiles = GetMovableTiles(map, from);
                             }
-                            else {
+                            else 
+                            {
                                 movableTiles.clear();
                             }
                         }
-                        else if (generalSelected) {
-                            for (auto& tile : movableTiles) {
-                                if (CheckCollisionPointCircle(mouse, tile.center, radiusX * 0.8f)) {
+
+                        else if (generalSelected) 
+                        {
+                            for (auto& tile : movableTiles) 
+                            {
+                                if (CheckCollisionPointCircle(mouse, tile.center, radiusX * 0.8f)) 
+                                {
                                     currentGeneral->SetPosition(tile.center);
                                     generalSelected = false;
                                     movableTiles.clear();
@@ -144,7 +159,8 @@ int main() {
                     }
                 }
 
-                for (const auto& tile : movableTiles) {
+                for (const auto& tile : movableTiles) 
+                {
                     DrawCircleV(tile.center, 30, Fade(BLUE, 0.4f));
                 }
 
@@ -153,10 +169,12 @@ int main() {
 
                 // 인접 시에만 적 캐릭터 보임
                 if (map.GetTileAtPosition(currentGeneral->GetFootPosition()) &&
-                    map.GetTileAtPosition(enemyGeneral->GetFootPosition())) {
+                    map.GetTileAtPosition(enemyGeneral->GetFootPosition())) 
+                {
                     HexTile* cTile = map.GetTileAtPosition(currentGeneral->GetFootPosition());
                     HexTile* eTile = map.GetTileAtPosition(enemyGeneral->GetFootPosition());
-                    if (abs(cTile->x - eTile->x) <= 1 && abs(cTile->y - eTile->y) <= 1) {
+                    if (abs(cTile->x - eTile->x) <= 1 && abs(cTile->y - eTile->y) <= 1) 
+                    {
                         enemyGeneral->Update();
                         enemyGeneral->Draw();
                     }
@@ -184,11 +202,13 @@ int main() {
                 Rectangle endTurnButton = { 1260, 750, 110, 40 };
                 DrawRectangleRec(endTurnButton, LIGHTGRAY);
                 DrawText("TurnEnd", endTurnButton.x + 10, endTurnButton.y + 10, 20, BLACK);
-                if (CheckCollisionPointRec(mouse, endTurnButton) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+                if (CheckCollisionPointRec(mouse, endTurnButton) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) 
+                {
                     turnmanager.EndTurn();
                 }
             }
-            else {
+            else
+            {
                 DrawRectangle(0, 0, screenWidth, screenHeight, GRAY);
                 const char* turnText = (turnmanager.GetCurrentTurn() == Turn::P1) ? "P1 TURN" : "P2 TURN";
                 int textWidth = MeasureText(turnText, 60);
@@ -198,33 +218,44 @@ int main() {
                 bool hovering = CheckCollisionPointRec(mouse, startButton);
                 DrawRectangleRec(startButton, hovering ? DARKGRAY : LIGHTGRAY);
                 DrawText("START", startButton.x + 60, startButton.y + 15, 30, BLACK);
-                if (hovering && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+                if (hovering && IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+                {
                     turnmanager.StartTurn();
-            for (const auto& tile : movableTiles) {
-                DrawCircleV(tile.center, 30, Fade(BLUE, 0.4f));
+                }
+
+                for (const auto& tile : movableTiles)
+                {
+                    DrawCircleV(tile.center, 30, Fade(BLUE, 0.4f));
+                }
             }
 
-            for (auto& g : player) {
+            for (auto& g : player) 
+            {
                 bool wasMoving = g->IsMoving(); // Update 전 상태 저장
                 g->Update(); // 장군 위치 업데이트
                 bool isNowMoving = g->IsMoving(); // Update 후 상태 저장
 
                 // 장군 이동이 방금 끝났다면
-                if (wasMoving && !isNowMoving) {
+                if (wasMoving && !isNowMoving) 
+                {
                     // 장군이 도달한 타일을 가져옵니다.
                     HexTile* landedTile = map.GetTileAtPosition(g->GetFootPosition());
-                    if (landedTile != nullptr) {
+                    if (landedTile != nullptr) 
+                    {
                         // 어떤 플레이어의 장군인지 확인합니다.
                         int movedPlayerIndex = -1;
                         if (g == player[0]) movedPlayerIndex = 0;
                         else if (g == player[1]) movedPlayerIndex = 1;
 
                         // 플레이어 장군이 맞다면 승리 조건 체크
-                        if (movedPlayerIndex != -1) {
+                        if (movedPlayerIndex != -1) 
+                        {
                             // --- 승리 조건 체크 ---
                             // player[0] (인덱스 0)이 상대방 성 타일 (맵의 우하단: mapW-1, mapH-1)에 도달했다면 승리
-                            if (movedPlayerIndex == 0) {
-                                if (landedTile->x == map.GetMapW() - 1 && landedTile->y == map.GetMapH() - 1) {
+                            if (movedPlayerIndex == 0) 
+                            {
+                                if (landedTile->x == map.GetMapW() - 1 && landedTile->y == map.GetMapH() - 1) 
+                                {
                                     winningPlayerIndex = 0; // player[0] 승리
                                     currentState = STATE_WIN_SCREEN; // 승리 화면 상태로 전환
                                     DrawText("Player 1 wins!!", GetScreenWidth() / 2, GetScreenHeight() / 2, 20, BLUE);
@@ -232,7 +263,8 @@ int main() {
                             }
                             // player[1] (인덱스 1)이 상대방 성 타일 (맵의 좌상단: 0,0)에 도달했다면 승리
                             else if (movedPlayerIndex == 1) {
-                                if (landedTile->x == 0 && landedTile->y == 0) {
+                                if (landedTile->x == 0 && landedTile->y == 0) 
+                                {
                                     winningPlayerIndex = 1; // player[1] 승리
                                     currentState = STATE_WIN_SCREEN; // 승리 화면 상태로 전환
                                     DrawText("Player 2 wins!!", GetScreenWidth() / 2, GetScreenHeight() / 2, 20, RED);
@@ -346,4 +378,4 @@ int main() {
     CloseWindow();
     return 0;
 }
-}
+
