@@ -68,8 +68,8 @@ void Mode0::SetDialogueStep(int step) {
         break;
     case 6:
         fullDialogue = "When your general encounters an enemy general, a battle will begin!";
-        waitingForSpace = true;\
-        canMove = true;
+        waitingForSpace = true; \
+            canMove = true;
         break;
     case 7:
         tutorialDone = true;

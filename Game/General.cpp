@@ -1,4 +1,3 @@
-//General.cpp
 #include "General.h"
 
 General::General(Vector2 pos, const char* text_path)
@@ -58,15 +57,4 @@ Vector2 General::GetFootPosition() const {
 
 bool General::IsMoving() const {
     return isMoving;
-}
-
-void General::CollectResources(HexTile* tile)
-{
-    if (!tile) return;
-
-    wood += tile->woodCount;
-    stone += tile->stoneCount;
-
-    tile->woodCount = 0;
-    tile->stoneCount = 0;
 }

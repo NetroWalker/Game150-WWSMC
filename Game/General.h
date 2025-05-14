@@ -1,7 +1,5 @@
-//general.h
 #pragma once
 #include "raylib.h"
-#include "map.h"
 
 class General {
 public:
@@ -16,15 +14,7 @@ public:
 
     bool IsMoving() const;
 
-    int GetWood() const { return wood; }
-    int GetStone() const { return stone; }
-    bool CanBuildCastle() const { return wood >= 10 && stone >= 10; }
-    void UseResourcesForCastle() { wood -= 10; stone -= 10; }
-    void CollectResources(HexTile* tile);
 private:
-    int wood = 0;
-    int stone = 0;
-
     Vector2 position;
     Vector2 startPos;
     Vector2 targetPos;

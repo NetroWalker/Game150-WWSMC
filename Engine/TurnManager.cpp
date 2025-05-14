@@ -14,7 +14,7 @@ void TurnManager::EndTurn() {
 
 // 턴 전환 화면에서 START 버튼 입력 시
 void TurnManager::StartTurn() {
-    
+
     move_count = 1;
     intrasition = false;
 }
