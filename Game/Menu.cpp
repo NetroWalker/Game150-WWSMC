@@ -1,14 +1,12 @@
-#include "menu.h"
+﻿#include "menu.h"
 
-Menu::Menu(int screenWidth, int screenHeight) :
-    screenWidth(screenWidth), screenHeight(screenHeight) {
-    // Button dimensions and positions
+Menu::Menu(int screenWidth, int screenHeight)
+    : screenWidth(screenWidth), screenHeight(screenHeight) {
+
     int buttonWidth = 200;
     int buttonHeight = 50;
-    int buttonSpacing = 20; // Space between buttons
-
-    // Calculate positions to center the buttons
-    int startY = screenHeight / 2 - (buttonHeight + buttonSpacing) / 2; // Adjusted to center
+    int buttonSpacing = 20;
+    int startY = screenHeight / 2 - (buttonHeight + buttonSpacing) / 2;
 
     tutorialButton = {
         screenWidth / 2 - buttonWidth / 2.0f,
@@ -23,34 +21,31 @@ Menu::Menu(int screenWidth, int screenHeight) :
         (float)buttonWidth,
         (float)buttonHeight
     };
+
+    // ✅ 배경 이미지 로드
+    backgroundImage = LoadTexture("Assets/BeastCrossing.png");
 }
 
 Menu::~Menu() {
-    // No resources to unload in this simple menu
+    UnloadTexture(backgroundImage); // ✅ 배경 이미지 언로드
 }
 
 void Menu::Update() {
-    // Check for button clicks
     Vector2 mousePos = GetMousePosition();
-    if (CheckCollisionPointRec(mousePos, tutorialButton) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) {
-        // Start Tutorial button clicked
-    }
-    if (CheckCollisionPointRec(mousePos, mainMapButton) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) {
-        // Start Main Map button clicked
-    }
+    // 클릭 이벤트는 외부에서 StartTutorialClicked(), StartMainMapClicked()로 처리
 }
 
 void Menu::Draw() {
-    ClearBackground(RAYWHITE); // Clear to white
+    // ✅ 배경 먼저 그림
+    DrawTexture(backgroundImage, 0, 0, WHITE);
 
-    // Draw buttons
+    // 버튼 출력
     DrawRectangleRec(tutorialButton, LIGHTGRAY);
     DrawText("Start Tutorial", (int)(tutorialButton.x + 10), (int)(tutorialButton.y + 10), 20, BLACK);
 
     DrawRectangleRec(mainMapButton, LIGHTGRAY);
     DrawText("Start Main Map", (int)(mainMapButton.x + 10), (int)(mainMapButton.y + 10), 20, BLACK);
 
-    // You can add a title or other elements to the menu here
     DrawText("Game Menu", screenWidth / 2 - MeasureText("Game Menu", 40) / 2, 50, 40, DARKGRAY);
 }
 

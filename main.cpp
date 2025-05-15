@@ -3,6 +3,7 @@
 #include "Game/Battlemap.h"
 #include "Game/General.h"
 #include "Game/Mode0.h"
+#include "Game/menu.h"
 #include "Engine/TurnManager.h"
 #include <cmath>
 
@@ -10,6 +11,7 @@
 #define screenHeight 1000
 
 enum GameState {
+    STATE_MENU,
     STATE_TUTORIAL,
     STATE_MAIN_MAP,
     STATE_BATTLE_MAP
@@ -73,18 +75,31 @@ int main() {
 
     BattleMap battleMap(screenWidth, screenHeight);
     TurnManager turnmanager;
+    Mode0* mode0 = new Mode0({ screenWidth / 2.0f, screenHeight / 2.0f }, radiusX, radiusY);
+    Menu* menu = new Menu(screenWidth, screenHeight);
 
     bool generalSelected = false;
     std::vector<HexTile> movableTiles;
 
-    Mode0* mode0 = new Mode0({ screenWidth / 2.0f, screenHeight / 2.0f }, radiusX, radiusY);
-    GameState currentState = STATE_TUTORIAL;
+    GameState currentState = STATE_MENU;
 
     while (!WindowShouldClose()) {
         BeginDrawing();
         ClearBackground(RAYWHITE);
 
-        if (currentState == STATE_TUTORIAL) {
+        if (currentState == STATE_MENU) {
+            menu->Update();
+            menu->Draw();
+
+            if (menu->StartTutorialClicked()) {
+                currentState = STATE_TUTORIAL;
+            }
+            else if (menu->StartMainMapClicked()) {
+                currentState = STATE_MAIN_MAP;
+            }
+        }
+
+        else if (currentState == STATE_TUTORIAL) {
             mode0->Update();
             mode0->Draw();
             if (mode0->IsTutorialDone()) {
@@ -105,9 +120,6 @@ int main() {
 
                 map.Update();
                 map.Draw(currentGeneral);
-
-                HexTile* currentTile = map.GetTileAtPosition(currentGeneral->GetFootPosition());
-                HexTile* enemyTile = map.GetTileAtPosition(enemyGeneral->GetFootPosition());
 
                 if (turnmanager.CanMove()) {
                     if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && !currentGeneral->IsMoving()) {
@@ -142,7 +154,6 @@ int main() {
                 currentGeneral->Update();
                 currentGeneral->Draw();
 
-                // 인접 시에만 적 캐릭터 보임
                 if (map.GetTileAtPosition(currentGeneral->GetFootPosition()) &&
                     map.GetTileAtPosition(enemyGeneral->GetFootPosition())) {
                     HexTile* cTile = map.GetTileAtPosition(currentGeneral->GetFootPosition());
@@ -153,23 +164,21 @@ int main() {
                     }
                 }
 
-                if (!player[0]->IsMoving() && !player[1]->IsMoving())
-                {
+                if (!player[0]->IsMoving() && !player[1]->IsMoving()) {
                     Vector2 pos1 = player[0]->GetFootPosition();
                     Vector2 pos2 = player[1]->GetFootPosition();
                     float dx = pos1.x - pos2.x;
                     float dy = pos1.y - pos2.y;
                     float dist = sqrtf(dx * dx + dy * dy);
-                    if (dist < 1.0f)
-                    {
+
+                    if (dist < 1.0f) {
                         currentState = STATE_BATTLE_MAP;
-                        battleMap.LoadSoldiersForTurn(turnmanager.GetCurrentTurn());  // ✅ 병사 에셋 결정
+                        battleMap.LoadSoldiersForTurn(turnmanager.GetCurrentTurn());
                     }
                 }
 
                 Rectangle moveRect = { 1200, 750, 40, 40 };
-                Color moveColor = turnmanager.CanMove() ? GREEN : RED;
-                DrawRectangleRec(moveRect, moveColor);
+                DrawRectangleRec(moveRect, turnmanager.CanMove() ? GREEN : RED);
                 DrawText("Move", 1200, 795, 20, DARKGRAY);
 
                 Rectangle endTurnButton = { 1260, 750, 110, 40 };
@@ -205,6 +214,7 @@ int main() {
 
     delete player1;
     delete player2;
+    delete menu;
     CloseWindow();
     return 0;
 }
