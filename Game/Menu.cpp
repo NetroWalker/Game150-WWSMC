@@ -22,17 +22,15 @@ Menu::Menu(int screenWidth, int screenHeight)
         (float)buttonHeight
     };
 
-    // ✅ 배경 이미지 로드
     backgroundImage = LoadTexture("Assets/BeastCrossing.png");
 }
 
 Menu::~Menu() {
-    UnloadTexture(backgroundImage); // ✅ 배경 이미지 언로드
+    UnloadTexture(backgroundImage); 
 }
 
 void Menu::Update() {
     Vector2 mousePos = GetMousePosition();
-    // 클릭 이벤트는 외부에서 StartTutorialClicked(), StartMainMapClicked()로 처리
 }
 
 void Menu::Draw() {
