@@ -153,12 +153,13 @@ int main() {
 
                 currentGeneral->Update();
                 currentGeneral->Draw();
-
+                
+                // 장군 보이는 오류 수정.
                 if (map.GetTileAtPosition(currentGeneral->GetFootPosition()) &&
                     map.GetTileAtPosition(enemyGeneral->GetFootPosition())) {
                     HexTile* cTile = map.GetTileAtPosition(currentGeneral->GetFootPosition());
                     HexTile* eTile = map.GetTileAtPosition(enemyGeneral->GetFootPosition());
-                    if (abs(cTile->x - eTile->x) <= 1 && abs(cTile->y - eTile->y) <= 1) {
+                    if (map.IsNeighborTile(cTile->x, cTile->y, eTile->x, eTile->y)) {
                         enemyGeneral->Update();
                         enemyGeneral->Draw();
                     }
