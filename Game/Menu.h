@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "raylib.h"
 
 class Menu {
@@ -17,4 +17,5 @@ private:
     int screenHeight;
     Rectangle tutorialButton;
     Rectangle mainMapButton;
+    Texture2D backgroundImage;  // ✅ 새로 추가된 배경 이미지
 };

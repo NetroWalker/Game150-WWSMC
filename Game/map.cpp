@@ -104,21 +104,7 @@ void Map::Draw(General* general) {
     if (!generalTile) return;
 
     for (const auto& tile : tiles) {
-        int dx = tile.x - generalTile->x;
-        int dy = tile.y - generalTile->y;
-
-        bool isEven = (generalTile->x % 2 == 0);
-        bool isNeighbor = false;
-
-        if ((dx == 0 && dy == 1) || (dx == 0 && dy == -1) ||
-            (dx == 1 && dy == 0) || (dx == -1 && dy == 0) ||
-            (dx == 1 && ((isEven && dy == -1) || (!isEven && dy == 1))) ||
-            (dx == -1 && ((isEven && dy == -1) || (!isEven && dy == 1))) ||
-            (dx == 0 && dy == 0)) {
-            isNeighbor = true;
-        }
-
-        if (isNeighbor) {
+        if (IsNeighborTile(tile.x, tile.y, generalTile->x, generalTile->y)) {
             Rectangle source = { 0, 0, (float)tileTexture.width, (float)tileTexture.height };
             Rectangle dest = {
                 tile.center.x,
@@ -166,4 +152,19 @@ HexTile* Map::GetTileAtPosition(Vector2 pos) {
         }
     }
     return nullptr;
+}
+
+// 이웃 타일
+bool Map::IsNeighborTile(int x1, int y1, int x2, int y2) {
+    int dx = x2 - x1;
+    int dy = y2 - y1;
+    bool isEven = (x1 % 2 == 0);
+
+    if (dx == 0 && dy == 0) return true;
+    if ((dx == 0 && (dy == 1 || dy == -1))) return true;
+    if ((dx == 1 && dy == 0) || (dx == -1 && dy == 0)) return true;
+    if (dx == 1 && ((isEven && dy == -1) || (!isEven && dy == 1))) return true;
+    if (dx == -1 && ((isEven && dy == -1) || (!isEven && dy == 1))) return true;
+
+    return false;
 }
