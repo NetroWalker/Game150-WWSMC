@@ -106,6 +106,7 @@ int main() {
                 map.Update();
                 map.Draw(currentGeneral);
 
+
                 HexTile* currentTile = map.GetTileAtPosition(currentGeneral->GetFootPosition());
                 HexTile* enemyTile = map.GetTileAtPosition(enemyGeneral->GetFootPosition());
 
