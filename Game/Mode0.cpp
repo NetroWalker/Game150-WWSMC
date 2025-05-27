@@ -39,7 +39,7 @@ void Mode0::SetDialogueStep(int step) {
     dialogueStep = step;
     waitingForSpace = false;
     delayTimer = 0.0f;
-    canMove = false;  // ✅ 기본은 이동 불가
+    canMove = false;
 
     switch (step) {
     case 0:
@@ -52,7 +52,7 @@ void Mode0::SetDialogueStep(int step) {
         break;
     case 2:
         fullDialogue = "You can move the general to any tile you want using the mouse!";
-        canMove = true;  // ✅ 여기서 이동 가능
+        canMove = true;
         break;
     case 3:
         fullDialogue = "Good!!!";
@@ -64,7 +64,7 @@ void Mode0::SetDialogueStep(int step) {
     case 5:
         fullDialogue = "But just this time, I'll let you move once more.";
         waitingForSpace = true;
-        canMove = true;  // ✅ 다시 이동 허용
+        canMove = true;
         break;
     case 6:
         fullDialogue = "When your general encounters an enemy general, a battle will begin!";
@@ -116,7 +116,6 @@ void Mode0::Update() {
         }
     }
 
-    // ✅ General 이동 가능 여부를 canMove로 제어
     if (dialogueShown && canMove && IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && !tutorialGeneral->IsMoving()) {
         Vector2 mouse = GetMousePosition();
 
