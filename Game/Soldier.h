@@ -15,15 +15,8 @@ public:
     void SetSelected(bool sel);
     bool IsSelected() const;
 
-    int GetAtk() const;
-    void ReceiveAttack(int damage);
-
-    float GetSpeed() const;
     double GetRadius() const;
-
-    int GetHP() const;
-
-    void ResetHP();
+    Rectangle GetHitbox() const;
 
 private:
     Vector2 position;
@@ -32,9 +25,7 @@ private:
     SoldierType type;
 
     Texture2D sprite;
-    int hp;
-    float speed;
-    int atk;
+    Rectangle hitbox;  // ✅ 히트박스 멤버 추가
 
-    mutable bool flash = false;
+    void UpdateHitbox();  // ✅ 내부에서 히트박스 갱신용
 };

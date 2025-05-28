@@ -7,9 +7,12 @@
 #include "Engine/TurnManager.h"
 #include <cmath>
 
+
+//window.h
 #define screenWidth 1500
 #define screenHeight 1000
 
+//State.h
 enum GameState {
     STATE_MENU,
     STATE_TUTORIAL,
@@ -17,6 +20,7 @@ enum GameState {
     STATE_BATTLE_MAP
 };
 
+//map.cpp(in mode1.cpp)
 std::vector<HexTile> GetMovableTiles(Map& map, HexTile* from) {
     std::vector<HexTile> result;
     if (!from) return result;
@@ -46,33 +50,39 @@ std::vector<HexTile> GetMovableTiles(Map& map, HexTile* from) {
     return result;
 }
 
+//main.cpp
 int main() {
     InitWindow(screenWidth, screenHeight, "NoName");
     SetTargetFPS(60);
 
+    //map.cpp
     float radiusX = 200.0f;
     float radiusY = 200.0f;
     float squashFactor = 0.3f;
 
+    //window.h
     Vector2 Fcenter = {
         screenWidth / 2.0f - ((5 - 1) * radiusX * 1.5f) / 2.0f,
         screenHeight / 2.0f - ((5 - 1) * radiusY * sqrtf(3.0f) * squashFactor) / 2.0f
     };
 
+    //map.cpp(in mode1.cpp)
     Map map(Fcenter, radiusX, radiusY, 5, 5, true);
     map.SetPoint();
 
+    //map.cpp(in mode1.cpp)
     HexTile* tile33 = map.GetTileAt(3, 3);
     if (!tile33) {
         TraceLog(LOG_ERROR, "tile33 not found. Exiting.");
         CloseWindow();
         return -1;
     }
-
+    //(in mode1.cpp)
     General* player1 = new General(map.GetTiles()[0].center, "Assets/General.png");
     General* player2 = new General(tile33->center, "Assets/General1.png");
     std::vector<General*> player = { player1, player2 };
 
+    //map.cpp(in mode2.cpp)
     BattleMap battleMap(screenWidth, screenHeight);
     TurnManager turnmanager;
     Mode0* mode0 = new Mode0({ screenWidth / 2.0f, screenHeight / 2.0f }, radiusX, radiusY);
@@ -111,6 +121,15 @@ int main() {
         else if (currentState == STATE_MAIN_MAP) {
             Vector2 mouse = GetMousePosition();
             Turn turn = turnmanager.GetCurrentTurn();
+
+
+            //디버그 모드로 옴겨야함
+            if (IsKeyPressed(KEY_Q)) 
+            {
+                currentState = STATE_BATTLE_MAP;
+                turnmanager = TurnManager(); 
+                battleMap.LoadSoldiersForTurn(Turn::P1);
+            }
 
             if (!turnmanager.IsTransitioning()) {
                 int playerIndex = (turn == Turn::P1) ? 0 : 1;
@@ -153,6 +172,15 @@ int main() {
 
                 currentGeneral->Update();
                 currentGeneral->Draw();
+
+
+                //디버그 버전으로 옴겨야함
+                if (IsKeyDown(KEY_D)) {
+                    Vector2 generalPos = currentGeneral->GetPosition(); 
+                    float clickableRadius = 50.0f;
+                    DrawCircleLines((int)generalPos.x, (int)generalPos.y, clickableRadius, RED);
+                }
+
                 
                 // 장군 보이는 오류 수정.
                 if (map.GetTileAtPosition(currentGeneral->GetFootPosition()) &&

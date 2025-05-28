@@ -143,6 +143,10 @@ void BattleMap::Update() {
     if (allPlaced && CheckCollisionPointRec(mouse, clickableStart) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
         transitioning = true;
     }
+    if (IsKeyPressed(KEY_E)) {
+        showHitbox = !showHitbox;  // E키 누를 때마다 on/off 토글
+    }
+
 }
 
 void BattleMap::Draw() {
@@ -174,6 +178,21 @@ void BattleMap::Draw() {
         src.width = -src.width;  // 좌우 반전
         DrawTexturePro(icon.texture, src, dest, origin, 0.0f, WHITE);
     }
+  
+    if (showHitbox) {
+        for (const auto& soldier : soldiers) { // soldiers는 Soldier 객체 리스트
+            Rectangle box = soldier.GetHitbox();
+            box.x += offsetX; // 화면 스크롤 반영
+            DrawRectangleLinesEx(box, 2, RED);
+        }
+
+        for (const auto& enemy : enemySoldiers) {
+            Rectangle box = enemy.GetHitbox();
+            box.x += offsetX;
+            DrawRectangleLinesEx(box, 2, BLUE);
+        }
+    }
+
 
     Rectangle drawStart = { startButton.x + offsetX, startButton.y, startButton.width, startButton.height };
     DrawRectangleRec(drawStart, LIGHTGRAY);

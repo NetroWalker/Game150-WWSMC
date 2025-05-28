@@ -34,9 +34,15 @@ private:
 
     Rectangle startButton;
 
-    bool draggingSomething = false;
+
+    float zoomTimer = 0.0f;
+    float screenScale = 1.0f;
+    float offsetX = 0.0f;
+
     int draggingIndex = -1;
 
-    float offsetX = 0.0f;
+    bool showHitbox = false;
+    bool draggingSomething = false;
+    bool impactZoom = false;
     bool transitioning = false;
 };
