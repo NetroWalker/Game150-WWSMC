@@ -37,6 +37,35 @@ void Map::SetPoint() {
     }
 }
 
+std::vector<HexTile> GetMovableTiles(Map& map, HexTile* from) {
+    std::vector<HexTile> result;
+    if (!from) return result;
+
+    int x = from->x;
+    int y = from->y;
+
+    if (x % 2 == 1) {
+        int dx[] = { 0, +1, -1, -1,  0, +1 };
+        int dy[] = { -1,  0,  0, +1, +1, +1 };
+        for (int i = 0; i < 6; i++) {
+            if (HexTile* t = map.GetTileAt(x + dx[i], y + dy[i])) {
+                result.push_back(*t);
+            }
+        }
+    }
+    else {
+        int dx[] = { 0,  0, +1, -1, -1, +1 };
+        int dy[] = { -1, +1,  0,  0, -1, -1 };
+        for (int i = 0; i < 6; i++) {
+            if (HexTile* t = map.GetTileAt(x + dx[i], y + dy[i])) {
+                result.push_back(*t);
+            }
+        }
+    }
+
+    return result;
+}
+
 bool Map::IsPointInHexagon(Vector2 point) const {
     int intersections = 0;
     for (int i = 0; i < 6; i++) {

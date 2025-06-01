@@ -4,55 +4,33 @@
 #include "Game/General.h"
 #include "Game/Mode0.h"
 #include "Game/menu.h"
+#include "Game/States.h"
+#include "Engine/Engine.h"
+#include "Game/Menu.h"
+#include "Game/Mode0.h"
+#include "Game/map.h"
+#include "Game/BattleMap.h"
+
 #include "Engine/TurnManager.h"
 #include <cmath>
 
 #define screenWidth 1500
 #define screenHeight 1000
 
-enum GameState {
-    STATE_MENU,
-    STATE_TUTORIAL,
-    STATE_MAIN_MAP,
-    STATE_BATTLE_MAP
-};
-
-std::vector<HexTile> GetMovableTiles(Map& map, HexTile* from) {
-    std::vector<HexTile> result;
-    if (!from) return result;
-
-    int x = from->x;
-    int y = from->y;
-
-    if (x % 2 == 1) {
-        int dx[] = { 0, +1, -1, -1,  0, +1 };
-        int dy[] = { -1,  0,  0, +1, +1, +1 };
-        for (int i = 0; i < 6; i++) {
-            if (HexTile* t = map.GetTileAt(x + dx[i], y + dy[i])) {
-                result.push_back(*t);
-            }
-        }
-    }
-    else {
-        int dx[] = { 0,  0, +1, -1, -1, +1 };
-        int dy[] = { -1, +1,  0,  0, -1, -1 };
-        for (int i = 0; i < 6; i++) {
-            if (HexTile* t = map.GetTileAt(x + dx[i], y + dy[i])) {
-                result.push_back(*t);
-            }
-        }
-    }
-
-    return result;
-}
-
 int main() {
-    InitWindow(screenWidth, screenHeight, "NoName");
-    SetTargetFPS(60);
 
     float radiusX = 200.0f;
     float radiusY = 200.0f;
     float squashFactor = 0.3f;
+
+    Engine& engine = Engine::Instance();
+    engine.Start("A COOOOOOORN? REALLY?");
+
+    Menu* menu = new Menu(screenWidth, screenHeight);
+    engine.GetGameStateManager().AddGameState(*menu);
+
+    Mode0* mode0 = new Mode0({ screenWidth / 2.0f, screenHeight / 2.0f }, radiusX, radiusY);
+    engine.GetGameStateManager().AddGameState(*mode0);
 
     Vector2 Fcenter = {
         screenWidth / 2.0f - ((5 - 1) * radiusX * 1.5f) / 2.0f,
@@ -61,6 +39,11 @@ int main() {
 
     Map map(Fcenter, radiusX, radiusY, 5, 5, true);
     map.SetPoint();
+    engine.GetGameStateManager().AddGameState(map);
+
+    BattleMap battleMap(screenWidth, screenHeight);
+    engine.GetGameStateManager().AddGameState(battleMap);
+
 
     HexTile* tile33 = map.GetTileAt(3, 3);
     if (!tile33) {
@@ -73,26 +56,25 @@ int main() {
     General* player2 = new General(tile33->center, "Assets/General1.png");
     std::vector<General*> player = { player1, player2 };
 
-    BattleMap battleMap(screenWidth, screenHeight);
+    
     TurnManager turnmanager;
-    Mode0* mode0 = new Mode0({ screenWidth / 2.0f, screenHeight / 2.0f }, radiusX, radiusY);
-    Menu* menu = new Menu(screenWidth, screenHeight);
+    
+   
 
     bool generalSelected = false;
     std::vector<HexTile> movableTiles;
 
-    GameState currentState = STATE_MENU;
+    //GameState currentState = States::STATE_MENU; gamestart: MENU
 
-    while (!WindowShouldClose()) {
-        BeginDrawing();
-        ClearBackground(RAYWHITE);
+    while (engine.HasGameEnded() == false) {
+        engine.Update();
 
         if (currentState == STATE_MENU) {
             menu->Update();
             menu->Draw();
 
             if (menu->StartTutorialClicked()) {
-                currentState = STATE_TUTORIAL;
+                currentState = States::STATE_TUTORIAL;
             }
             else if (menu->StartMainMapClicked()) {
                 currentState = STATE_MAIN_MAP;
@@ -131,7 +113,7 @@ int main() {
                             generalSelected = !generalSelected;
                             if (generalSelected) {
                                 HexTile* from = map.GetTileAtPosition(currentGeneral->GetFootPosition());
-                                movableTiles = GetMovableTiles(map, from);
+                                movableTiles = map.GetMovableTiles(map, from);
                             }
                             else {
                                 movableTiles.clear();
@@ -158,7 +140,6 @@ int main() {
                 currentGeneral->Update();
                 currentGeneral->Draw();
                 
-                // 장군 보이는 오류 수정.
                 if (map.GetTileAtPosition(currentGeneral->GetFootPosition()) &&
                     map.GetTileAtPosition(enemyGeneral->GetFootPosition())) {
                     HexTile* cTile = map.GetTileAtPosition(currentGeneral->GetFootPosition());
@@ -208,18 +189,15 @@ int main() {
                 }
             }
         }
-
+        engine.Stop();
+        return 0;
         else if (currentState == STATE_BATTLE_MAP) {
             battleMap.Update();
             battleMap.Draw();
         }
-
-        EndDrawing();
     }
 
     delete player1;
     delete player2;
     delete menu;
-    CloseWindow();
-    return 0;
 }

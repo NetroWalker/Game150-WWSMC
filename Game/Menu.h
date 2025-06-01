@@ -1,13 +1,20 @@
 ﻿#pragma once
 #include "raylib.h"
+#include"../Engine/GameState.h"
+#include"../Engine/Texture.h"
 
-class Menu {
+class Menu : public CS230::GameState{
 public:
     Menu(int screenWidth, int screenHeight);
     ~Menu();
 
-    void Update();
-    void Draw();
+    void Load()override;
+    void Update(double dt)override;
+    void Unload()override;
+    void Draw()override;
+    std::string GetName() override {
+        return "Menu";
+    }
 
     bool StartTutorialClicked();
     bool StartMainMapClicked();
@@ -17,5 +24,5 @@ private:
     int screenHeight;
     Rectangle tutorialButton;
     Rectangle mainMapButton;
-    Texture2D backgroundImage;  // ✅ 새로 추가된 배경 이미지
+    Texture2D backgroundImage;
 };

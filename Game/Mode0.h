@@ -2,16 +2,22 @@
 #include "raylib.h"
 #include "map.h"
 #include "General.h"
+#include "../Engine/GameState.h"
 #include <vector>
 #include <string>
 
-class Mode0 {
+class Mode0 :public CS230::GameState{
 public:
     Mode0(Vector2 center, float radiusX, float radiusY);
     ~Mode0();
 
-    void Update();
-    void Draw();
+    void Load()override;
+    void Update(double dt)override;
+    void Draw()override;
+    void Unload()override;
+    std::string GetName() override {
+        return "Mode0";
+    }
     bool IsTutorialDone() const;
 
 private:

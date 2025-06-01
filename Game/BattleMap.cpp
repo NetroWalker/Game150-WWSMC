@@ -67,7 +67,7 @@ void BattleMap::LoadSoldiersForTurn(Turn turn) {
     }
 }
 
-void BattleMap::Update() {
+void BattleMap::Update(double dt) {
     Vector2 mouse = GetMousePosition();
     float scale = 0.3f;
 

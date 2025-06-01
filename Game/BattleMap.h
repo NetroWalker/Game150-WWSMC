@@ -2,6 +2,7 @@
 #include "raylib.h"
 #include <vector>
 #include <string>
+#include"../Engine/GameState.h"
 #include "../Engine/TurnManager.h"
 
 struct UnitIcon {
@@ -12,13 +13,15 @@ struct UnitIcon {
     bool placed = false;
 };
 
-class BattleMap {
+class BattleMap : public CS230::GameState{
 public:
     BattleMap(int screenWidth, int screenHeight);
     ~BattleMap();
 
-    void Update();
-    void Draw();
+    void Load()override;
+    void Update(double dt)override;
+    void Draw()override;
+    void Unload()override;
     void LoadSoldiersForTurn(Turn turn);
 
 private:

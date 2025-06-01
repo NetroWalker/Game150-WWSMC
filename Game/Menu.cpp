@@ -21,23 +21,31 @@ Menu::Menu(int screenWidth, int screenHeight)
         (float)buttonWidth,
         (float)buttonHeight
     };
-
-    backgroundImage = LoadTexture("Assets/BeastCrossing.png");
+    
 }
 
 Menu::~Menu() {
-    UnloadTexture(backgroundImage); 
+    
 }
 
-void Menu::Update() {
+void Menu::Load()
+{
+    backgroundImage = LoadTexture("Assets/BeastCrossing.png");
+}
+
+void Menu::Update(double dt) {
     Vector2 mousePos = GetMousePosition();
+
+}
+
+void Menu::Unload()
+{
+    UnloadTexture(backgroundImage);
 }
 
 void Menu::Draw() {
-    // ✅ 배경 먼저 그림
     DrawTexture(backgroundImage, 0, 0, WHITE);
 
-    // 버튼 출력
     DrawRectangleRec(tutorialButton, LIGHTGRAY);
     DrawText("Start Tutorial", (int)(tutorialButton.x + 10), (int)(tutorialButton.y + 10), 20, BLACK);
 

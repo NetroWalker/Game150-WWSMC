@@ -77,6 +77,7 @@
     <ClInclude Include="Game\Menu.h" />
     <ClInclude Include="Game\Mode0.h" />
     <ClInclude Include="Game\Soldier.h" />
+    <ClInclude Include="Game\States.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
