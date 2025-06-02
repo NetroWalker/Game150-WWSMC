@@ -24,6 +24,11 @@ namespace CS230 {
 		gamestates.push_back(&gamestate);
 	}
 
+	GameState* GameStateManager::GetGameState(int index)
+	{
+		return gamestates[index];
+	}
+
 	void GameStateManager::SetNextGameState(int index) {
 		next_gamestate = gamestates[index];
 

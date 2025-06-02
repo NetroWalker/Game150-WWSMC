@@ -1,3 +1,4 @@
+//general.cpp
 #include "General.h"
 
 General::General(Vector2 pos, const char* text_path)

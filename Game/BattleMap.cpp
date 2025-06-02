@@ -1,4 +1,7 @@
-﻿#include "BattleMap.h"
+﻿//Battlemap.cpp
+#pragma once
+#include"../Engine/Engine.h"
+#include "BattleMap.h"
 
 BattleMap::BattleMap(int screenWidth, int screenHeight) {
     background = LoadTexture("Assets/Battlemap (2).png");
@@ -65,6 +68,11 @@ void BattleMap::LoadSoldiersForTurn(Turn turn) {
             { ex - (225 * scale), ey - (650 * scale) }
             });
     }
+}
+
+void BattleMap::Load()
+{
+    Engine::GetLogger().LogEvent("Loading BattleMap");
 }
 
 void BattleMap::Update(double dt) {
@@ -178,4 +186,13 @@ void BattleMap::Draw() {
     Rectangle drawStart = { startButton.x + offsetX, startButton.y, startButton.width, startButton.height };
     DrawRectangleRec(drawStart, LIGHTGRAY);
     DrawText("START", (int)(drawStart.x + 15), (int)(drawStart.y + 15), 20, BLACK);
+}
+
+void BattleMap::Unload()
+{
+    Engine::GetLogger().LogEvent("Unloading BattleMap");
+}
+
+std::string BattleMap::GetName() {
+    return "BattleMapState"; // 상태의 이름 반환
 }

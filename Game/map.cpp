@@ -1,4 +1,5 @@
-﻿#include "map.h"
+﻿//map.cpp
+#include "map.h"
 #include <cmath>
 
 Map::Map(Vector2 center, float radiusX, float radiusY, int width, int height, bool autoTile)
@@ -37,7 +38,7 @@ void Map::SetPoint() {
     }
 }
 
-std::vector<HexTile> GetMovableTiles(Map& map, HexTile* from) {
+std::vector<HexTile> Map::GetMovableTiles(Map& map, HexTile* from) {
     std::vector<HexTile> result;
     if (!from) return result;
 

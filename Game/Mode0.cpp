@@ -1,4 +1,6 @@
-﻿#include "Mode0.h"
+﻿//mode0.cpp
+#include"../Engine/Engine.h"
+#include "Mode0.h"
 #include <cmath>
 
 Mode0::Mode0(Vector2 center, float rX, float rY)
@@ -81,7 +83,12 @@ void Mode0::SetDialogueStep(int step) {
     dialogueCharTimer = 0.0f;
 }
 
-void Mode0::Update() {
+void Mode0::Load()
+{
+    Engine::GetLogger().LogEvent("Unloading BattleMap");
+}
+
+void Mode0::Update(double dt) {
     tutorialTimer += GetFrameTime();
 
     if (tutorialTimer >= 2.0f && chatAlpha < 1.0f) {
@@ -188,6 +195,11 @@ void Mode0::Draw() {
             DrawTextEx(font, currentDialogue.c_str(), textPos, 30, 2.0f, Fade(BLACK, chatAlpha));
         }
     }
+}
+
+void Mode0::Unload()
+{
+    Engine::GetLogger().LogEvent("Unloading BattleMap");
 }
 
 bool Mode0::IsTutorialDone() const {

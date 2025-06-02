@@ -1,7 +1,12 @@
-﻿#include "menu.h"
+﻿//menu.cpp
+#include"../Engine/Engine.h"
+#include "menu.h"
+
+
+
 
 Menu::Menu(int screenWidth, int screenHeight)
-    : screenWidth(screenWidth), screenHeight(screenHeight) {
+    : screenWidth(screenWidth), screenHeight(screenHeight), backgroundImage() {
 
     int buttonWidth = 200;
     int buttonHeight = 50;
@@ -34,8 +39,17 @@ void Menu::Load()
 }
 
 void Menu::Update(double dt) {
-    Vector2 mousePos = GetMousePosition();
+    // dt 파라미터는 이 메뉴에서 사용되지 않을 수 있습니다. ( [[maybe_unused]] double dt 로 표시 가능)
 
+    if (StartTutorialClicked()) {
+        Engine::GetLogger().LogEvent("Menu: Tutorial button clicked!"); // 디버깅용 로그
+        Engine::Instance().GetGameStateManager().SetNextGameState(TUTORIAL_STATE_IDX);
+    }
+    else if (StartMainMapClicked()) {
+        // "Start Game" 버튼이 "Start Main Map"을 의미한다고 가정합니다.
+        Engine::GetLogger().LogEvent("Menu: Start Main Map button clicked!"); // 디버깅용 로그
+        Engine::Instance().GetGameStateManager().SetNextGameState(MAIN_MAP_STATE_IDX);
+    }
 }
 
 void Menu::Unload()

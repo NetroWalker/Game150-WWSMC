@@ -1,4 +1,5 @@
-﻿#pragma once
+﻿//mode0.h
+#pragma once
 #include "raylib.h"
 #include "map.h"
 #include "General.h"

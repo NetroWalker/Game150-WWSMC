@@ -23,6 +23,7 @@ namespace CS230 {
         void Update(double dt);
 
         void AddGameState(GameState& gamestate);
+        GameState* GetGameState(int index);
         void SetNextGameState(int index);
         void ClearNextGameState();
         void ReloadState();
