@@ -1,14 +1,13 @@
 // Game/MainMapState.h
 #pragma once
-#include "../Engine/Engine.h" // For GameState and Engine instance
+#include "../Engine/Engine.h"
 #include "map.h"
 #include "General.h"
-#include "../Engine/TurnManager.h" // Assuming TurnManager is part of the engine files you provided
-#include "States.h" // For your GameState enum (to map to GSmachine indices)
+#include "../Engine/TurnManager.h"
+#include "States.h"
 #include <vector>
 
-// Define indices for GameStateManager (adjust as needed based on add order)
-const int BATTLE_MAP_STATE_INDEX = 3; // Example if BattleMap is the 4th state added
+const int BATTLE_MAP_STATE_INDEX = 3;
 
 class MainMapState : public CS230::GameState {
 public:
@@ -22,11 +21,11 @@ public:
     std::string GetName() override { return "MainMapState"; }
 
 private:
-    Map gameMap; // map object is now a member
+    Map gameMap;
     std::vector<General*> players;
     TurnManager turnManager;
     bool generalSelected;
     std::vector<HexTile> movableTiles;
     int screenWidth, screenHeight;
-    float radiusX, radiusY; // If needed for map centering/scaling
+    float radiusX, radiusY;
 };
