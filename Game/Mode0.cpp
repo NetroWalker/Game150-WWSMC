@@ -1,40 +1,45 @@
 ﻿//mode0.cpp
 #include"../Engine/Engine.h"
 #include "Mode0.h"
+#include "States.h"
+#include "SquirrelGen.h"
+#include "SnakeGen.h"
+#include "LinearMovement.h"
 #include <cmath>
 
 Mode0::Mode0(Vector2 center, float rX, float rY)
-    : radiusX(rX), tutorialMap(center, rX, rY, 3, 1, false)
+    : tutorialMap(center, rX, rY, 3, 1, false), // 멤버 객체 초기화
+    radiusX(rX)
 {
-    float root3 = sqrtf(3.0f);
-    float xOffset = rX * 1.5f;
-    float yOffset = rY * root3;
-    float squash = 0.5f;
-    float totalWidth = (3 - 1) * xOffset;
-
-    std::vector<HexTile>& tiles = const_cast<std::vector<HexTile>&>(tutorialMap.GetTiles());
-    tiles.clear();
-
-    for (int x = 0; x < 3; x++) {
-        int y = 0;
-        float hexX = center.x - totalWidth / 2 + x * xOffset;
-        float hexY = center.y + ((x % 2) * (yOffset / 2.0f));
-        float squashedHexY = hexY * squash;
-
-        HexTile tile = { x, y, { hexX, squashedHexY } };
-        tiles.push_back(tile);
-    }
-
-    tutorialGeneral = new General(tiles[0].center, "Assets/General.png");
-    staticGeneral = new General(tiles[2].center, "Assets/General1.png");
-
-    chatWindowTexture = LoadTexture("Assets/chat_window.png");
+    //float root3 = sqrtf(3.0f);
+    //float xOffset = rX * 1.5f;
+    //float yOffset = rY * root3;
+    //float squash = 0.5f;
+    //float totalWidth = (3 - 1) * xOffset;
+    //
+    //std::vector<HexTile>& tiles = const_cast<std::vector<HexTile>&>(tutorialMap->GetTiles());
+    //tiles.clear();
+    //
+    //for (int x = 0; x < 3; x++) {
+    //    int y = 0;
+    //    float hexX = center.x - totalWidth / 2 + x * xOffset;
+    //    float hexY = center.y + ((x % 2) * (yOffset / 2.0f));
+    //    float squashedHexY = hexY * squash;
+    //
+    //    HexTile tile = { x, y, { hexX, squashedHexY } };
+    //    tiles.push_back(tile);
+    //}
+    //
+    //tutorialGeneral = new SquirrelGen(tiles[0].center, "Assets/General.png");
+    //staticGeneral = new SnakeGen(tiles[2].center, "Assets/General1.png");
+    //
+    //chatWindowTexture = LoadTexture("Assets/chat_window.png");
 }
 
 Mode0::~Mode0() {
-    delete tutorialGeneral;
-    delete staticGeneral;
-    UnloadTexture(chatWindowTexture);
+    //delete tutorialGeneral;
+    //delete staticGeneral;
+    //UnloadTexture(chatWindowTexture);
 }
 
 void Mode0::SetDialogueStep(int step) {
@@ -83,16 +88,37 @@ void Mode0::SetDialogueStep(int step) {
     dialogueCharTimer = 0.0f;
 }
 
-void Mode0::Load()
-{
-    Engine::GetLogger().LogEvent("Unloading BattleMap");
+void Mode0::Load() {
+    Engine::GetLogger().LogEvent(GetName() + " Load");
+
+    AddGSComponent(new CS230::GameObjectManager());
+
+    tutorialMap.SetPoint();
+    const std::vector<HexTile>& tiles = tutorialMap.GetTiles();
+
+    // ===== 수정된 부분 =====
+    // Raylib의 Vector2를 엔진의 Math::vec2 타입으로 변환하여 생성자에 전달합니다.
+    tutorialGeneral = new SquirrelGen({ (double)tiles[0].center.x, (double)tiles[0].center.y });
+    staticGeneral = new SnakeGen({ (double)tiles[2].center.x, (double)tiles[2].center.y });
+    // ======================
+
+    GetGSComponent<CS230::GameObjectManager>()->Add(tutorialGeneral);
+    GetGSComponent<CS230::GameObjectManager>()->Add(staticGeneral);
+
+    chatWindowTexture = LoadTexture("Assets/chat_window.png");
+    tutorialTimer = 0.0f;
+    chatAlpha = 0.0f;
+    dialogueShown = false;
+    tutorialDone = false;
+    generalSelected = false;
+    movableTiles.clear();
 }
 
 void Mode0::Update(double dt) {
-    tutorialTimer += GetFrameTime();
+    tutorialTimer += dt;
 
-    if (tutorialTimer >= 2.0f && chatAlpha < 1.0f) {
-        chatAlpha += GetFrameTime();
+    if (tutorialTimer >= 2.0f && !dialogueShown) {
+        chatAlpha += dt;
         if (chatAlpha >= 1.0f) {
             chatAlpha = 1.0f;
             dialogueShown = true;
@@ -101,107 +127,99 @@ void Mode0::Update(double dt) {
     }
 
     if (dialogueShown && dialogueCharIndex < (int)fullDialogue.length()) {
-        dialogueCharTimer += GetFrameTime();
+        dialogueCharTimer += dt;
         if (dialogueCharTimer >= 0.03f) {
             currentDialogue += fullDialogue[dialogueCharIndex++];
             dialogueCharTimer = 0.0f;
         }
     }
 
+    // ===== 수정: 닫는 중괄호 추가 =====
     if (dialogueShown && waitingForSpace && IsKeyPressed(KEY_SPACE) && dialogueCharIndex == (int)fullDialogue.length()) {
         SetDialogueStep(dialogueStep + 1);
     }
 
-    if (dialogueStep == 2 && tutorialGeneral->GetFootPosition().x == tutorialMap.GetTiles()[1].center.x) {
+    // ===== 수정: LinearMovement 컴포넌트를 통해 GetFootPosition 호출 =====
+    LinearMovement* tg_movement = tutorialGeneral->GetGOComponent<LinearMovement>();
+    Math::vec2 tg_foot_pos = tg_movement->GetFootPosition();
+    if (dialogueStep == 2 && tg_foot_pos.x == tutorialMap.GetTiles()[1].center.x) {
         SetDialogueStep(3);
     }
 
     if (dialogueStep == 3 && dialogueCharIndex == (int)fullDialogue.length()) {
-        delayTimer += GetFrameTime();
+        delayTimer += dt;
         if (delayTimer >= 2.0f) {
             SetDialogueStep(4);
         }
     }
 
-    if (dialogueShown && canMove && IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && !tutorialGeneral->IsMoving()) {
-        Vector2 mouse = GetMousePosition();
+    // ===== 수정: 'movement' 변수 선언 및 올바른 함수 호출 =====
+    if (dialogueShown && canMove && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+        LinearMovement* movement = tutorialGeneral->GetGOComponent<LinearMovement>();
+        if (!movement->IsMoving()) {
+            Vector2 mouse = GetMousePosition();
+            Math::vec2 currentPos_math = tutorialGeneral->GetPosition();
+            Vector2 currentPos_raylib = { (float)currentPos_math.x, (float)currentPos_math.y };
 
-        if (CheckCollisionPointCircle(mouse, tutorialGeneral->GetPosition(), 50)) {
-            if (!generalSelected) {
-                generalSelected = true;
-                HexTile* from = tutorialMap.GetTileAtPosition(tutorialGeneral->GetFootPosition());
-                if (from) {
-                    int x = from->x;
-                    int y = from->y;
+            if (CheckCollisionPointCircle(mouse, currentPos_raylib, 50)) {
+                generalSelected = !generalSelected;
+                if (generalSelected) {
+                    Math::vec2 footPos_math = movement->GetFootPosition();
+                    Vector2 footPos_raylib = { (float)footPos_math.x, (float)footPos_math.y };
+                    HexTile* from = tutorialMap.GetTileAtPosition(footPos_raylib);
+                    movableTiles = tutorialMap.GetMovableTiles(from);
+                }
+                else {
                     movableTiles.clear();
-
-                    for (int dx = -1; dx <= 1; dx++) {
-                        int nx = x + dx;
-                        if (nx >= 0 && nx <= 2) {
-                            if (nx == x) continue;
-                            if (HexTile* t = tutorialMap.GetTileAt(nx, y)) {
-                                movableTiles.push_back(*t);
-                            }
-                        }
+                }
+            }
+            else if (generalSelected) {
+                for (auto& tile : movableTiles) {
+                    if (CheckCollisionPointCircle(mouse, tile.center, radiusX * 0.8f)) {
+                        movement->MoveTo({ (double)tile.center.x, (double)tile.center.y });
+                        generalSelected = false;
+                        movableTiles.clear();
+                        break;
                     }
                 }
             }
-            else {
-                generalSelected = false;
-                movableTiles.clear();
-            }
-        }
-        else if (generalSelected) {
-            for (auto& tile : movableTiles) {
-                if (CheckCollisionPointCircle(mouse, tile.center, radiusX * 0.8f)) {
-                    tutorialGeneral->SetPosition(tile.center);
-                    generalSelected = false;
-                    movableTiles.clear();
-                    break;
-                }
-            }
         }
     }
 
-    tutorialGeneral->Update();
+    if (tutorialDone) {
+        Engine::Instance().GetGameStateManager().SetNextGameState(STATE_MAIN_MAP);
+        return;
+    }
+
+    GetGSComponent<CS230::GameObjectManager>()->UpdateAll(dt);
 }
 
-void Mode0::Draw() {
+void Mode0::Draw(){
     ClearBackground(BLACK);
-    tutorialMap.Draw(tutorialGeneral);
 
-    for (const auto& tile : movableTiles) {
-        DrawCircleV(tile.center, 30, Fade(BLUE, 0.4f));
+    // 1. 맵 그리기
+    tutorialMap.Draw();
+
+    // 2. 이동 가능 타일 그리기
+    if (generalSelected) {
+        for (const auto& tile : movableTiles) {
+            DrawCircleV(tile.center, 30, Fade(BLUE, 0.4f));
+        }
     }
-
-    tutorialGeneral->Draw();
-    staticGeneral->Draw();
-
-    if (tutorialTimer >= 2.0f) {
-        float scale = 1.0f;
-        float width = chatWindowTexture.width * scale;
-        float height = chatWindowTexture.height * scale;
-
-        Vector2 pos = {
-            (float)GetScreenWidth() / 2.0f - width / 2.0f,
-            (float)GetScreenHeight() - height - 30.0f
-        };
-
-        DrawTexture(chatWindowTexture, (int)pos.x, (int)pos.y, Fade(WHITE, chatAlpha));
-
+        Math::TransformationMatrix camera_matrix; // 기본 카메라 매트릭스
+        GetGSComponent<CS230::GameObjectManager>()->DrawAll(camera_matrix);
         if (dialogueShown) {
             Font font = GetFontDefault();
             Vector2 textPos = { 120, 635 };
             DrawTextEx(font, currentDialogue.c_str(), textPos, 30, 2.0f, Fade(BLACK, chatAlpha));
         }
     }
-}
 
-void Mode0::Unload()
-{
-    Engine::GetLogger().LogEvent("Unloading BattleMap");
-}
-
-bool Mode0::IsTutorialDone() const {
-    return tutorialDone;
+void Mode0::Unload() {
+    Engine::GetLogger().LogEvent(GetName() + " Unload");
+    UnloadTexture(chatWindowTexture);
+    // AddGSComponent로 추가된 GameObjectManager는 자동으로 해제됩니다.
+    // GOM에 추가된 tutorialGeneral, staticGeneral도 자동으로 해제됩니다.
+    tutorialGeneral = nullptr;
+    staticGeneral = nullptr;
 }

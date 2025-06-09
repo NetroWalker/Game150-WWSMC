@@ -6,13 +6,19 @@ Map::Map(Vector2 center, float radiusX, float radiusY, int width, int height, bo
     : center(center), radiusX(radiusX), radiusY(radiusY),
     squashFactor(0.5f), autoTile(autoTile), mapW(width), mapH(height) {
     tileTexture = LoadTexture("assets/150map.png");
-    tile1 = LoadTexture("Assets/Tile1.png"); // 기본 타일
+    tile1 = LoadTexture("Assets/Tile1.png");
+    // SetPoint()는 생성자에서 한 번만 호출하는 것이 더 효율적입니다.
+    if (this->autoTile) {
+        SetPoint();
+    }
 }
 
 Map::~Map() {
     UnloadTexture(tileTexture);
     UnloadTexture(tile1);
 }
+
+
 
 void Map::Update() {
     HandleMouseWheelInput();
@@ -38,18 +44,19 @@ void Map::SetPoint() {
     }
 }
 
-std::vector<HexTile> Map::GetMovableTiles(Map& map, HexTile* from) {
+std::vector<HexTile> Map::GetMovableTiles(HexTile* from) {
     std::vector<HexTile> result;
     if (!from) return result;
 
     int x = from->x;
     int y = from->y;
 
+    // 더 이상 'map' 파라미터를 받지 않고, 'this' 객체의 멤버 함수를 직접 호출합니다.
     if (x % 2 == 1) {
         int dx[] = { 0, +1, -1, -1,  0, +1 };
         int dy[] = { -1,  0,  0, +1, +1, +1 };
         for (int i = 0; i < 6; i++) {
-            if (HexTile* t = map.GetTileAt(x + dx[i], y + dy[i])) {
+            if (HexTile* t = this->GetTileAt(x + dx[i], y + dy[i])) { // this-> 사용
                 result.push_back(*t);
             }
         }
@@ -58,12 +65,11 @@ std::vector<HexTile> Map::GetMovableTiles(Map& map, HexTile* from) {
         int dx[] = { 0,  0, +1, -1, -1, +1 };
         int dy[] = { -1, +1,  0,  0, -1, -1 };
         for (int i = 0; i < 6; i++) {
-            if (HexTile* t = map.GetTileAt(x + dx[i], y + dy[i])) {
+            if (HexTile* t = this->GetTileAt(x + dx[i], y + dy[i])) { // this-> 사용
                 result.push_back(*t);
             }
         }
     }
-
     return result;
 }
 
@@ -83,7 +89,7 @@ bool Map::IsPointInHexagon(Vector2 point) const {
 }
 
 void Map::UpdateMapPosition() {
-    // 끔: 맵 드래그 비활성
+    
 }
 
 void Map::DrawHexagon(Color color) {
@@ -93,29 +99,8 @@ void Map::DrawHexagon(Color color) {
 }
 
 void Map::Draw() {
-    if (autoTile) SetPoint();
-
     for (const auto& tile : tiles) {
-        Rectangle source = { 0, 0, (float)tileTexture.width, (float)tileTexture.height };
-        Rectangle dest = {
-            tile.center.x,
-            tile.center.y,
-            radiusX * 2.0f,
-            radiusY * 2.0f * squashFactor
-        };
-        Vector2 origin = { radiusX, radiusY * squashFactor };
-
-        DrawTexturePro(tile1, source, dest, origin, 0.0f, WHITE);  // 기본 돌 타일
-        DrawHexagon(DARKGREEN);
-    }
-}
-
-void Map::Draw(General* general) {
-    if (autoTile) SetPoint();
-
-    // 기본 타일 먼저 출력
-    for (const auto& tile : tiles) {
-        Rectangle source = { 0, 0, (float)tileTexture.width, (float)tileTexture.height };
+        Rectangle source = { 0, 0, (float)tile1.width, (float)tile1.height };
         Rectangle dest = {
             tile.center.x,
             tile.center.y,
@@ -125,35 +110,10 @@ void Map::Draw(General* general) {
         Vector2 origin = { radiusX, radiusY * squashFactor };
 
         DrawTexturePro(tile1, source, dest, origin, 0.0f, WHITE);
-        DrawHexagon(DARKGREEN);
-    }
-
-    // 장군 주변 강조
-    Vector2 generalPos = general->GetFootPosition();
-    HexTile* generalTile = GetTileAtPosition(generalPos);
-    if (!generalTile) return;
-
-    for (const auto& tile : tiles) {
-        if (IsNeighborTile(tile.x, tile.y, generalTile->x, generalTile->y)) {
-            Rectangle source = { 0, 0, (float)tileTexture.width, (float)tileTexture.height };
-            Rectangle dest = {
-                tile.center.x,
-                tile.center.y,
-                radiusX * 2.0f,
-                radiusY * 2.0f * squashFactor
-            };
-            Vector2 origin = { radiusX, radiusY * squashFactor };
-
-            DrawTexturePro(tileTexture, source, dest, origin, 0.0f, WHITE);
-            DrawHexagon(DARKGREEN);
-        }
+        // DrawHexagon(DARKGREEN); // 필요하다면 타일 외곽선 그리기
     }
 }
 
-bool Map::IsMouseOver() {
-    Vector2 mousePos = GetMousePosition();
-    return IsPointInHexagon(mousePos);
-}
 
 void Map::HandleMouseWheelInput() {
     float wheel = GetMouseWheelMove();
@@ -184,7 +144,6 @@ HexTile* Map::GetTileAtPosition(Vector2 pos) {
     return nullptr;
 }
 
-// 이웃 타일
 bool Map::IsNeighborTile(int x1, int y1, int x2, int y2) {
     int dx = x2 - x1;
     int dy = y2 - y1;

@@ -91,6 +91,24 @@
     <ClCompile Include="Game\MainMapState.cpp">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="Game\Squirrel.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\Snake.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\SquirrelGen.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\SnakeGen.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\Splash.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\LinearMovement.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game\map.h">
@@ -184,6 +202,27 @@
       <Filter>Game</Filter>
     </ClInclude>
     <ClInclude Include="Game\MainMapState.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\GameObjectTypes.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\Squirrel.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\Snake.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\SquirrelGen.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\SnakeGen.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\Splash.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\LinearMovement.h">
       <Filter>Game</Filter>
     </ClInclude>
   </ItemGroup>

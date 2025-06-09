@@ -179,7 +179,7 @@ void BattleMap::Draw() {
             icon.texture.height * scale
         };
         Vector2 origin = { dest.width / 2, dest.height / 2 };
-        src.width = -src.width;  // 좌우 반전
+        src.width = -src.width;
         DrawTexturePro(icon.texture, src, dest, origin, 0.0f, WHITE);
     }
 
@@ -194,5 +194,5 @@ void BattleMap::Unload()
 }
 
 std::string BattleMap::GetName() {
-    return "BattleMapState"; // 상태의 이름 반환
+    return "BattleMapState";
 }

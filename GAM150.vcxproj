@@ -41,11 +41,17 @@
     <ClCompile Include="Engine\Window.cpp" />
     <ClCompile Include="Game\BattleMap.cpp" />
     <ClCompile Include="Game\General.cpp" />
+    <ClCompile Include="Game\LinearMovement.cpp" />
     <ClCompile Include="Game\MainMapState.cpp" />
     <ClCompile Include="Game\map.cpp" />
     <ClCompile Include="Game\Menu.cpp" />
     <ClCompile Include="Game\Mode0.cpp" />
+    <ClCompile Include="Game\Snake.cpp" />
+    <ClCompile Include="Game\SnakeGen.cpp" />
     <ClCompile Include="Game\Soldier.cpp" />
+    <ClCompile Include="Game\Splash.cpp" />
+    <ClCompile Include="Game\Squirrel.cpp" />
+    <ClCompile Include="Game\SquirrelGen.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -73,12 +79,19 @@
     <ClInclude Include="Engine\Vec2.h" />
     <ClInclude Include="Engine\Window.h" />
     <ClInclude Include="Game\BattleMap.h" />
+    <ClInclude Include="Game\GameObjectTypes.h" />
     <ClInclude Include="Game\General.h" />
+    <ClInclude Include="Game\LinearMovement.h" />
     <ClInclude Include="Game\MainMapState.h" />
     <ClInclude Include="Game\map.h" />
     <ClInclude Include="Game\Menu.h" />
     <ClInclude Include="Game\Mode0.h" />
+    <ClInclude Include="Game\Snake.h" />
+    <ClInclude Include="Game\SnakeGen.h" />
     <ClInclude Include="Game\Soldier.h" />
+    <ClInclude Include="Game\Splash.h" />
+    <ClInclude Include="Game\Squirrel.h" />
+    <ClInclude Include="Game\SquirrelGen.h" />
     <ClInclude Include="Game\States.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

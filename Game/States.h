@@ -2,8 +2,9 @@
 #pragma once
 
 enum GameState {
-    STATE_MENU,      //0
-    STATE_TUTORIAL,  //1
-    STATE_MAIN_MAP,  //2
-    STATE_BATTLE_MAP //3
+    SPLASH,          //0
+    STATE_MENU,      //1
+    STATE_TUTORIAL,  //2
+    STATE_MAIN_MAP,  //3
+    STATE_BATTLE_MAP //4
 };

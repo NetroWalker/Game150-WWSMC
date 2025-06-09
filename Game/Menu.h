@@ -4,11 +4,6 @@
 #include"../Engine/GameState.h"
 #include"../Engine/Texture.h"
 
-const int MENU_STATE_IDX = 0;
-const int TUTORIAL_STATE_IDX = 1;
-const int MAIN_MAP_STATE_IDX = 2;
-const int BATTLE_MAP_STATE_IDX = 3;
-
 class Menu : public CS230::GameState{
 public:
     Menu(int screenWidth, int screenHeight);
