@@ -226,4 +226,7 @@
       <Filter>Game</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="Assets\SquirrelGen.spt.txt" />
+  </ItemGroup>
 </Project>

@@ -12,6 +12,7 @@ Created:    March 23, 2025
 #include <limits>
 #include<math.h>
 #include<vector>
+#include<raylib.h>
 
 namespace Math {
     struct vec2 {
@@ -20,6 +21,10 @@ namespace Math {
 
         vec2() = default;
         vec2(double x, double y) : x(x), y(y) {}
+        vec2(const Vector2& v) : x(static_cast<double>(v.x)), y(static_cast<double>(v.y)) {}
+        operator Vector2() const {
+            return Vector2{ static_cast<float>(x), static_cast<float>(y) };
+        }
 
         bool operator==(const vec2& v);
         bool operator!=(const vec2& v);

@@ -73,6 +73,9 @@ bool CS230::Animation::Ended() {
 }
 
 void CS230::Animation::Update(double dt) {
+    if (ended == true) {
+        return;
+    }
     current_frame->Update(dt);
     if (current_frame->Ended() == true) {
         current_frame->ResetTime();

@@ -23,6 +23,7 @@ public:
     std::string GetName() override { return "MainMapState"; }
 
 private:
+    float camera_speed = 500.0f;
     Map gameMap;
     TurnManager turnManager;
 

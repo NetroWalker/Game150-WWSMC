@@ -194,26 +194,44 @@ void Mode0::Update(double dt) {
     GetGSComponent<CS230::GameObjectManager>()->UpdateAll(dt);
 }
 
-void Mode0::Draw(){
+void Mode0::Draw() {
     ClearBackground(BLACK);
+    Math::TransformationMatrix camera_matrix;
 
-    // 1. 맵 그리기
-    tutorialMap.Draw();
+    // 1. 튜토리얼 장군의 현재 타일 위치 찾기
+    HexTile* vision_center_tile = nullptr;
+    if (tutorialGeneral != nullptr) {
+        LinearMovement* movement = tutorialGeneral->GetGOComponent<LinearMovement>();
+        vision_center_tile = tutorialMap.GetTileAtPosition(movement->GetFootPosition());
+    }
 
-    // 2. 이동 가능 타일 그리기
+    // 2. 맵 그리기 (시야의 중심 타일을 전달하여 Fog of War 효과 적용)
+    tutorialMap.Draw(vision_center_tile, camera_matrix);
+
+    // 3. 이동 가능 범위 그리기
     if (generalSelected) {
         for (const auto& tile : movableTiles) {
             DrawCircleV(tile.center, 30, Fade(BLUE, 0.4f));
         }
     }
-        Math::TransformationMatrix camera_matrix; // 기본 카메라 매트릭스
-        GetGSComponent<CS230::GameObjectManager>()->DrawAll(camera_matrix);
-        if (dialogueShown) {
+
+    // 4. 모든 GameObject 그리기 (장군들)
+    GetGSComponent<CS230::GameObjectManager>()->DrawAll(camera_matrix);
+
+    // 5. 다이얼로그 UI 그리기
+    if (dialogueShown) {
+        float width = chatWindowTexture.width;
+        float height = chatWindowTexture.height;
+        Vector2 pos = { GetScreenWidth() / 2.0f - width / 2.0f, GetScreenHeight() - height - 30.0f };
+        DrawTexture(chatWindowTexture, (int)pos.x, (int)pos.y, Fade(WHITE, chatAlpha));
+
+        if (chatAlpha >= 1.0f) {
             Font font = GetFontDefault();
-            Vector2 textPos = { 120, 635 };
-            DrawTextEx(font, currentDialogue.c_str(), textPos, 30, 2.0f, Fade(BLACK, chatAlpha));
+            Vector2 textPos = { 120, (float)GetScreenHeight() - 165 };
+            DrawTextEx(font, currentDialogue.c_str(), textPos, 30, 2.0f, BLACK);
         }
     }
+}
 
 void Mode0::Unload() {
     Engine::GetLogger().LogEvent(GetName() + " Unload");

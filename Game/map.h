@@ -2,6 +2,7 @@
 #pragma once
 #include "raylib.h"
 #include <vector>
+#include"../Engine/Engine.h"
 
 struct HexTile {
     int x, y;
@@ -14,7 +15,7 @@ public:
     ~Map();
 
     void Update();
-    void Draw();  
+    void Draw(HexTile* vision_center_tile, const Math::TransformationMatrix& camera_matrix);
 
     void SetPoint(); // 타일 위치를 계산하고 생성하는 함수
     std::vector<HexTile> GetMovableTiles(HexTile* from); // 멤버 함수 시그니처 수정
@@ -25,6 +26,8 @@ public:
     HexTile* GetTileAtPosition(Vector2 pos);
 
 private:
+    Texture2D visible_tile_texture; // 150map.png
+    Texture2D hidden_tile_texture;
     Vector2 center;
     float radiusX, radiusY;
     float squashFactor;
@@ -33,8 +36,6 @@ private:
 
     Vector2 points[6]; // DrawHexagon 등에서 사용
     std::vector<HexTile> tiles;
-    Texture2D tileTexture; // 특수 타일 텍스처
-    Texture2D tile1;       // 기본 타일 텍스처
 
     void DrawHexagon(Color color); // private 헬퍼 함수
     bool IsPointInHexagon(Vector2 point) const; // private 헬퍼 함수

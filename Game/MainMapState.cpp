@@ -5,6 +5,7 @@
 #include "SquirrelGen.h"
 #include "SnakeGen.h"
 #include "LinearMovement.h"
+#include "../Engine/Camera.h"
 #include <cmath>
 
 MainMapState::MainMapState(int sw, int sh) :
@@ -18,6 +19,7 @@ MainMapState::MainMapState(int sw, int sh) :
 }
 
 void MainMapState::Load() {
+    AddGSComponent(new CS230::Camera({ {0,0}, {0,0} }));
     Engine::GetLogger().LogEvent(GetName() + " Load");
     AddGSComponent(new CS230::GameObjectManager());
 
@@ -28,45 +30,55 @@ void MainMapState::Load() {
         return;
     }
 
-    // 플레이어 생성 및 GameObjectManager에 추가
-    // Raylib의 Vector2를 엔진의 Math::vec2로 변환하여 전달합니다.
-    player1 = new SquirrelGen({ (double)gameMap.GetTiles()[0].center.x, (double)gameMap.GetTiles()[0].center.y });
-    player2 = new SnakeGen({ (double)tile33->center.x, (double)tile33->center.y });
+    // Vec2.h 수정 덕분에 타입 변환 코드가 필요 없습니다.
+    player1 = new SquirrelGen(gameMap.GetTiles()[0].center);
+    player2 = new SnakeGen(tile33->center);
     GetGSComponent<CS230::GameObjectManager>()->Add(player1);
     GetGSComponent<CS230::GameObjectManager>()->Add(player2);
-
+    player1->SetScale({ 0.5, 0.5 });
+    player2->SetScale({ 0.5, 0.5 });
     generalSelected = false;
     movableTiles.clear();
-    // turnManager는 자동으로 초기화됩니다.
 }
 
 void MainMapState::Update(double dt) {
     CS230::GameObjectManager* GOM = GetGSComponent<CS230::GameObjectManager>();
-    Vector2 mouse = GetMousePosition(); // Raylib의 Vector2
+    Vector2 mouse = GetMousePosition();
     Turn turn = turnManager.GetCurrentTurn();
+    CS230::Camera* camera = GetGSComponent<CS230::Camera>();
+    if (camera != nullptr) {
+        auto& input = Engine::GetInput(); // 입력 시스템에 대한 참조
+        Math::vec2 camera_offset;         // 이번 프레임에 이동할 거리
 
+        if (input.KeyDown(CS230::Input::Keys::Up)) {
+            camera_offset.y += camera_speed * dt;
+        }
+        if (input.KeyDown(CS230::Input::Keys::Down)) {
+            camera_offset.y -= camera_speed * dt;
+        }
+        if (input.KeyDown(CS230::Input::Keys::Left)) {
+            camera_offset.x -= camera_speed * dt;
+        }
+        if (input.KeyDown(CS230::Input::Keys::Right)) {
+            camera_offset.x += camera_speed * dt;
+        }
+
+        // 현재 카메라 위치에 이동할 거리를 더해 새로운 위치로 설정
+        Math::vec2 camera_pos = camera->GetPosition();
+        camera->SetPosition(camera_pos + camera_offset);
+    }
     if (!turnManager.IsTransitioning()) {
         CS230::GameObject* currentGeneral = (turn == Turn::P1) ? player1 : player2;
         LinearMovement* currentMovement = currentGeneral->GetGOComponent<LinearMovement>();
 
         if (turnManager.CanMove()) {
             if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && !currentMovement->IsMoving()) {
-
-                // ===== 수정된 부분 1 =====
-                // GetPosition()이 반환하는 Math::vec2를 Raylib의 Vector2로 수동 변환합니다.
-                Math::vec2 currentPos_math = currentGeneral->GetPosition();
-                Vector2 currentPos_raylib = { (float)currentPos_math.x, (float)currentPos_math.y };
-
-                if (CheckCollisionPointCircle(mouse, currentPos_raylib, 50)) {
+                // Vec2.h 수정 덕분에 GetPosition()의 결과를 바로 사용할 수 있습니다.
+                if (CheckCollisionPointCircle(mouse, currentGeneral->GetPosition(), 50)) {
                     generalSelected = !generalSelected;
                     if (generalSelected) {
-
-                        // ===== 수정된 부분 2 =====
-                        // GetFootPosition()이 반환하는 Math::vec2도 Raylib의 Vector2로 수동 변환합니다.
-                        Math::vec2 footPos_math = currentMovement->GetFootPosition();
-                        Vector2 footPos_raylib = { (float)footPos_math.x, (float)footPos_math.y };
-
-                        HexTile* from = gameMap.GetTileAtPosition(footPos_raylib);
+                        // GetFootPosition()의 결과도 바로 사용 가능합니다.
+                        HexTile* from = gameMap.GetTileAtPosition(currentMovement->GetFootPosition());
                         movableTiles = gameMap.GetMovableTiles(from);
                     }
                     else {
@@ -76,8 +88,8 @@ void MainMapState::Update(double dt) {
                 else if (generalSelected) {
                     for (auto& tile : movableTiles) {
                         if (CheckCollisionPointCircle(mouse, tile.center, radiusX * 0.8f)) {
-                            // MoveTo에는 Raylib의 tile.center를 다시 Math::vec2로 변환하여 전달합니다.
-                            currentMovement->MoveTo({ (double)tile.center.x, (double)tile.center.y });
+                            // tile.center (Vector2)도 MoveTo(Math::vec2)에 바로 전달 가능합니다.
+                            currentMovement->MoveTo(tile.center);
                             generalSelected = false;
                             movableTiles.clear();
                             turnManager.Move();
@@ -87,10 +99,19 @@ void MainMapState::Update(double dt) {
                 }
             }
         }
+
+        // 턴 종료 버튼 로직
+        Rectangle endTurnButton = { 1260, 750, 110, 40 };
+        if (CheckCollisionPointRec(mouse, endTurnButton) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+            turnManager.EndTurn();
+            generalSelected = false;
+            movableTiles.clear();
+        }
+
         GOM->CollisionTest();
     }
     else {
-        // 턴 전환 로직
+        // 턴 전환 화면에서 START 버튼 클릭 로직
         Rectangle startButton = { screenWidth / 2.0f - 100, screenHeight / 2.0f + 50, 200, 60 };
         if (CheckCollisionPointRec(mouse, startButton) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
             turnManager.StartTurn();
@@ -99,32 +120,46 @@ void MainMapState::Update(double dt) {
 
     GOM->UpdateAll(dt);
 }
+
 void MainMapState::Draw() {
     ClearBackground(RAYWHITE);
-    Math::TransformationMatrix camera_matrix; // 기본 카메라 행렬
-
+    CS230::Camera* camera = GetGSComponent<CS230::Camera>();
+    Math::TransformationMatrix camera_matrix; // 기본 행렬 (카메라가 없을 경우 대비)
+    if (camera != nullptr) {
+        camera_matrix = camera->GetMatrix();
+    }
     if (!turnManager.IsTransitioning()) {
         // ========== 게임 플레이 화면 그리기 ==========
-        gameMap.Draw();
 
-        // 선택 가능한 타일 그리기
+        // 1. 현재 턴인 장군의 위치 타일 찾기
+        CS230::GameObject* currentGeneral = (turnManager.GetCurrentTurn() == Turn::P1) ? player1 : player2;
+        HexTile* currentTile = nullptr;
+        if (currentGeneral != nullptr) {
+            LinearMovement* currentMovement = currentGeneral->GetGOComponent<LinearMovement>();
+            currentTile = gameMap.GetTileAtPosition(currentMovement->GetFootPosition());
+        }
+
+        // 2. 맵 그리기 (찾아낸 타일을 시야의 중심으로 전달)
+        gameMap.Draw(currentTile, camera_matrix);
+
+        // 3. 이동 가능 범위 그리기 (선택 사항)
         if (generalSelected) {
             for (const auto& tile : movableTiles) {
                 DrawCircleV(tile.center, 30, Fade(BLUE, 0.4f));
             }
         }
 
-        // GameObjectManager가 모든 게임 오브젝트(플레이어)를 그림
+        // 4. 모든 유닛(장군) 그리기
         GetGSComponent<CS230::GameObjectManager>()->DrawAll(camera_matrix);
 
-        // 여기에 게임 플레이 UI (예: 턴 종료 버튼)를 그릴 수 있습니다.
+        // 5. UI 그리기
         Rectangle endTurnButton = { 1260, 750, 110, 40 };
         DrawRectangleRec(endTurnButton, LIGHTGRAY);
         DrawText("TurnEnd", endTurnButton.x + 10, endTurnButton.y + 10, 20, BLACK);
+
     }
     else {
-        // ========== 채워진 턴 전환 화면 그리기 ==========
-        // 게임 화면 위에 반투명한 회색 배경을 그려 전환 중임을 표시
+        // 턴 전환 화면 그리기
         DrawRectangle(0, 0, screenWidth, screenHeight, Fade(GRAY, 0.8f));
 
         Turn turn = turnManager.GetCurrentTurn();
@@ -132,7 +167,6 @@ void MainMapState::Draw() {
         int textWidth = MeasureText(turnText, 60);
         DrawText(turnText, screenWidth / 2 - textWidth / 2, screenHeight / 2 - 100, 60, DARKBLUE);
 
-        // START 버튼 그리기
         Rectangle startButton = { screenWidth / 2.0f - 100, screenHeight / 2.0f + 50, 200, 60 };
         Vector2 mouse = GetMousePosition();
         bool hovering = CheckCollisionPointRec(mouse, startButton);
@@ -143,5 +177,4 @@ void MainMapState::Draw() {
 
 void MainMapState::Unload() {
     Engine::GetLogger().LogEvent(GetName() + " Unload");
-    // GameState가 소멸될 때 컴포넌트(GameObjectManager)와 그 안의 GameObject들이 자동으로 해제됩니다.
 }

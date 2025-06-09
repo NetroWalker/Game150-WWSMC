@@ -53,7 +53,7 @@ namespace CS230 {
         const Math::vec2& GetScale() const;
         double GetRotation() const;
         void change_state(State* new_state);
-
+        void SetScale(Math::vec2 new_scale);
         void SetPosition(Math::vec2 new_position);
 
         template<typename T>
@@ -65,7 +65,7 @@ namespace CS230 {
         void UpdatePosition(Math::vec2 delta);
         void SetVelocity(Math::vec2 new_position);
         void UpdateVelocity(Math::vec2 delta);
-        void SetScale(Math::vec2 new_scale);
+        
         void UpdateScale(Math::vec2 delta);
         void SetRotation(double new_rotation);
         void UpdateRotation(double delta);

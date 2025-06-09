@@ -5,8 +5,8 @@
 Map::Map(Vector2 center, float radiusX, float radiusY, int width, int height, bool autoTile)
     : center(center), radiusX(radiusX), radiusY(radiusY),
     squashFactor(0.5f), autoTile(autoTile), mapW(width), mapH(height) {
-    tileTexture = LoadTexture("assets/150map.png");
-    tile1 = LoadTexture("Assets/Tile1.png");
+    visible_tile_texture = LoadTexture("assets/150map.png");
+    hidden_tile_texture = LoadTexture("Assets/Tile1.png");
     // SetPoint()는 생성자에서 한 번만 호출하는 것이 더 효율적입니다.
     if (this->autoTile) {
         SetPoint();
@@ -14,8 +14,8 @@ Map::Map(Vector2 center, float radiusX, float radiusY, int width, int height, bo
 }
 
 Map::~Map() {
-    UnloadTexture(tileTexture);
-    UnloadTexture(tile1);
+    UnloadTexture(visible_tile_texture);
+    UnloadTexture(hidden_tile_texture);
 }
 
 
@@ -98,19 +98,40 @@ void Map::DrawHexagon(Color color) {
     }
 }
 
-void Map::Draw() {
-    for (const auto& tile : tiles) {
-        Rectangle source = { 0, 0, (float)tile1.width, (float)tile1.height };
+void Map::Draw(HexTile* vision_center_tile, const Math::TransformationMatrix& camera_matrix) {
+    // 화면의 높이를 가져옵니다. Y축을 뒤집을 때 기준이 됩니다.
+    const int screen_height = GetScreenHeight();
+
+    for (const auto& tile_to_draw : tiles) {
+        Texture2D texture_to_use = hidden_tile_texture;
+
+        if (vision_center_tile != nullptr) {
+            if (IsNeighborTile(vision_center_tile->x, vision_center_tile->y, tile_to_draw.x, tile_to_draw.y)) {
+                texture_to_use = visible_tile_texture;
+            }
+        }
+
+        Rectangle source = { 0, 0, (float)texture_to_use.width, (float)texture_to_use.height };
+
+        Math::vec2 world_pos(tile_to_draw.center);
+
+        // 카메라의 영향을 받은 월드 좌표
+        Math::vec2 transformed_pos = camera_matrix * world_pos;
+
+        // ===== Y축 변환 로직 추가 =====
+        // Y좌표를 화면 좌표계(Y축이 아래로 증가)에 맞게 뒤집습니다.
+        float final_screen_y = -transformed_pos.y + screen_height;
+        // ============================
+
         Rectangle dest = {
-            tile.center.x,
-            tile.center.y,
+            (float)transformed_pos.x, // X좌표는 그대로 사용
+            final_screen_y,           // 변환된 Y좌표 사용
             radiusX * 2.0f,
             radiusY * 2.0f * squashFactor
         };
         Vector2 origin = { radiusX, radiusY * squashFactor };
 
-        DrawTexturePro(tile1, source, dest, origin, 0.0f, WHITE);
-        // DrawHexagon(DARKGREEN); // 필요하다면 타일 외곽선 그리기
+        DrawTexturePro(texture_to_use, source, dest, origin, 0.0f, WHITE);
     }
 }
 
