@@ -1,53 +1,48 @@
-﻿// main.cpp
-#include "raylib.h"
+﻿#include "raylib.h"
 #include "Engine/Engine.h"
 #include "Game/Splash.h"
 #include "Game/Menu.h"
 #include "Game/States.h"
 #include "Game/Mode0.h"
 #include "Game/MainMapState.h"
-#include "Game/BattleMap.h"   
+#include "Game/BattleMap.h"
 #include "Engine/Window.h"
 
 int main() {
     Engine& engine = Engine::Instance();
-    engine.Start("A COOOOOOORN? REALLY?"); 
+    engine.Start("A COOOOOOORN? REALLY?");
+
+    // 모든 GameState를 new를 사용해 힙(heap)에 생성하도록 통일
+    Splash* splashState = new Splash(); // ===== 수정 1 =====
     Menu* menuState = new Menu(CS230::Window::default_width, CS230::Window::default_height);
-    Mode0* tutorialState = new Mode0({ CS230::Window::default_width / 2.0f, CS230::Window::default_height / 2.0f }, 200.0f, 200.0f);
+    Mode0* tutorialState = new Mode0({ (double)CS230::Window::default_width / 2.0, (double)CS230::Window::default_height / 2.0 }, 200.0f, 200.0f);
     MainMapState* mainMapState = new MainMapState(CS230::Window::default_width, CS230::Window::default_height);
     BattleMap* battleMapState = new BattleMap();
-    Splash splash;
-    engine.GetGameStateManager().AddGameState(splash);
-    engine.GetGameStateManager().AddGameState(*menuState);      
-    engine.GetGameStateManager().AddGameState(*tutorialState);  
-    engine.GetGameStateManager().AddGameState(*mainMapState);   
-    engine.GetGameStateManager().AddGameState(*battleMapState); 
 
+    // GameStateManager에 상태 추가
+    engine.GetGameStateManager().AddGameState(*splashState);
+    engine.GetGameStateManager().AddGameState(*menuState);
+    engine.GetGameStateManager().AddGameState(*tutorialState);
+    engine.GetGameStateManager().AddGameState(*mainMapState);
+    engine.GetGameStateManager().AddGameState(*battleMapState);
+
+    // 폰트 추가 및 초기 상태 설정
     engine.AddFont("Assets/Font_Simple.png");
     engine.AddFont("Assets/Font_Outlined.png");
+    engine.GetGameStateManager().SetNextGameState(SPLASH);
 
-    // 2. GameStateManager에 GameState 추가
-    // 여기서 추가하는 순서가 위의 *_STATE_IDX와 일치해야 합니다.
-    engine.GetGameStateManager().AddGameState(*menuState);         // 인덱스 0
-    engine.GetGameStateManager().AddGameState(*tutorialState);     // 인덱스 1
-    engine.GetGameStateManager().AddGameState(*mainMapState);      // 인덱스 2
-    engine.GetGameStateManager().AddGameState(*battleMapState);     // 인덱스 3
-
-    // 3. 초기 GameState 설정
-    engine.GetGameStateManager().SetNextGameState(STATE_MENU); // 메뉴 화면으로 시작
-
-    // 4. 메인 게임 루프 (단순화됨)
-    // engine.Update()가 GameStateManager를 통해 현재 활성화된 GameState의 Update 및 Draw를 호출합니다.
+    // 메인 루프
     while (!engine.HasGameEnded()) {
         engine.Update();
     }
 
+    // 게임 종료
     engine.Stop();
-
+    delete splashState; // ===== 수정 1 =====
     delete menuState;
     delete tutorialState;
     delete mainMapState;
-    //delete battleMapState;
+    delete battleMapState; // ===== 수정 2 =====
 
     return 0;
 }

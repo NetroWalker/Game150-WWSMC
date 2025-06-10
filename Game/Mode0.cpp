@@ -3,6 +3,7 @@
 #include "Mode0.h"
 #include "States.h"
 #include "SquirrelGen.h"
+#include "../Engine/Camera.h"
 #include "SnakeGen.h"
 #include "LinearMovement.h"
 #include <cmath>
@@ -64,8 +65,8 @@ void Mode0::SetDialogueStep(int step) {
 
 void Mode0::Load() {
     Engine::GetLogger().LogEvent(GetName() + " Load");
-
     AddGSComponent(new CS230::GameObjectManager());
+    AddGSComponent(new CS230::Camera({ {0,0}, {0,0} }));
 
     tutorialMap.SetPoint();
     const std::vector<HexTile>& tiles = tutorialMap.GetTiles();
@@ -74,9 +75,11 @@ void Mode0::Load() {
     staticGeneral = new SnakeGen({ (double)tiles[2].center.x, (double)tiles[2].center.y });
     tutorialGeneral->SetScale({ 0.3, 0.3 });
     staticGeneral->SetScale({ 0.3,0.3 });
-    GetGSComponent<CS230::GameObjectManager>()->Add(tutorialGeneral);
-    GetGSComponent<CS230::GameObjectManager>()->Add(staticGeneral);
-    
+
+    CS230::GameObjectManager* GOM = GetGSComponent<CS230::GameObjectManager>();
+    GOM->Add(tutorialGeneral);
+    GOM->Add(staticGeneral);
+
     chatWindowTexture = LoadTexture("Assets/chat_window.png");
     tutorialTimer = 0.0f;
     chatAlpha = 0.0f;
@@ -84,6 +87,7 @@ void Mode0::Load() {
     tutorialDone = false;
     generalSelected = false;
     movableTiles.clear();
+    SetDialogueStep(-1);
 }
 
 void Mode0::Update(double dt) {
@@ -164,18 +168,29 @@ void Mode0::Update(double dt) {
 
 void Mode0::Draw() {
     ClearBackground(BLACK);
+    CS230::Camera* camera = GetGSComponent<CS230::Camera>();
     Math::TransformationMatrix camera_matrix;
-    HexTile* vision_center_tile = nullptr;
-    if (tutorialGeneral != nullptr) {
-        LinearMovement* movement = tutorialGeneral->GetGOComponent<LinearMovement>();
-        vision_center_tile = tutorialMap.GetTileAtPosition(movement->GetFootPosition());
+    if (camera != nullptr) {
+        camera_matrix = camera->GetMatrix();
     }
 
-    tutorialMap.Draw(vision_center_tile, camera_matrix);
+    std::set<HexTile*> visibleTiles;
+    if (tutorialGeneral != nullptr) {
+        HexTile* source_tile = tutorialMap.GetTileAtPosition(tutorialGeneral->GetGOComponent<LinearMovement>()->GetFootPosition());
+        if (source_tile != nullptr) {
+            visibleTiles.insert(source_tile);
+            auto neighbors = tutorialMap.GetMovableTiles(source_tile);
+            for (const auto& neighbor : neighbors) {
+                visibleTiles.insert(tutorialMap.GetTileAt(neighbor.x, neighbor.y));
+            }
+        }
+    }
+
+    tutorialMap.Draw(visibleTiles, camera_matrix);
 
     if (generalSelected) {
         for (const auto& tile : movableTiles) {
-            DrawCircleV(tile.center, 30, Fade(BLUE, 0.4f));
+            DrawCircleV(camera_matrix * Math::vec2(tile.center), 30, Fade(BLUE, 0.4f));
         }
     }
 
@@ -186,10 +201,9 @@ void Mode0::Draw() {
         float height = chatWindowTexture.height;
         Vector2 pos = { GetScreenWidth() / 2.0f - width / 2.0f, GetScreenHeight() - height - 30.0f };
         DrawTexture(chatWindowTexture, (int)pos.x, (int)pos.y, Fade(WHITE, chatAlpha));
-
         if (chatAlpha >= 1.0f) {
             Font font = GetFontDefault();
-            Vector2 textPos = { 120, (float)GetScreenHeight() - 165 };
+            Vector2 textPos = { pos.x + 100, pos.y + 40 };
             DrawTextEx(font, currentDialogue.c_str(), textPos, 30, 2.0f, BLACK);
         }
     }

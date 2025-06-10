@@ -1,4 +1,3 @@
-//Squirrel.h
 #pragma once
 #include"../Engine/GameObject.h"
 #include"GameObjectTypes.h"

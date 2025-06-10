@@ -7,7 +7,7 @@ Squirrel::Squirrel(Math::vec2 position) : CS230::GameObject(position)
 }
 
 void Squirrel::ResolveCollision(GameObject* other_object) {
-	if (other_object->Type() == GameObjectTypes::Enemy) {
+	if (other_object->Type() == GameObjectTypes::Snake) {
 		//Fight algorithm ----Yeonseo Job when the unit
 	}
 }

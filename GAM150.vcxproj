@@ -48,7 +48,6 @@
     <ClCompile Include="Game\Material.cpp" />
     <ClCompile Include="Game\Menu.cpp" />
     <ClCompile Include="Game\Mode0.cpp" />
-    <ClCompile Include="Game\Snake.cpp" />
     <ClCompile Include="Game\SnakeGen.cpp" />
     <ClCompile Include="Game\PlacementTile.cpp" />
     <ClCompile Include="Game\Soldier.cpp" />
@@ -93,7 +92,6 @@
     <ClInclude Include="Game\Material.h" />
     <ClInclude Include="Game\Menu.h" />
     <ClInclude Include="Game\Mode0.h" />
-    <ClInclude Include="Game\Snake.h" />
     <ClInclude Include="Game\SnakeGen.h" />
     <ClInclude Include="Game\PlacementTile.h" />
     <ClInclude Include="Game\Soldier.h" />
@@ -102,9 +100,6 @@
     <ClInclude Include="Game\SquirrelGen.h" />
     <ClInclude Include="Game\States.h" />
     <ClInclude Include="Game\WaitingZone.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="Assets\SquirrelGen.spt.txt" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>

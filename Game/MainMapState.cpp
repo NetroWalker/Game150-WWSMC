@@ -7,70 +7,77 @@
 #include "../Engine/Collision.h"
 #include "../Engine/ShowCollision.h"
 #include "Castle.h"
+#include "Material.h"
 #include "../Engine/Camera.h"
 #include <cmath>
 
 MainMapState::MainMapState(int sw, int sh) :
     screenWidth(sw), screenHeight(sh),
     radiusX(200.0f), radiusY(200.0f),
-    gameMap(Vector2{ screenWidth / 2.0f - ((5 - 1) * 200.0f * 1.5f) / 2.0f,
-                     screenHeight / 2.0f - ((5 - 1) * 200.0f * sqrtf(3.0f) * 0.5f) / 2.0f },
+    gameMap(Vector2{ screenWidth / 2.0f - ((8 - 1) * 200.0f * 1.5f) / 2.0f,
+                     screenHeight / 2.0f - ((10 - 1) * 200.0f * sqrtf(3.0f) * 0.5f) / 2.0f },
         200.0f, 200.0f, 8, 10, true),
     generalSelected(false)
 {
 }
 
-
+MainMapState::~MainMapState() {
+    delete player1_resources;
+    delete player2_resources;
+}
 
 void MainMapState::Load() {
-    AddGSComponent(new CS230::Camera({ {0,0}, {0,0} }));
     Engine::GetLogger().LogEvent(GetName() + " Load");
+    AddGSComponent(new CS230::Camera({ {0,0}, {0,0} }));
     AddGSComponent(new CS230::GameObjectManager());
+    CS230::GameObjectManager* GOM = GetGSComponent<CS230::GameObjectManager>();
 
-    gameMap.SetPoint();
-    HexTile* tile33 = gameMap.GetTileAt(3, 3);
-    if (!tile33) {
-        Engine::GetLogger().LogError("MainMapState: tile33 not found during Load.");
-        return;
-    }
     player1_resources = new Stone();
     player2_resources = new Stone();
-    player1 = new SquirrelGen({ (double)gameMap.GetTiles()[0].center.x, (double)gameMap.GetTiles()[0].center.y });
-    player2 = new SnakeGen({ (double)tile33->center.x, (double)tile33->center.y });
-    castle1 = new Castle({ (double)gameMap.GetTiles()[0].center.x, (double)gameMap.GetTiles()[0].center.y
-        }, "Assets/castle_me.spt");
-    castle2 = new Castle({ (double)tile33->center.x, (double)tile33->center.y }, "Assets/castle_eneme.spt");
 
-    GetGSComponent<CS230::GameObjectManager>()->Add(castle1);
-    GetGSComponent<CS230::GameObjectManager>()->Add(castle2);
-    GetGSComponent<CS230::GameObjectManager>()->Add(player1);
-    GetGSComponent<CS230::GameObjectManager>()->Add(player2);
+    gameMap.SetPoint();
+    HexTile* tile_end = gameMap.GetTileAt(7, 9);
+    if (!tile_end) { return; }
+
+    Math::vec2 p1_start_pos = gameMap.GetTiles()[0].center;
+    Math::vec2 p2_start_pos = tile_end->center;
+
+    this->player1 = new SquirrelGen(p1_start_pos);
+    this->player2 = new SnakeGen(p2_start_pos);
+    Castle* initial_castle1 = new Castle(p1_start_pos, "Assets/castle_me.spt");
+    Castle* initial_castle2 = new Castle(p2_start_pos, "Assets/castle_enemy.spt");
+
+    player1_castles.push_back(initial_castle1);
+    player2_castles.push_back(initial_castle2);
+
+    GOM->Add(initial_castle1);
+    GOM->Add(initial_castle2);
+    GOM->Add(player1);
+    GOM->Add(player2);
+
     player1->SetScale({ 0.3, 0.3 });
     player2->SetScale({ 0.3, 0.3 });
-    castle1->SetScale({ 0.7, 0.7 });
-    castle2->SetScale({ 0.7, 0.7 });
+    initial_castle1->SetScale({ 0.7, 0.7 });
+    initial_castle2->SetScale({ 0.7, 0.7 });
+
     generalSelected = false;
     movableTiles.clear();
     startingTile = nullptr;
 }
 
 void MainMapState::Update(double dt) {
-    player1_resources->Update(dt, player1_castles.size());
-    player2_resources->Update(dt, player2_castles.size());
+    if (notification_timer > 0) {
+        notification_timer -= dt;
+        if (notification_timer <= 0) notification_message.clear();
+    }
+
+    CS230::GameObjectManager* GOM = GetGSComponent<CS230::GameObjectManager>();
     Vector2 mouse = GetMousePosition();
-    Turn turn = turnManager.GetCurrentTurn();
     CS230::Camera* camera = GetGSComponent<CS230::Camera>();
-    Turn current_turn = turnManager.GetCurrentTurn();
-    CS230::GameObject* currentGeneral = (current_turn == Turn::P1) ? player1 : player2;
-    CS230::GameObject* enemyGeneral = (current_turn == Turn::P1) ? player2 : player1;
-    friendlyCastle = (current_turn == Turn::P1) ? castle1 : castle2;
-    enemyCastle = (current_turn == Turn::P1) ? castle2 : castle1;
-    LinearMovement* currentMovement = currentGeneral->GetGOComponent<LinearMovement>();
 
     if (camera != nullptr) {
         auto& input = Engine::GetInput();
         Math::vec2 camera_offset;
-
         if (input.KeyDown(CS230::Input::Keys::Up)) { camera_offset.y += camera_speed * dt; }
         if (input.KeyDown(CS230::Input::Keys::Down)) { camera_offset.y -= camera_speed * dt; }
         if (input.KeyDown(CS230::Input::Keys::Left)) { camera_offset.x -= camera_speed * dt; }
@@ -80,152 +87,216 @@ void MainMapState::Update(double dt) {
     }
 
     if (!turnManager.IsTransitioning()) {
+        Turn turn = turnManager.GetCurrentTurn();
+        CS230::GameObject* currentGeneral = (turn == Turn::P1) ? player1 : player2;
 
+        if (Engine::GetInput().KeyJustPressed(CS230::Input::Keys::B)) {
+            std::vector<Castle*>& friendly_castles = (turn == Turn::P1) ? player1_castles : player2_castles;
+            Stone* current_player_resources = (turn == Turn::P1) ? player1_resources : player2_resources;
 
-        if (turnManager.CanMove()) {
-            if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && !currentMovement->IsMoving()) {
-                CS230::RectCollision* collisionComp = currentGeneral->GetGOComponent<CS230::RectCollision>();
-
-                if (collisionComp != nullptr && camera != nullptr) {
-                    Rectangle click_box = collisionComp->ToRaylibScreenRect(camera->GetMatrix());
-                    if (CheckCollisionPointRec(mouse, click_box)) {
-                        generalSelected = !generalSelected;
-                        if (generalSelected) {
-                            startingTile = gameMap.GetTileAtPosition(currentMovement->GetFootPosition());
-                            movableTiles = gameMap.GetMovableTiles(startingTile);
-                        }
-                        else {
-                            movableTiles.clear();
-                            startingTile = nullptr;
+            if (friendly_castles.size() >= MAX_CASTLES) {
+                notification_message = "Cannot build: Maximum castles reached!";
+                notification_timer = 2.0;
+            }
+            else {
+                HexTile* build_tile = gameMap.GetTileAtPosition(currentGeneral->GetGOComponent<LinearMovement>()->GetFootPosition());
+                bool is_build_location_valid = true;
+                if (build_tile) {
+                    for (Castle* existing_castle : friendly_castles) {
+                        HexTile* existing_castle_tile = gameMap.GetTileAtPosition(existing_castle->GetPosition());
+                        if (existing_castle_tile && gameMap.IsNeighborTile(existing_castle_tile->x, existing_castle_tile->y, build_tile->x, build_tile->y)) {
+                            is_build_location_valid = false;
+                            notification_message = "Cannot build: Too close to an existing castle!";
+                            notification_timer = 2.0;
+                            break;
                         }
                     }
                 }
+                else { is_build_location_valid = false; }
 
-                if (generalSelected && (collisionComp == nullptr || !CheckCollisionPointRec(mouse, collisionComp->ToRaylibScreenRect(camera->GetMatrix())))) {
-                    const int screen_height = GetScreenHeight();
-                    const Math::TransformationMatrix& camera_matrix = camera->GetMatrix();
-                    for (auto& tile : movableTiles) {
-                        Math::vec2 transformed_pos = camera_matrix * Math::vec2(tile.center);
-                        Vector2 screen_pos = { (float)transformed_pos.x, screen_height - (float)transformed_pos.y };
-                        if (CheckCollisionPointCircle(mouse, screen_pos, 35.0f)) {
-                            currentMovement->MoveTo({ (double)tile.center.x, (double)tile.center.y });
-                            generalSelected = false;
-                            movableTiles.clear();
-                            startingTile = nullptr;
-                            turnManager.Move();
-                            break;
-                        }
+                if (is_build_location_valid) {
+                    int next_castle_cost = friendly_castles.size() * 10;
+                    if (current_player_resources->SpendResources(next_castle_cost)) {
+                        Engine::GetLogger().LogEvent("Player built a castle! Cost: " + std::to_string(next_castle_cost));
+                        const char* spt_path = (turn == Turn::P1) ? "Assets/castle_me.spt" : "Assets/castle_enemy.spt";
+                        Castle* new_castle = new Castle(build_tile->center, spt_path);
+                        new_castle->SetScale({ 0.7, 0.7 });
+                        friendly_castles.push_back(new_castle);
+                        GOM->Add(new_castle);
+                    }
+                    else {
+                        notification_message = "Not enough resources! (Needed: " + std::to_string(next_castle_cost) + ")";
+                        notification_timer = 2.0;
                     }
                 }
             }
         }
 
+        if (turnManager.CanMove() && IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && !currentGeneral->GetGOComponent<LinearMovement>()->IsMoving()) {
+            bool clickedOnGeneral = false;
+            if (auto collisionComp = currentGeneral->GetGOComponent<CS230::RectCollision>(); collisionComp && camera) {
+                if (CheckCollisionPointRec(mouse, collisionComp->ToRaylibScreenRect(camera->GetMatrix()))) {
+                    generalSelected = !generalSelected;
+                    clickedOnGeneral = true;
+                    if (generalSelected) {
+                        startingTile = gameMap.GetTileAtPosition(currentGeneral->GetGOComponent<LinearMovement>()->GetFootPosition());
+                        movableTiles = gameMap.GetMovableTiles(startingTile);
+                    }
+                    else {
+                        movableTiles.clear();
+                        startingTile = nullptr;
+                    }
+                }
+            }
+            if (generalSelected && !clickedOnGeneral) {
+                // ===== 수정된 부분 시작 =====
+                const int screen_height = GetScreenHeight();
+                const Math::TransformationMatrix& camera_matrix = camera->GetMatrix();
 
-        Rectangle endTurnButton = { 1260, 750, 110, 40 };
+                for (auto& tile : movableTiles) {
+                    // 1. 타일의 월드 좌표를 가져옵니다.
+                    Math::vec2 world_pos = tile.center;
+
+                    // 2. 카메라의 영향을 받은 화면 좌표로 변환합니다. (Draw 함수와 동일한 로직)
+                    Math::vec2 transformed_pos = camera_matrix * world_pos;
+                    Vector2 screen_pos = {
+                        (float)transformed_pos.x,
+                        screen_height - (float)transformed_pos.y
+                    };
+
+                    // 3. 변환된 '화면 좌표'를 기준으로 클릭을 확인합니다.
+                    if (CheckCollisionPointCircle(mouse, screen_pos, 35.0f)) {
+
+                        // 이동 명령은 '월드 좌표'로 해야 합니다.
+                        currentGeneral->GetGOComponent<LinearMovement>()->MoveTo(tile.center);
+
+                        generalSelected = false;
+                        movableTiles.clear();
+                        startingTile = nullptr;
+                        turnManager.Move();
+                        break;
+                    }
+                }
+            }
+        }
+
+        Rectangle endTurnButton = { (float)screenWidth - 120, (float)screenHeight - 50, 110, 40 };
         if (CheckCollisionPointRec(mouse, endTurnButton) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
             turnManager.EndTurn();
             generalSelected = false;
             movableTiles.clear();
             startingTile = nullptr;
         }
+
     }
     else {
+        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
             Rectangle startButton = { screenWidth / 2.0f - 100, screenHeight / 2.0f + 50, 200, 60 };
-            if (CheckCollisionPointRec(mouse, startButton) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+            if (CheckCollisionPointRec(mouse, startButton)) {
+                std::vector<Castle*>& castles_to_update = (turnManager.GetCurrentTurn() == Turn::P1) ? player1_castles : player2_castles;
+                if (turnManager.GetCurrentTurn() == Turn::P1) {
+                    player1_resources->AddResources(castles_to_update.size() * 2);
+                }
+                else {
+                    player2_resources->AddResources(castles_to_update.size() * 2);
+                }
                 turnManager.StartTurn();
             }
         }
-    GetGSComponent<CS230::GameObjectManager>()->UpdateAll(dt);
     }
+    GOM->UpdateAll(dt);
+}
+
 void MainMapState::Draw() {
     ClearBackground(RAYWHITE);
     CS230::Camera* camera = GetGSComponent<CS230::Camera>();
     Math::TransformationMatrix camera_matrix;
-    if (camera != nullptr) {
-        camera_matrix = camera->GetMatrix();
-    }
-    const int screen_height = GetScreenHeight();
+    if (camera != nullptr) camera_matrix = camera->GetMatrix();
 
     if (!turnManager.IsTransitioning()) {
-        CS230::GameObject* currentGeneral = (turnManager.GetCurrentTurn() == Turn::P1) ? player1 : player2;
-        CS230::GameObject* enemyGeneral = (turnManager.GetCurrentTurn() == Turn::P1) ? player2 : player1;
         Turn current_turn = turnManager.GetCurrentTurn();
-        HexTile* currentTile = nullptr;
-        Castle* friendlyCastle = (current_turn == Turn::P1) ? castle1 : castle2;
-        Castle* enemyCastle = (current_turn == Turn::P1) ? castle2 : castle1;
+        CS230::GameObject* currentGeneral = (current_turn == Turn::P1) ? player1 : player2;
+        std::vector<Castle*>& friendlyCastles = (current_turn == Turn::P1) ? player1_castles : player2_castles;
 
-        if (currentGeneral != nullptr) {
-            currentTile = gameMap.GetTileAtPosition(currentGeneral->GetGOComponent<LinearMovement>()->GetFootPosition());
+        std::set<HexTile*> visibleTiles;
+        auto addVisionFrom = [&](const Math::vec2& pos) {
+            HexTile* source_tile = gameMap.GetTileAtPosition(pos);
+            if (source_tile == nullptr) return;
+            visibleTiles.insert(source_tile);
+            auto neighbors = gameMap.GetMovableTiles(source_tile);
+            for (const auto& neighbor : neighbors) {
+                visibleTiles.insert(gameMap.GetTileAt(neighbor.x, neighbor.y));
+            }
+            };
+
+        addVisionFrom(currentGeneral->GetGOComponent<LinearMovement>()->GetFootPosition());
+        for (Castle* castle : friendlyCastles) {
+            addVisionFrom(castle->GetPosition());
         }
 
-        gameMap.Draw(currentTile, camera_matrix);
+        gameMap.Draw(visibleTiles, camera_matrix);
 
         if (generalSelected) {
+            const int screen_height = GetScreenHeight(); // Y축 변환을 위해 화면 높이 가져오기
+
+            // 1. '이동 전' 타일 (녹색 원) 그리기
             if (startingTile != nullptr) {
+                // 월드 좌표를 카메라 행렬로 변환
                 Math::vec2 transformed_pos = camera_matrix * Math::vec2(startingTile->center);
-                Vector2 screen_pos = { (float)transformed_pos.x, screen_height - (float)transformed_pos.y };
+                // 최종 화면 좌표 계산 (Y축 뒤집기 포함)
+                Vector2 screen_pos = {
+                    (float)transformed_pos.x,
+                    screen_height - (float)transformed_pos.y
+                };
+                DrawCircleV(screen_pos, 30, Fade(GREEN, 0.5f));
             }
+
+            // 2. '이동 후' 타일 (파란 원) 그리기
             for (const auto& tile : movableTiles) {
+                // 월드 좌표를 카메라 행렬로 변환
                 Math::vec2 transformed_pos = camera_matrix * Math::vec2(tile.center);
-                Vector2 screen_pos = { (float)transformed_pos.x, screen_height - (float)transformed_pos.y };
+                // 최종 화면 좌표 계산 (Y축 뒤집기 포함)
+                Vector2 screen_pos = {
+                    (float)transformed_pos.x,
+                    screen_height - (float)transformed_pos.y
+                };
                 DrawCircleV(screen_pos, 30, Fade(BLUE, 0.4f));
             }
         }
 
-        if (currentGeneral != nullptr) {
-            currentGeneral->Draw(camera_matrix);
-        }
+        GetGSComponent<CS230::GameObjectManager>()->DrawAll(camera_matrix);
 
-        if (currentGeneral != nullptr && enemyGeneral != nullptr) {
-            HexTile* generalTile = currentTile;
-            HexTile* enemyTile = gameMap.GetTileAtPosition(enemyGeneral->GetGOComponent<LinearMovement>()->GetFootPosition());
-
-            if (generalTile != nullptr && enemyTile != nullptr &&
-                gameMap.IsNeighborTile(generalTile->x, generalTile->y, enemyTile->x, enemyTile->y)) {
-                enemyGeneral->Draw(camera_matrix);
-            }
-        }
-        //GetGSComponent<CS230::GameObjectManager>()->DrawAll(camera_matrix);
-        
-        if (currentGeneral != nullptr) {
-            currentGeneral->Draw(camera_matrix);
-        }
-
-        if (currentTile != nullptr) {
-            HexTile* enemyGeneralTile = gameMap.GetTileAtPosition(enemyGeneral->GetGOComponent<LinearMovement>()->GetFootPosition());
-            if (enemyGeneralTile != nullptr && gameMap.IsNeighborTile(currentTile->x, currentTile->y, enemyGeneralTile->x, enemyGeneralTile->y)) {
-                enemyGeneral->Draw(camera_matrix);
-            }
-
-            HexTile* enemyCastleTile = gameMap.GetTileAtPosition(enemyCastle->GetPosition());
-            if (enemyCastleTile != nullptr && gameMap.IsNeighborTile(currentTile->x, currentTile->y, enemyCastleTile->x, enemyCastleTile->y)) {
-                enemyCastle->Draw(camera_matrix);
-            }
-        }
-        if (friendlyCastle != nullptr) {
-            friendlyCastle->Draw(camera_matrix);
-        }
-        Rectangle endTurnButton = { 1260, 750, 110, 40 };
-        DrawRectangleRec(endTurnButton, LIGHTGRAY);
-        DrawText("TurnEnd", endTurnButton.x + 10, endTurnButton.y + 10, 20, BLACK);
         std::string p1_text = "P1 Stone: " + std::to_string(player1_resources->GetStoneCount());
         DrawText(p1_text.c_str(), 10, 10, 20, BLACK);
-
         std::string p2_text = "P2 Stone: " + std::to_string(player2_resources->GetStoneCount());
         int p2_text_width = MeasureText(p2_text.c_str(), 20);
         DrawText(p2_text.c_str(), screenWidth - p2_text_width - 10, 10, 20, BLACK);
+
+        std::string p1_castle_text = "Castles: " + std::to_string(player1_castles.size()) + " / " + std::to_string(MAX_CASTLES);
+        DrawText(p1_castle_text.c_str(), 10, 35, 20, BLACK);
+        std::string p2_castle_text = "Castles: " + std::to_string(player2_castles.size()) + " / " + std::to_string(MAX_CASTLES);
+        int p2_castle_width = MeasureText(p2_castle_text.c_str(), 20);
+        DrawText(p2_castle_text.c_str(), screenWidth - p2_castle_width - 10, 35, 20, BLACK);
+
+        Rectangle endTurnButton = { (float)screenWidth - 120, (float)screenHeight - 50, 110, 40 };
+        DrawRectangleRec(endTurnButton, LIGHTGRAY);
+        DrawText("TurnEnd", endTurnButton.x + 10, endTurnButton.y + 10, 20, BLACK);
+
+        if (notification_timer > 0) {
+            int text_width = MeasureText(notification_message.c_str(), 30);
+            DrawRectangle(screenWidth / 2 - text_width / 2 - 10, screenHeight / 2 - 25, text_width + 20, 50, Fade(BLACK, 0.7f));
+            DrawText(notification_message.c_str(), screenWidth / 2 - text_width / 2, screenHeight / 2 - 15, 30, YELLOW);
+        }
+
     }
     else {
+        Vector2 mouse_pos = GetMousePosition();
         DrawRectangle(0, 0, screenWidth, screenHeight, Fade(GRAY, 0.8f));
-
-        Turn turn = turnManager.GetCurrentTurn();
-        const char* turnText = (turn == Turn::P1) ? "PLAYER 1 TURN" : "PLAYER 2 TURN";
+        const char* turnText = (turnManager.GetCurrentTurn() == Turn::P1) ? "PLAYER 1 TURN" : "PLAYER 2 TURN";
         int textWidth = MeasureText(turnText, 60);
         DrawText(turnText, screenWidth / 2 - textWidth / 2, screenHeight / 2 - 100, 60, DARKBLUE);
-
         Rectangle startButton = { screenWidth / 2.0f - 100, screenHeight / 2.0f + 50, 200, 60 };
-        Vector2 mouse = GetMousePosition();
-        bool hovering = CheckCollisionPointRec(mouse, startButton);
+        bool hovering = CheckCollisionPointRec(mouse_pos, startButton);
         DrawRectangleRec(startButton, hovering ? DARKGRAY : LIGHTGRAY);
         DrawText("START", startButton.x + 60, startButton.y + 15, 30, BLACK);
     }
@@ -233,4 +304,8 @@ void MainMapState::Draw() {
 
 void MainMapState::Unload() {
     Engine::GetLogger().LogEvent(GetName() + " Unload");
+    player1 = nullptr;
+    player2 = nullptr;
+    player1_castles.clear();
+    player2_castles.clear();
 }

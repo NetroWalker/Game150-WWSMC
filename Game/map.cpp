@@ -104,33 +104,38 @@ void Map::DrawHexagon(Color color) {
     }
 }
 
-void Map::Draw(HexTile* vision_center_tile, const Math::TransformationMatrix& camera_matrix) {
+void Map::Draw(const std::set<HexTile*>& visibleTiles, const Math::TransformationMatrix& camera_matrix) {
     const int screen_height = GetScreenHeight();
 
     for (const auto& tile_to_draw : tiles) {
         Texture2D texture_to_use = hidden_tile_texture;
 
-        if (vision_center_tile != nullptr) {
-            if (IsNeighborTile(vision_center_tile->x, vision_center_tile->y, tile_to_draw.x, tile_to_draw.y)) {
+        // ===== 수정된 시야 확인 로직 =====
+        // 현재 그리려는 타일이 visibleTiles 목록에 포함되어 있는지 확인합니다.
+        // C++20 부터는 set.contains(&tile_to_draw) 를 사용할 수 있습니다.
+        if (visibleTiles.count(const_cast<HexTile*>(&tile_to_draw))) {
+            // 포함되어 있다면, 타일 타입에 맞는 텍스처를 선택합니다.
+            switch (tile_to_draw.type) {
+            case TileType::Grass:
                 texture_to_use = grass_tile_texture;
+                break;
+            case TileType::Water:
+                texture_to_use = water_tile_texture;
+                break;
+            case TileType::Stone:
+                texture_to_use = stone_tile_texture;
+                break;
             }
         }
+        // ==============================
 
+        // 그리기 로직은 그대로 유지
         Rectangle source = { 0, 0, (float)texture_to_use.width, (float)texture_to_use.height };
-
         Math::vec2 world_pos(tile_to_draw.center);
-
         Math::vec2 transformed_pos = camera_matrix * world_pos;
         float final_screen_y = -transformed_pos.y + screen_height;
-
-        Rectangle dest = {
-            (float)transformed_pos.x, 
-            final_screen_y,           
-            radiusX * 2.0f,
-            radiusY * 2.0f * squashFactor
-        };
+        Rectangle dest = { (float)transformed_pos.x, final_screen_y, radiusX * 2.0f, radiusY * 2.0f * squashFactor };
         Vector2 origin = { radiusX, radiusY * squashFactor };
-
         DrawTexturePro(texture_to_use, source, dest, origin, 0.0f, WHITE);
     }
 }

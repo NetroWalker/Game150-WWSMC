@@ -1,6 +1,7 @@
 ﻿// Game/map.h
 #pragma once
 #include "raylib.h"
+#include <set>
 #include <vector>
 #include"../Engine/Engine.h"
 enum class TileType {
@@ -21,7 +22,7 @@ public:
     ~Map();
 
     void Update();
-    void Draw(HexTile* vision_center_tile, const Math::TransformationMatrix& camera_matrix);
+    void Draw(const std::set<HexTile*>& visibleTiles, const Math::TransformationMatrix& camera_matrix);
 
     void SetPoint();
     std::vector<HexTile> GetMovableTiles(HexTile* from);

@@ -3,11 +3,9 @@
 
 enum class GameObjectTypes {
     SquirrelGen,
-    Squirrel,
+	Squirrel,
     SnakeGen,
-    Snake,
-    EnemyGen,
-    Enemy,
+	Snake,
 	Soldier,
 	PlacementTile,
 	WaitingZone,

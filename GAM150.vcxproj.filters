@@ -91,9 +91,6 @@
     <ClCompile Include="Game\Squirrel.cpp">
       <Filter>Game</Filter>
     </ClCompile>
-    <ClCompile Include="Game\Snake.cpp">
-      <Filter>Game</Filter>
-    </ClCompile>
     <ClCompile Include="Game\SquirrelGen.cpp">
       <Filter>Game</Filter>
     </ClCompile>
@@ -110,8 +107,8 @@
       <Filter>Game</Filter>
     </ClCompile>
     <ClCompile Include="Game\Material.cpp">
-		<Filter>Game</Filter>
-	</ClCompile>
+      <Filter>Game</Filter>
+    </ClCompile>
     <ClCompile Include="Game\Background.cpp">
       <Filter>Game</Filter>
     </ClCompile>
@@ -216,9 +213,6 @@
     <ClInclude Include="Game\Squirrel.h">
       <Filter>Game</Filter>
     </ClInclude>
-    <ClInclude Include="Game\Snake.h">
-      <Filter>Game</Filter>
-    </ClInclude>
     <ClInclude Include="Game\SquirrelGen.h">
       <Filter>Game</Filter>
     </ClInclude>
@@ -237,9 +231,9 @@
     <ClInclude Include="Game\Material.h">
       <Filter>Game</Filter>
     </ClInclude>
+    <ClInclude Include="Game\GameObjectTypes.h" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="Assets\SquirrelGen.spt.txt" />
     <ClInclude Include="Game\Background.h">
       <Filter>Game</Filter>
     </ClInclude>
