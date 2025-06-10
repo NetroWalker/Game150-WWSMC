@@ -143,7 +143,6 @@ void MainMapState::Draw() {
             if (startingTile != nullptr) {
                 Math::vec2 transformed_pos = camera_matrix * Math::vec2(startingTile->center);
                 Vector2 screen_pos = { (float)transformed_pos.x, screen_height - (float)transformed_pos.y };
-                DrawCircleV(screen_pos, 30, Fade(GREEN, 0.5f));
             }
             for (const auto& tile : movableTiles) {
                 Math::vec2 transformed_pos = camera_matrix * Math::vec2(tile.center);
