@@ -1,41 +1,60 @@
 ﻿//soldier.h
 #pragma once
 #include "raylib.h"
+#include "../Engine/Vec2.h"
+#include "../Engine/Matrix.h"
+#include "../Engine/GameObject.h"
+#include "GameObjectTypes.h"
+#include "PlacementTile.h"
 
-enum SoldierType { RANGED, TANK, MELEE, CAT };
+enum class SoldierTypes { Ranged, Tank, Melee };
+enum class Animals { Squirrel, Snake };
+enum class SoldierState { InQueue, Placed, InBattle };
 
-class Soldier {
+class Soldier : public CS230::GameObject {
 public:
-    Soldier(Vector2 pos, SoldierType type, double radius = 20.0);
-    ~Soldier();
+    Soldier(Math::vec2 start_position, Animals animal, SoldierTypes type);
 
-    void Draw() const;
-    void SetPosition(Vector2 pos);
-    Vector2 GetPosition() const;
+    void Update(double dt) override;
+    void Draw(Math::TransformationMatrix camera_matrix) override;
 
-    void SetSelected(bool sel);
-    bool IsSelected() const;
+    GameObjectTypes Type() override { return GameObjectTypes::Soldier; }
+    std::string TypeName() override { return "Soldier"; }
+    bool CanCollideWith(GameObjectTypes other_type) override;
+    void ResolveCollision(GameObject* other_object) override;
 
-    int GetAtk() const;
-    void ReceiveAttack(int damage);
+    SoldierTypes GetType() const;
+    Animals GetAnimal() const;
+    bool win(SoldierTypes other) const;
 
-    float GetSpeed() const;
-    double GetRadius() const;
+    void SetOriginalPosition(Math::vec2 pos);
+    Math::vec2 GetOriginalPosition() const;
 
-    int GetHP() const;
+    void SetState(SoldierState new_state);
+    SoldierState GetState();
 
-    void ResetHP();
+    void SetTileList(std::vector<PlacementTile*>* tile_list);
+
+    void SetOccupiedTile(PlacementTile* tile);
+    PlacementTile* GetOccupiedTile() const;
+
+    enum class Animations {
+        None,
+        Attack,
+        Move
+    };
 
 private:
-    Vector2 position;
-    double radius;
-    bool selected = false;
-    SoldierType type;
+    CS230::Sprite* sprite = nullptr;
+    Animals animal;
+    SoldierTypes type;
+    Math::vec2 originalPosition;
+    SoldierState state = SoldierState::InQueue;
+    double scale = 1.0;
 
-    Texture2D sprite;
-    int hp;
-    float speed;
-    int atk;
 
-    mutable bool flash = false;
+    bool is_dragging = false;
+    Math::vec2 drag_offset;
+    std::vector<PlacementTile*>* tiles = nullptr;
+    PlacementTile* occupiedTile = nullptr;
 };

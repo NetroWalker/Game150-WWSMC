@@ -52,7 +52,7 @@ namespace CS230 {
 		case Status::STARTING:
 
 			if (gamestates.empty() == false) {
-				SetNextGameState(0);
+				SetNextGameState(3);
 				status = Status::LOADING;
 			}
 			else {

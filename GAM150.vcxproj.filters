@@ -110,6 +110,10 @@
       <Filter>Game</Filter>
     </ClCompile>
     <ClCompile Include="Game\Material.cpp">
+    <ClCompile Include="Game\Background.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\PlacementTile.cpp">
       <Filter>Game</Filter>
     </ClCompile>
   </ItemGroup>
@@ -234,5 +238,17 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="Assets\SquirrelGen.spt.txt" />
+    <ClInclude Include="Game\Background.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\Fonts.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\WaitingZone.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\PlacementTile.h">
+      <Filter>Game</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

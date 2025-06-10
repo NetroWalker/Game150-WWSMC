@@ -8,5 +8,8 @@ enum class GameObjectTypes {
     Snake,
     EnemyGen,
     Enemy,
+	Soldier,
+	PlacementTile,
+	WaitingZone,
     Count
 };

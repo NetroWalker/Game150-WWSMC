@@ -1,114 +1,180 @@
-//soldier.cpp
+// Soldierl.cpp
 #include "Soldier.h"
-#include <stdio.h>
+#include "../Engine/Engine.h"
+#include "../Engine/Camera.h"
 
-Soldier::Soldier(Vector2 pos, SoldierType t, double r)
-    : position(pos), radius(r), type(t)
-{
-    switch (type) {
-    case RANGED:
-        sprite = LoadTexture("assets/adc.png");
-        hp = 30;
-        speed = 2.0f;
-        atk = 4;
+static Math::vec2 mouse_pos;
+
+Soldier::Soldier(Math::vec2 start_position, Animals animal, SoldierTypes type)
+    : GameObject(start_position), animal(animal), type(type), originalPosition(start_position) {
+
+    std::string path;
+    if (animal == Animals::Squirrel) {
+        if (type == SoldierTypes::Melee)
+            path = "Assets/SquirrelM.spt";
+        else if (type == SoldierTypes::Ranged)
+            path = "Assets/SquirrelR.spt";
+        else if (type == SoldierTypes::Tank)
+            path = "Assets/SquirrelT.spt";
+    }
+    else if (animal == Animals::Snake) {
+        if (type == SoldierTypes::Melee)
+            path = "Assets/SnakeM.spt";
+        else if (type == SoldierTypes::Ranged)
+            path = "Assets/SnakeR.spt";
+        else if (type == SoldierTypes::Tank)
+            path = "Assets/SnakeT.spt";
+    }
+
+    sprite = new CS230::Sprite(path, this);
+    AddGOComponent(sprite);
+    GetGOComponent<CS230::Sprite>()->PlayAnimation(static_cast<int>(Animations::None));
+    SetScale({ 0.25, 0.25 });
+    SetState(SoldierState::InQueue);
+}
+
+void Soldier::SetTileList(std::vector<PlacementTile*>* tileList) {
+    tiles = tileList;
+}
+
+void Soldier::Update(double dt) {
+    CS230::GameObject::Update(dt);
+
+    Vector2 raw_mouse = GetMousePosition();
+    float flipped_y = Engine::GetWindow().GetSize().y - raw_mouse.y;
+
+    Math::vec2 cam_pos = Engine::GetGameStateManager().GetGSComponent<CS230::Camera>()->GetPosition();
+    mouse_pos = Math::vec2{ raw_mouse.x + cam_pos.x, flipped_y + cam_pos.y };
+
+    Math::vec2 size = static_cast<Math::vec2>(sprite->GetFrameSize());
+    Math::vec2 scale = GetScale();
+    Math::vec2 halfSize = { size.x * std::abs(scale.x) * 0.5, size.y * std::abs(scale.y) * 0.5 };
+    Math::vec2 topLeft = { GetPosition().x - halfSize.x,GetPosition().y };
+    Math::vec2 bottomRight = { GetPosition().x + halfSize.x, GetPosition().y + halfSize.y * 2 };
+
+    bool mouseOver = (mouse_pos.x >= topLeft.x && mouse_pos.x <= bottomRight.x &&
+        mouse_pos.y <= bottomRight.y && mouse_pos.y >= topLeft.y);
+
+
+    if (state == SoldierState::InQueue) {
+        if (!is_dragging && IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && mouseOver) {
+            is_dragging = true;
+            drag_offset = Math::vec2{ GetPosition().x - mouse_pos.x, GetPosition().y - mouse_pos.y };
+            if (occupiedTile != nullptr) {
+                occupiedTile->SetOccupied(false);
+                occupiedTile = nullptr;
+            }
+        }
+
+        if (is_dragging && IsMouseButtonDown(MOUSE_LEFT_BUTTON)) {
+            SetPosition(mouse_pos + drag_offset);
+        }
+
+        if (is_dragging && IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) {
+            is_dragging = false;
+
+            PlacementTile* targetTile = nullptr;
+            if (this->tiles) {
+                for (auto tile : *tiles) {
+                    if (tile->IsPointInside(mouse_pos) && !tile->IsOccupied()) {
+                        targetTile = tile;
+                        break;
+                    }
+                }
+            }
+
+            if (targetTile != nullptr) {
+                Math::vec2 tilePos = targetTile->GetPosition();
+                tilePos.y -= 50;
+                SetPosition(tilePos);
+                SetState(SoldierState::Placed);
+                targetTile->SetOccupied(true);
+                SetOccupiedTile(targetTile);
+            }
+            else {
+                SetPosition(originalPosition);
+                SetState(SoldierState::InQueue);
+            }
+        }
+    }
+}
+
+void Soldier::Draw(Math::TransformationMatrix camera_matrix) {
+    CS230::GameObject::Draw(camera_matrix);
+}
+
+bool Soldier::CanCollideWith(GameObjectTypes) {
+    return false;
+}
+
+void Soldier::ResolveCollision([[maybe_unused]]GameObject* other_object) {
+}
+
+SoldierTypes Soldier::GetType() const {
+    return type; 
+}
+
+Animals Soldier::GetAnimal() const {
+    return animal; 
+}
+
+bool Soldier::win(SoldierTypes other) const {
+    return (type == SoldierTypes::Tank && other == SoldierTypes::Ranged) ||
+        (type == SoldierTypes::Ranged && other == SoldierTypes::Melee) ||
+        (type == SoldierTypes::Melee && other == SoldierTypes::Tank);
+}
+
+void Soldier::SetOriginalPosition(Math::vec2 pos) {
+    originalPosition = pos;
+}
+
+Math::vec2 Soldier::GetOriginalPosition() const {
+    return originalPosition;
+}
+
+void Soldier::SetState(SoldierState new_state) {
+    state = new_state;
+
+    switch (state) {
+    case SoldierState::InQueue:
+        if (animal == Animals::Squirrel)
+            SetScale({ 0.25, 0.25 });
+        else
+            SetScale({ -0.25, 0.25 });
+
+        if (occupiedTile != nullptr) {
+            occupiedTile->SetOccupied(false);
+            occupiedTile = nullptr;
+        }
         break;
-    case TANK:
-        sprite = LoadTexture("assets/tanker.png");
-        hp = 80;
-        speed = 1.0f;
-        atk = 1;
+    case SoldierState::Placed:
+        if (animal == Animals::Squirrel)
+            SetScale({ 0.5, 0.5 });
+        else
+            SetScale({ -0.5, 0.5 });
         break;
-    case MELEE:
-        sprite = LoadTexture("assets/melee.png");
-        hp = 20;
-        speed = 4.0f;
-        atk = 8;
-        break;
-    case CAT:
-        sprite = LoadTexture("assets/cat.png");
-        hp = 50;
-        speed = 2.0f;
-        atk = 5;
+    case SoldierState::InBattle:
+        if (animal == Animals::Squirrel)
+            SetScale({ 1, 1 });
+        else
+            SetScale({ -1, 1 });
+
+        if (occupiedTile != nullptr) {
+            occupiedTile->SetOccupied(false);
+            occupiedTile = nullptr;
+        }
         break;
     }
 }
 
-Soldier::~Soldier() {
-    // UnloadTexture(sprite); 
+SoldierState Soldier::GetState() {
+    return state;
 }
 
-void Soldier::Draw() const {
-    float scale = 0.35f;
-    float width = sprite.width * scale;
-    float height = sprite.height * scale;
-
-    Color drawColor = selected ? ORANGE : WHITE;
-    if (flash) {
-        drawColor = RED;
-    }
-
-    DrawTexturePro(
-        sprite,
-        { 0, 0, (float)sprite.width, (float)sprite.height },
-        { position.x, position.y, width, height },
-        { width / 2.0f, height / 2.0f },
-        0.0f,
-        drawColor
-    );
-
-    int hpFontSize = 20;
-    const char* hpText = TextFormat("%d", hp);
-    int textWidth = MeasureText(hpText, hpFontSize);
-    DrawText(hpText, (int)(position.x - textWidth / 2), (int)(position.y - hpFontSize / 2), hpFontSize, RED);
-
-    if (flash) flash = false;
+void Soldier::SetOccupiedTile(PlacementTile* tile) {
+    occupiedTile = tile;
 }
 
-void Soldier::SetPosition(Vector2 pos) {
-    position = pos;
-}
-
-Vector2 Soldier::GetPosition() const {
-    return position;
-}
-
-void Soldier::SetSelected(bool sel) {
-    selected = sel;
-}
-
-bool Soldier::IsSelected() const {
-    return selected;
-}
-
-int Soldier::GetAtk() const {
-    return atk;
-}
-
-void Soldier::ReceiveAttack(int damage) {
-    hp -= damage;
-    if (hp < 0) hp = 0;
-    flash = true;
-}
-
-float Soldier::GetSpeed() const {
-    return speed;
-}
-
-double Soldier::GetRadius() const {
-    return radius;
-}
-
-int Soldier::GetHP() const {
-    return hp;
-}
-
-void Soldier::ResetHP() {
-    switch (type) {
-    case RANGED:
-        hp = 30;
-        break;
-    case TANK:
-        hp = 80;
-        break;
-    }
+PlacementTile* Soldier::GetOccupiedTile() const {
+    return occupiedTile;
 }

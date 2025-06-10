@@ -132,6 +132,21 @@ void MainMapState::Update(double dt) {
             Rectangle startButton = { screenWidth / 2.0f - 100, screenHeight / 2.0f + 50, 200, 60 };
             if (CheckCollisionPointRec(mouse, startButton) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
                 turnManager.StartTurn();
+        currentGeneral->Update(); // Update general's movement animation
+
+        // Battle transition logic
+        if (!players[0]->IsMoving() && !players[1]->IsMoving()) {
+            HexTile* p1Tile = gameMap.GetTileAtPosition(players[0]->GetFootPosition());
+            HexTile* p2Tile = gameMap.GetTileAtPosition(players[1]->GetFootPosition());
+
+            if (p1Tile && p2Tile && p1Tile->x == p2Tile->x && p1Tile->y == p2Tile->y) { //Simplified check: are they on the same tile?
+                Engine::GetLogger().LogEvent("Transitioning to Battle Map");
+                // Access BattleMap state directly to load soldiers - this is a bit of a hack.
+                // A better way would be an event system or passing data through a shared context.
+                // For now, assuming direct access or a way to pass the current turn.
+                dynamic_cast<BattleMap*>(Engine::Instance().GetGameStateManager().GetGameState(BATTLE_MAP_STATE_INDEX))->LoadSoldiers();
+                Engine::Instance().GetGameStateManager().SetNextGameState(BATTLE_MAP_STATE_INDEX);
+                return; // Return to avoid further processing this frame
             }
         }
 

@@ -31,3 +31,21 @@ void TurnManager::Move() {
 bool TurnManager::IsTransitioning() const {
     return intrasition;
 }
+
+// �� ��ȯ ȭ�� on
+void TurnManager::ShowTransition() {
+    intrasition = true;
+}
+
+// �� ��ȯ ȭ�� off
+void TurnManager::HideTransition() {
+    intrasition = false;
+}
+
+void TurnManager::SetTurn(Turn turn) {
+    currentTurn = turn;
+}
+
+void TurnManager::SetTransition(bool transition) {
+    intrasition = transition;
+}

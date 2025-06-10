@@ -14,6 +14,10 @@ public:
     bool CanMove() const;
     void Move();
     bool IsTransitioning() const;
+    void ShowTransition();
+    void HideTransition();
+    void SetTurn(Turn turn);
+    void SetTransition(bool transition);
 
 private:
     Turn currentTurn;

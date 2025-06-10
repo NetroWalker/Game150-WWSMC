@@ -13,7 +13,7 @@ Updated : April 20, 2025
 
 void CS230::GameObjectManager::Add(GameObject* object)
 {
-		objects.push_back(object);
+	objects.push_back(object);
 }
 
 void CS230::GameObjectManager::Unload()
