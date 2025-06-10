@@ -3,10 +3,16 @@
 #include "raylib.h"
 #include <vector>
 #include"../Engine/Engine.h"
+enum class TileType {
+    Grass,
+    Stone,
+    Water
+};
 
 struct HexTile {
     int x, y;
     Vector2 center;
+    TileType type;
 };
 
 class Map {
@@ -17,8 +23,8 @@ public:
     void Update();
     void Draw(HexTile* vision_center_tile, const Math::TransformationMatrix& camera_matrix);
 
-    void SetPoint(); // 타일 위치를 계산하고 생성하는 함수
-    std::vector<HexTile> GetMovableTiles(HexTile* from); // 멤버 함수 시그니처 수정
+    void SetPoint();
+    std::vector<HexTile> GetMovableTiles(HexTile* from);
     bool IsNeighborTile(int x1, int y1, int x2, int y2);
 
     const std::vector<HexTile>& GetTiles() const { return tiles; }
@@ -26,19 +32,21 @@ public:
     HexTile* GetTileAtPosition(Vector2 pos);
 
 private:
-    Texture2D visible_tile_texture; // 150map.png
+    Texture2D grass_tile_texture;
+    Texture2D water_tile_texture;
+    Texture2D stone_tile_texture;
     Texture2D hidden_tile_texture;
     Vector2 center;
     float radiusX, radiusY;
     float squashFactor;
-    bool autoTile; // 생성자에서만 사용한다면 멤버 변수가 아닐 수도 있음
+    bool autoTile;
     int mapW, mapH;
 
-    Vector2 points[6]; // DrawHexagon 등에서 사용
+    Vector2 points[6];
     std::vector<HexTile> tiles;
 
-    void DrawHexagon(Color color); // private 헬퍼 함수
-    bool IsPointInHexagon(Vector2 point) const; // private 헬퍼 함수
+    void DrawHexagon(Color color);
+    bool IsPointInHexagon(Vector2 point) const;
     void UpdateMapPosition();
     void HandleMouseWheelInput();
 };

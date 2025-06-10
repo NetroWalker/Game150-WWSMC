@@ -5,16 +5,19 @@
 Map::Map(Vector2 center, float radiusX, float radiusY, int width, int height, bool autoTile)
     : center(center), radiusX(radiusX), radiusY(radiusY),
     squashFactor(0.5f), autoTile(autoTile), mapW(width), mapH(height) {
-    visible_tile_texture = LoadTexture("assets/150map.png");
-    hidden_tile_texture = LoadTexture("Assets/Tile1.png");
-    // SetPoint()는 생성자에서 한 번만 호출하는 것이 더 효율적입니다.
+    grass_tile_texture = LoadTexture("assets/TileGrass.png");
+    water_tile_texture = LoadTexture("assets/TileWater.png");
+    stone_tile_texture = LoadTexture("Assets/TileStone.png");
+    hidden_tile_texture = LoadTexture("Assets/TileHidden.png");
     if (this->autoTile) {
         SetPoint();
     }
 }
 
 Map::~Map() {
-    UnloadTexture(visible_tile_texture);
+    UnloadTexture(grass_tile_texture);
+    UnloadTexture(water_tile_texture);
+    UnloadTexture(stone_tile_texture);
     UnloadTexture(hidden_tile_texture);
 }
 
@@ -38,7 +41,10 @@ void Map::SetPoint() {
             float hexY = center.y + y * yOffset + ((x % 2) * (yOffset / 2.0f));
             float squashedHexY = hexY * squashFactor;
 
-            HexTile tile = { x, y, { hexX, squashedHexY } };
+            int random_type_index = rand() % 2;
+            TileType random_type = static_cast<TileType>(random_type_index);
+
+            HexTile tile = { x, y, { hexX, squashedHexY }, random_type };
             tiles.push_back(tile);
         }
     }
@@ -51,12 +57,11 @@ std::vector<HexTile> Map::GetMovableTiles(HexTile* from) {
     int x = from->x;
     int y = from->y;
 
-    // 더 이상 'map' 파라미터를 받지 않고, 'this' 객체의 멤버 함수를 직접 호출합니다.
     if (x % 2 == 1) {
         int dx[] = { 0, +1, -1, -1,  0, +1 };
         int dy[] = { -1,  0,  0, +1, +1, +1 };
         for (int i = 0; i < 6; i++) {
-            if (HexTile* t = this->GetTileAt(x + dx[i], y + dy[i])) { // this-> 사용
+            if (HexTile* t = this->GetTileAt(x + dx[i], y + dy[i])) {
                 result.push_back(*t);
             }
         }
@@ -65,7 +70,7 @@ std::vector<HexTile> Map::GetMovableTiles(HexTile* from) {
         int dx[] = { 0,  0, +1, -1, -1, +1 };
         int dy[] = { -1, +1,  0,  0, -1, -1 };
         for (int i = 0; i < 6; i++) {
-            if (HexTile* t = this->GetTileAt(x + dx[i], y + dy[i])) { // this-> 사용
+            if (HexTile* t = this->GetTileAt(x + dx[i], y + dy[i])) {
                 result.push_back(*t);
             }
         }
@@ -99,7 +104,6 @@ void Map::DrawHexagon(Color color) {
 }
 
 void Map::Draw(HexTile* vision_center_tile, const Math::TransformationMatrix& camera_matrix) {
-    // 화면의 높이를 가져옵니다. Y축을 뒤집을 때 기준이 됩니다.
     const int screen_height = GetScreenHeight();
 
     for (const auto& tile_to_draw : tiles) {
@@ -107,7 +111,7 @@ void Map::Draw(HexTile* vision_center_tile, const Math::TransformationMatrix& ca
 
         if (vision_center_tile != nullptr) {
             if (IsNeighborTile(vision_center_tile->x, vision_center_tile->y, tile_to_draw.x, tile_to_draw.y)) {
-                texture_to_use = visible_tile_texture;
+                texture_to_use = grass_tile_texture;
             }
         }
 
@@ -115,17 +119,12 @@ void Map::Draw(HexTile* vision_center_tile, const Math::TransformationMatrix& ca
 
         Math::vec2 world_pos(tile_to_draw.center);
 
-        // 카메라의 영향을 받은 월드 좌표
         Math::vec2 transformed_pos = camera_matrix * world_pos;
-
-        // ===== Y축 변환 로직 추가 =====
-        // Y좌표를 화면 좌표계(Y축이 아래로 증가)에 맞게 뒤집습니다.
         float final_screen_y = -transformed_pos.y + screen_height;
-        // ============================
 
         Rectangle dest = {
-            (float)transformed_pos.x, // X좌표는 그대로 사용
-            final_screen_y,           // 변환된 Y좌표 사용
+            (float)transformed_pos.x, 
+            final_screen_y,           
             radiusX * 2.0f,
             radiusY * 2.0f * squashFactor
         };

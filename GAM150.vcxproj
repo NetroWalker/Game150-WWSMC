@@ -40,9 +40,11 @@
     <ClCompile Include="Engine\Vec2.cpp" />
     <ClCompile Include="Engine\Window.cpp" />
     <ClCompile Include="Game\BattleMap.cpp" />
+    <ClCompile Include="Game\Castle.cpp" />
     <ClCompile Include="Game\LinearMovement.cpp" />
     <ClCompile Include="Game\MainMapState.cpp" />
     <ClCompile Include="Game\map.cpp" />
+    <ClCompile Include="Game\Material.cpp" />
     <ClCompile Include="Game\Menu.cpp" />
     <ClCompile Include="Game\Mode0.cpp" />
     <ClCompile Include="Game\Snake.cpp" />
@@ -78,10 +80,12 @@
     <ClInclude Include="Engine\Vec2.h" />
     <ClInclude Include="Engine\Window.h" />
     <ClInclude Include="Game\BattleMap.h" />
+    <ClInclude Include="Game\Castle.h" />
     <ClInclude Include="Game\GameObjectTypes.h" />
     <ClInclude Include="Game\LinearMovement.h" />
     <ClInclude Include="Game\MainMapState.h" />
     <ClInclude Include="Game\map.h" />
+    <ClInclude Include="Game\Material.h" />
     <ClInclude Include="Game\Menu.h" />
     <ClInclude Include="Game\Mode0.h" />
     <ClInclude Include="Game\Snake.h" />
