@@ -88,7 +88,6 @@
     <ClInclude Include="Game\LinearMovement.h" />
     <ClInclude Include="Game\Fonts.h" />
     <ClInclude Include="Game\GameObjectTypes.h" />
-    <ClInclude Include="Game\General.h" />
     <ClInclude Include="Game\MainMapState.h" />
     <ClInclude Include="Game\map.h" />
     <ClInclude Include="Game\Material.h" />

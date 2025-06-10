@@ -312,18 +312,7 @@ void BattleMap::Draw() {
 			(Engine::GetWindow().GetSize().y / 8) * 7 - 70
 		};
 
-    for (const auto& icon : enemyIcons) {
-        Rectangle src = { 0, 0, (float)icon.texture.width, (float)icon.texture.height };
-        Rectangle dest = {
-            icon.position.x + offsetX + (icon.texture.width * scale / 2),
-            icon.position.y + (icon.texture.height * scale / 2),
-            icon.texture.width * scale,
-            icon.texture.height * scale
-        };
-        Vector2 origin = { dest.width / 2, dest.height / 2 };
-        src.width = -src.width;
-        DrawTexturePro(icon.texture, src, dest, origin, 0.0f, WHITE);
-    }
+    
 		Rectangle buttonRect = {
 			static_cast<float>(buttonPos.x),
 			static_cast<float>(buttonPos.y),
@@ -384,10 +373,6 @@ void BattleMap::Draw() {
 
 void BattleMap::Unload() {
 	ClearGSComponents();
-}
-
-std::string BattleMap::GetName() {
-    return "BattleMapState";
 }
 void BattleMap::update_title_text(const std::string& text) {
 	title_text = Engine::GetFont(static_cast<int>(Fonts::Simple)).PrintToTexture(text, 0xFFFFFFFF);

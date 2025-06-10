@@ -110,6 +110,8 @@
       <Filter>Game</Filter>
     </ClCompile>
     <ClCompile Include="Game\Material.cpp">
+		<Filter>Game</Filter>
+	</ClCompile>
     <ClCompile Include="Game\Background.cpp">
       <Filter>Game</Filter>
     </ClCompile>

@@ -37,8 +37,8 @@ void MainMapState::Load() {
     player2_resources = new Stone();
     player1 = new SquirrelGen({ (double)gameMap.GetTiles()[0].center.x, (double)gameMap.GetTiles()[0].center.y });
     player2 = new SnakeGen({ (double)tile33->center.x, (double)tile33->center.y });
-    castle1 = new Castle({(double)gameMap.GetTiles()[0].center.x, (double)gameMap.GetTiles()[0].center.y
-}, "Assets/castle_me.spt");
+    castle1 = new Castle({ (double)gameMap.GetTiles()[0].center.x, (double)gameMap.GetTiles()[0].center.y
+        }, "Assets/castle_me.spt");
     castle2 = new Castle({ (double)tile33->center.x, (double)tile33->center.y }, "Assets/castle_eneme.spt");
 
     GetGSComponent<CS230::GameObjectManager>()->Add(castle1);
@@ -60,6 +60,12 @@ void MainMapState::Update(double dt) {
     Vector2 mouse = GetMousePosition();
     Turn turn = turnManager.GetCurrentTurn();
     CS230::Camera* camera = GetGSComponent<CS230::Camera>();
+    Turn current_turn = turnManager.GetCurrentTurn();
+    CS230::GameObject* currentGeneral = (current_turn == Turn::P1) ? player1 : player2;
+    CS230::GameObject* enemyGeneral = (current_turn == Turn::P1) ? player2 : player1;
+    friendlyCastle = (current_turn == Turn::P1) ? castle1 : castle2;
+    enemyCastle = (current_turn == Turn::P1) ? castle2 : castle1;
+    LinearMovement* currentMovement = currentGeneral->GetGOComponent<LinearMovement>();
 
     if (camera != nullptr) {
         auto& input = Engine::GetInput();
@@ -74,83 +80,62 @@ void MainMapState::Update(double dt) {
     }
 
     if (!turnManager.IsTransitioning()) {
-        Turn current_turn = turnManager.GetCurrentTurn();
-        CS230::GameObject* currentGeneral = (current_turn == Turn::P1) ? player1 : player2;
-        CS230::GameObject* enemyGeneral = (current_turn == Turn::P1) ? player2 : player1;
-        friendlyCastle = (current_turn == Turn::P1) ? castle1 : castle2;
-        enemyCastle = (current_turn == Turn::P1) ? castle2 : castle1;
-        LinearMovement* currentMovement = currentGeneral->GetGOComponent<LinearMovement>();
-            
-            if (turnManager.CanMove()) {
-                if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && !currentMovement->IsMoving()) {
-                    CS230::RectCollision* collisionComp = currentGeneral->GetGOComponent<CS230::RectCollision>();
 
-                    if (collisionComp != nullptr && camera != nullptr) {
-                        Rectangle click_box = collisionComp->ToRaylibScreenRect(camera->GetMatrix());
-                        if (CheckCollisionPointRec(mouse, click_box)) {
-                            generalSelected = !generalSelected;
-                            if (generalSelected) {
-                                startingTile = gameMap.GetTileAtPosition(currentMovement->GetFootPosition());
-                                movableTiles = gameMap.GetMovableTiles(startingTile);
-                            }
-                            else {
-                                movableTiles.clear();
-                                startingTile = nullptr;
-                            }
+
+        if (turnManager.CanMove()) {
+            if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && !currentMovement->IsMoving()) {
+                CS230::RectCollision* collisionComp = currentGeneral->GetGOComponent<CS230::RectCollision>();
+
+                if (collisionComp != nullptr && camera != nullptr) {
+                    Rectangle click_box = collisionComp->ToRaylibScreenRect(camera->GetMatrix());
+                    if (CheckCollisionPointRec(mouse, click_box)) {
+                        generalSelected = !generalSelected;
+                        if (generalSelected) {
+                            startingTile = gameMap.GetTileAtPosition(currentMovement->GetFootPosition());
+                            movableTiles = gameMap.GetMovableTiles(startingTile);
+                        }
+                        else {
+                            movableTiles.clear();
+                            startingTile = nullptr;
                         }
                     }
+                }
 
-                    if (generalSelected && (collisionComp == nullptr || !CheckCollisionPointRec(mouse, collisionComp->ToRaylibScreenRect(camera->GetMatrix())))) {
-                        const int screen_height = GetScreenHeight();
-                        const Math::TransformationMatrix& camera_matrix = camera->GetMatrix();
-                        for (auto& tile : movableTiles) {
-                            Math::vec2 transformed_pos = camera_matrix * Math::vec2(tile.center);
-                            Vector2 screen_pos = { (float)transformed_pos.x, screen_height - (float)transformed_pos.y };
-                            if (CheckCollisionPointCircle(mouse, screen_pos, 35.0f)) {
-                                currentMovement->MoveTo({ (double)tile.center.x, (double)tile.center.y });
-                                generalSelected = false;
-                                movableTiles.clear();
-                                startingTile = nullptr;
-                                turnManager.Move();
-                                break;
-                            }
+                if (generalSelected && (collisionComp == nullptr || !CheckCollisionPointRec(mouse, collisionComp->ToRaylibScreenRect(camera->GetMatrix())))) {
+                    const int screen_height = GetScreenHeight();
+                    const Math::TransformationMatrix& camera_matrix = camera->GetMatrix();
+                    for (auto& tile : movableTiles) {
+                        Math::vec2 transformed_pos = camera_matrix * Math::vec2(tile.center);
+                        Vector2 screen_pos = { (float)transformed_pos.x, screen_height - (float)transformed_pos.y };
+                        if (CheckCollisionPointCircle(mouse, screen_pos, 35.0f)) {
+                            currentMovement->MoveTo({ (double)tile.center.x, (double)tile.center.y });
+                            generalSelected = false;
+                            movableTiles.clear();
+                            startingTile = nullptr;
+                            turnManager.Move();
+                            break;
                         }
                     }
                 }
             }
-
-            Rectangle endTurnButton = { 1260, 750, 110, 40 };
-            if (CheckCollisionPointRec(mouse, endTurnButton) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-                turnManager.EndTurn();
-                generalSelected = false;
-                movableTiles.clear();
-                startingTile = nullptr;
-            }
-
         }
-        else {
+
+
+        Rectangle endTurnButton = { 1260, 750, 110, 40 };
+        if (CheckCollisionPointRec(mouse, endTurnButton) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+            turnManager.EndTurn();
+            generalSelected = false;
+            movableTiles.clear();
+            startingTile = nullptr;
+        }
+    }
+    else {
             Rectangle startButton = { screenWidth / 2.0f - 100, screenHeight / 2.0f + 50, 200, 60 };
             if (CheckCollisionPointRec(mouse, startButton) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
                 turnManager.StartTurn();
-        currentGeneral->Update(); // Update general's movement animation
-
-        // Battle transition logic
-        if (!players[0]->IsMoving() && !players[1]->IsMoving()) {
-            HexTile* p1Tile = gameMap.GetTileAtPosition(players[0]->GetFootPosition());
-            HexTile* p2Tile = gameMap.GetTileAtPosition(players[1]->GetFootPosition());
-
-            if (p1Tile && p2Tile && p1Tile->x == p2Tile->x && p1Tile->y == p2Tile->y) { //Simplified check: are they on the same tile?
-                Engine::GetLogger().LogEvent("Transitioning to Battle Map");
-                // Access BattleMap state directly to load soldiers - this is a bit of a hack.
-                // A better way would be an event system or passing data through a shared context.
-                // For now, assuming direct access or a way to pass the current turn.
-                dynamic_cast<BattleMap*>(Engine::Instance().GetGameStateManager().GetGameState(BATTLE_MAP_STATE_INDEX))->LoadSoldiers();
-                Engine::Instance().GetGameStateManager().SetNextGameState(BATTLE_MAP_STATE_INDEX);
-                return; // Return to avoid further processing this frame
             }
         }
-
-        GetGSComponent<CS230::GameObjectManager>()->UpdateAll(dt);
+    GetGSComponent<CS230::GameObjectManager>()->UpdateAll(dt);
     }
 void MainMapState::Draw() {
     ClearBackground(RAYWHITE);

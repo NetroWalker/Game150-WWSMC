@@ -1,25 +1,4 @@
-﻿// Game/BattleMap.h
-
-#pragma once
-#include "raylib.h"
-#include <vector>
-#include <string>
-#include "../Engine/GameState.h" 
-#include "../Engine/TurnManager.h"
-
-struct UnitIcon {
-    Texture2D texture;
-    Vector2 position;
-    Vector2 originalPosition;
-    bool dragging = false;
-    bool placed = false;
-};
-
-class BattleMap : public CS230::GameState {
-public:
-    BattleMap(int screenWidth, int screenHeight);
-    ~BattleMap();
-
+﻿// BattleMap.h
 #include "../Engine/GameState.h"
 #include "../Engine/TurnManager.h"
 #include "../Engine/Camera.h"
@@ -35,7 +14,6 @@ public:
     void Unload() override;
     void Draw() override;
 
-    void LoadSoldiersForTurn(Turn turn);
     std::string GetName() override {
         return "BattleMap";
     }
@@ -83,8 +61,7 @@ private:
 
     float offsetX = 0.0f;
     bool transitioning = false;
-};
-    TurnManager turnmanager;    
+    TurnManager turnmanager;
     std::vector<Soldier*> soldiers;
 
     void update_title_text(const std::string& text);
