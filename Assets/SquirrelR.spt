@@ -1,0 +1,7 @@
+Assets/SquirrelR.png
+HotSpot 350 0
+FrameSize 700 600
+NumFrames 10
+Anim Assets/None.anm
+Anim Assets/SquirrelR.anm
+RectCollision -400 0 400 800

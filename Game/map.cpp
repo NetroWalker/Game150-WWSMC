@@ -1,6 +1,7 @@
 ﻿//map.cpp
 #include "map.h"
 #include <cmath>
+#include "States.h"
 
 Map::Map(Vector2 center, float radiusX, float radiusY, int width, int height, bool autoTile)
     : center(center), radiusX(radiusX), radiusY(radiusY),

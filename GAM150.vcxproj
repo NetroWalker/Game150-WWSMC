@@ -39,12 +39,14 @@
     <ClCompile Include="Engine\TurnManager.cpp" />
     <ClCompile Include="Engine\Vec2.cpp" />
     <ClCompile Include="Engine\Window.cpp" />
+    <ClCompile Include="Game\Background.cpp" />
     <ClCompile Include="Game\BattleMap.cpp" />
     <ClCompile Include="Game\General.cpp" />
     <ClCompile Include="Game\MainMapState.cpp" />
     <ClCompile Include="Game\map.cpp" />
     <ClCompile Include="Game\Menu.cpp" />
     <ClCompile Include="Game\Mode0.cpp" />
+    <ClCompile Include="Game\PlacementTile.cpp" />
     <ClCompile Include="Game\Soldier.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
@@ -72,14 +74,19 @@
     <ClInclude Include="Engine\TurnManager.h" />
     <ClInclude Include="Engine\Vec2.h" />
     <ClInclude Include="Engine\Window.h" />
+    <ClInclude Include="Game\Background.h" />
     <ClInclude Include="Game\BattleMap.h" />
+    <ClInclude Include="Game\Fonts.h" />
+    <ClInclude Include="Game\GameObjectTypes.h" />
     <ClInclude Include="Game\General.h" />
     <ClInclude Include="Game\MainMapState.h" />
     <ClInclude Include="Game\map.h" />
     <ClInclude Include="Game\Menu.h" />
     <ClInclude Include="Game\Mode0.h" />
+    <ClInclude Include="Game\PlacementTile.h" />
     <ClInclude Include="Game\Soldier.h" />
     <ClInclude Include="Game\States.h" />
+    <ClInclude Include="Game\WaitingZone.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>

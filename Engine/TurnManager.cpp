@@ -14,7 +14,6 @@ void TurnManager::EndTurn() {
 
 // 턴 전환 화면에서 START 버튼 입력 시
 void TurnManager::StartTurn() {
-
     move_count = 1;
     intrasition = false;
 }
@@ -49,4 +48,12 @@ void TurnManager::ShowTransition() {
 // 턴 전환 화면 off
 void TurnManager::HideTransition() {
     intrasition = false;
+}
+
+void TurnManager::SetTurn(Turn turn) {
+    currentTurn = turn;
+}
+
+void TurnManager::SetTransition(bool transition) {
+    intrasition = transition;
 }

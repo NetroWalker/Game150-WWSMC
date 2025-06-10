@@ -87,7 +87,7 @@ void MainMapState::Update([[maybe_unused]]double dt) {
                 // Access BattleMap state directly to load soldiers - this is a bit of a hack.
                 // A better way would be an event system or passing data through a shared context.
                 // For now, assuming direct access or a way to pass the current turn.
-                dynamic_cast<BattleMap*>(Engine::Instance().GetGameStateManager().GetGameState(BATTLE_MAP_STATE_INDEX))->LoadSoldiersForTurn(turnManager.GetCurrentTurn());
+                dynamic_cast<BattleMap*>(Engine::Instance().GetGameStateManager().GetGameState(BATTLE_MAP_STATE_INDEX))->LoadSoldiers();
                 Engine::Instance().GetGameStateManager().SetNextGameState(BATTLE_MAP_STATE_INDEX);
                 return; // Return to avoid further processing this frame
             }

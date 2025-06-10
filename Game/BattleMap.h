@@ -3,50 +3,70 @@
 #pragma once
 #include "raylib.h"
 #include <vector>
-#include <string>
-#include "../Engine/GameState.h" // CS230::GameState 상속
-#include "../Engine/TurnManager.h" // TurnManager 사용 (경로 확인 필요)
+#include "../Engine/GameState.h"
+#include "../Engine/TurnManager.h"
+#include "../Engine/Camera.h"
+#include "Soldier.h"
+#include "PlacementTile.h"
+#include "WaitingZone.h"
 
-struct UnitIcon {
-    Texture2D texture;
-    Vector2 position;
-    Vector2 originalPosition;
-    bool dragging = false;
-    bool placed = false;
-};
-
-class BattleMap : public CS230::GameState { // CS230::GameState 상속
+class BattleMap : public CS230::GameState {
 public:
-    BattleMap(int screenWidth, int screenHeight);
-    ~BattleMap();
-
-    // CS230::GameState 로부터 상속받은 순수 가상 함수들 (반드시 구현 필요)
+	BattleMap();
     void Load() override;
     void Update(double dt) override;
-    void Draw() override;
     void Unload() override;
-    std::string GetName() override;
+    void Draw() override;
 
-    // BattleMap 고유의 메소드
-    void LoadSoldiersForTurn(Turn turn);
+    std::string GetName() override {
+        return "BattleMap";
+    }
+
+    void LoadSoldiers();
+    void StartBattle();
 
 private:
-    Texture2D background;
-    Texture2D placementTileTexture;
-    Texture2D waitingZoneTexture;
+    double background_width = 3000;
+    Math::vec2 Waiting_pos1 = { 150, 50 };
+    Math::vec2 Waiting_pos2 = { 2400, 50 };
+    Math::vec2 Place_pos = { 100, 50 };
+    Math::vec2 Battle_pos = { 100, 50 };
+    bool p1_ready = false;
+    bool p2_ready = false;
+    bool isReady();
+    int p1_score = 0;
+    int p2_score = 0;
+    double move_speed = 1500;
+    int placed_count = 0;
 
-    std::vector<UnitIcon> unitIcons;
-    std::vector<UnitIcon> enemyIcons;
 
-    std::vector<Vector2> slotPositions;
-    std::vector<bool> slotOccupied;
+    std::vector<Soldier*> p1_soldiers;
+    std::vector<Soldier*> p2_soldiers;
+    int battle_index = 0;
+    int attack_count = 0;
+    double battle_timer = 0.0;
+    double end_timer = 0.0;
+    bool is_battling = false;
+    Soldier* current_p1 = nullptr;
+    Soldier* current_p2 = nullptr;
+    bool score_updated = false;
+    bool battle_finished = false;
 
-    Rectangle startButton;
 
-    bool draggingSomething = false;
-    int draggingIndex = -1;
+    CS230::Camera* camera = nullptr;
+    CS230::Texture* button_text = nullptr;
+    CS230::Texture* score_text_p1 = nullptr;
+    CS230::Texture* score_text_p2 = nullptr;
+    CS230::Texture* title_text = nullptr;
+    CS230::GameObjectManager* object = nullptr;
+    std::vector<PlacementTile*> tiles;
+    std::vector<WaitingZone*> zones;
+    //Turn turn;
 
-    float offsetX = 0.0f;
-    bool transitioning = false;
-    // int screenWidth, screenHeight; // 생성자에서 초기화되므로 멤버 변수로 필요할 수 있음
+    TurnManager turnmanager;    
+    std::vector<Soldier*> soldiers;
+
+    void update_title_text(const std::string& text);
+    void update_button_text(const std::string& text);
+    void update_score_text(int p1_score, int p2_score);
 };

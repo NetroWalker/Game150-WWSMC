@@ -91,6 +91,12 @@
     <ClCompile Include="Game\MainMapState.cpp">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="Game\Background.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\PlacementTile.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game\map.h">
@@ -184,6 +190,21 @@
       <Filter>Game</Filter>
     </ClInclude>
     <ClInclude Include="Game\MainMapState.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\GameObjectTypes.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\Background.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\Fonts.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\WaitingZone.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\PlacementTile.h">
       <Filter>Game</Filter>
     </ClInclude>
   </ItemGroup>
