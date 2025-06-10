@@ -8,38 +8,12 @@
 #include <cmath>
 
 Mode0::Mode0(Vector2 center, float rX, float rY)
-    : tutorialMap(center, rX, rY, 3, 1, false), // 멤버 객체 초기화
+    : tutorialMap(center, rX, rY, 3, 1, false),
     radiusX(rX)
 {
-    //float root3 = sqrtf(3.0f);
-    //float xOffset = rX * 1.5f;
-    //float yOffset = rY * root3;
-    //float squash = 0.5f;
-    //float totalWidth = (3 - 1) * xOffset;
-    //
-    //std::vector<HexTile>& tiles = const_cast<std::vector<HexTile>&>(tutorialMap->GetTiles());
-    //tiles.clear();
-    //
-    //for (int x = 0; x < 3; x++) {
-    //    int y = 0;
-    //    float hexX = center.x - totalWidth / 2 + x * xOffset;
-    //    float hexY = center.y + ((x % 2) * (yOffset / 2.0f));
-    //    float squashedHexY = hexY * squash;
-    //
-    //    HexTile tile = { x, y, { hexX, squashedHexY } };
-    //    tiles.push_back(tile);
-    //}
-    //
-    //tutorialGeneral = new SquirrelGen(tiles[0].center, "Assets/General.png");
-    //staticGeneral = new SnakeGen(tiles[2].center, "Assets/General1.png");
-    //
-    //chatWindowTexture = LoadTexture("Assets/chat_window.png");
 }
 
 Mode0::~Mode0() {
-    //delete tutorialGeneral;
-    //delete staticGeneral;
-    //UnloadTexture(chatWindowTexture);
 }
 
 void Mode0::SetDialogueStep(int step) {
@@ -96,15 +70,13 @@ void Mode0::Load() {
     tutorialMap.SetPoint();
     const std::vector<HexTile>& tiles = tutorialMap.GetTiles();
 
-    // ===== 수정된 부분 =====
-    // Raylib의 Vector2를 엔진의 Math::vec2 타입으로 변환하여 생성자에 전달합니다.
     tutorialGeneral = new SquirrelGen({ (double)tiles[0].center.x, (double)tiles[0].center.y });
     staticGeneral = new SnakeGen({ (double)tiles[2].center.x, (double)tiles[2].center.y });
-    // ======================
-
+    tutorialGeneral->SetScale({ 0.3, 0.3 });
+    staticGeneral->SetScale({ 0.3,0.3 });
     GetGSComponent<CS230::GameObjectManager>()->Add(tutorialGeneral);
     GetGSComponent<CS230::GameObjectManager>()->Add(staticGeneral);
-
+    
     chatWindowTexture = LoadTexture("Assets/chat_window.png");
     tutorialTimer = 0.0f;
     chatAlpha = 0.0f;
@@ -133,13 +105,10 @@ void Mode0::Update(double dt) {
             dialogueCharTimer = 0.0f;
         }
     }
-
-    // ===== 수정: 닫는 중괄호 추가 =====
     if (dialogueShown && waitingForSpace && IsKeyPressed(KEY_SPACE) && dialogueCharIndex == (int)fullDialogue.length()) {
         SetDialogueStep(dialogueStep + 1);
     }
 
-    // ===== 수정: LinearMovement 컴포넌트를 통해 GetFootPosition 호출 =====
     LinearMovement* tg_movement = tutorialGeneral->GetGOComponent<LinearMovement>();
     Math::vec2 tg_foot_pos = tg_movement->GetFootPosition();
     if (dialogueStep == 2 && tg_foot_pos.x == tutorialMap.GetTiles()[1].center.x) {
@@ -153,7 +122,6 @@ void Mode0::Update(double dt) {
         }
     }
 
-    // ===== 수정: 'movement' 변수 선언 및 올바른 함수 호출 =====
     if (dialogueShown && canMove && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
         LinearMovement* movement = tutorialGeneral->GetGOComponent<LinearMovement>();
         if (!movement->IsMoving()) {
@@ -197,28 +165,22 @@ void Mode0::Update(double dt) {
 void Mode0::Draw() {
     ClearBackground(BLACK);
     Math::TransformationMatrix camera_matrix;
-
-    // 1. 튜토리얼 장군의 현재 타일 위치 찾기
     HexTile* vision_center_tile = nullptr;
     if (tutorialGeneral != nullptr) {
         LinearMovement* movement = tutorialGeneral->GetGOComponent<LinearMovement>();
         vision_center_tile = tutorialMap.GetTileAtPosition(movement->GetFootPosition());
     }
 
-    // 2. 맵 그리기 (시야의 중심 타일을 전달하여 Fog of War 효과 적용)
     tutorialMap.Draw(vision_center_tile, camera_matrix);
 
-    // 3. 이동 가능 범위 그리기
     if (generalSelected) {
         for (const auto& tile : movableTiles) {
             DrawCircleV(tile.center, 30, Fade(BLUE, 0.4f));
         }
     }
 
-    // 4. 모든 GameObject 그리기 (장군들)
     GetGSComponent<CS230::GameObjectManager>()->DrawAll(camera_matrix);
 
-    // 5. 다이얼로그 UI 그리기
     if (dialogueShown) {
         float width = chatWindowTexture.width;
         float height = chatWindowTexture.height;
@@ -236,8 +198,6 @@ void Mode0::Draw() {
 void Mode0::Unload() {
     Engine::GetLogger().LogEvent(GetName() + " Unload");
     UnloadTexture(chatWindowTexture);
-    // AddGSComponent로 추가된 GameObjectManager는 자동으로 해제됩니다.
-    // GOM에 추가된 tutorialGeneral, staticGeneral도 자동으로 해제됩니다.
     tutorialGeneral = nullptr;
     staticGeneral = nullptr;
 }

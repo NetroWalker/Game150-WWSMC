@@ -1,4 +1,3 @@
-
 #pragma once
 
 enum class Turn {
@@ -15,8 +14,6 @@ public:
     bool CanMove() const;
     void Move();
     bool IsTransitioning() const;
-    void ShowTransition();
-    void HideTransition();
 
 private:
     Turn currentTurn;

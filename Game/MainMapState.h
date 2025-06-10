@@ -33,6 +33,7 @@ private:
 
     bool generalSelected = false;
     std::vector<HexTile> movableTiles;
+    HexTile* startingTile = nullptr;
     int screenWidth, screenHeight;
     float radiusX, radiusY;
 };

@@ -10,7 +10,9 @@ SquirrelGen::SquirrelGen(Math::vec2 position) : CS230::GameObject(position)
 }
 
 void SquirrelGen::ResolveCollision(GameObject* other_object) {
-	if (other_object->Type() == GameObjectTypes::SnakeGen) {
+	Math::vec2 my_tile = this->GetPosition();
+	Math::vec2 enemy_tile = other_object->GetPosition();
+	if (other_object->Type() == GameObjectTypes::SnakeGen && (my_tile == enemy_tile)) {
 		//start battl map
 		Engine::GetGameStateManager().SetNextGameState(STATE_BATTLE_MAP);
 	}
@@ -29,7 +31,7 @@ void SquirrelGen::Draw(Math::TransformationMatrix camera_matrix)
 bool SquirrelGen::CanCollideWith(GameObjectTypes other_object)
 {
 	switch (other_object) {
-	case GameObjectTypes::EnemyGen:
+	case GameObjectTypes::SnakeGen:
 		return true;
 	default: 
 		return false;

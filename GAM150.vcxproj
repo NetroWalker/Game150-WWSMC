@@ -40,7 +40,6 @@
     <ClCompile Include="Engine\Vec2.cpp" />
     <ClCompile Include="Engine\Window.cpp" />
     <ClCompile Include="Game\BattleMap.cpp" />
-    <ClCompile Include="Game\General.cpp" />
     <ClCompile Include="Game\LinearMovement.cpp" />
     <ClCompile Include="Game\MainMapState.cpp" />
     <ClCompile Include="Game\map.cpp" />
@@ -80,7 +79,6 @@
     <ClInclude Include="Engine\Window.h" />
     <ClInclude Include="Game\BattleMap.h" />
     <ClInclude Include="Game\GameObjectTypes.h" />
-    <ClInclude Include="Game\General.h" />
     <ClInclude Include="Game\LinearMovement.h" />
     <ClInclude Include="Game\MainMapState.h" />
     <ClInclude Include="Game\map.h" />

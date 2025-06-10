@@ -27,6 +27,7 @@ namespace CS230 {
         void Draw(Math::TransformationMatrix display_matrix)override;
         bool IsCollidingWith(GameObject* other_object)override;
         Math::rect WorldBoundary();
+        Rectangle ToRaylibScreenRect(const Math::TransformationMatrix& camera_matrix);
     private:
         GameObject* object;
         Math::irect boundary;

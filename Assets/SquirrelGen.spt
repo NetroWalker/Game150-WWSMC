@@ -1,4 +1,4 @@
 Assets/General.png
 FrameSize 500 800
 HotSpot 250 400
-RectCollision 0 800 500 800
+RectCollision -250 -400 250 400

@@ -16,6 +16,32 @@ Math::rect CS230::RectCollision::WorldBoundary() {
     };
 }
 
+Rectangle CS230::RectCollision::ToRaylibScreenRect(const Math::TransformationMatrix& camera_matrix) {
+    // 1. 월드 좌표계의 사각형 경계를 가져옵니다.
+    Math::rect world_box = WorldBoundary();
+
+    // 2. 사각형의 두 꼭짓점을 카메라 행렬로 변환하여 화면 좌표(Y축이 위로 향하는)로 만듭니다.
+    Math::vec2 screen_p1 = camera_matrix * world_box.point_1;
+    Math::vec2 screen_p2 = camera_matrix * world_box.point_2;
+
+    // 3. 변환된 두 점을 기준으로 화면 사각형의 좌/우/위/아래를 계산합니다.
+    float left = static_cast<float>(std::min(screen_p1.x, screen_p2.x));
+    float right = static_cast<float>(std::max(screen_p1.x, screen_p2.x));
+    float top_engine = static_cast<float>(std::max(screen_p1.y, screen_p2.y)); // 엔진 좌표계 (Y-up)
+    float bottom_engine = static_cast<float>(std::min(screen_p1.y, screen_p2.y)); // 엔진 좌표계 (Y-up)
+
+    // 4. Raylib의 Rectangle 구조체(x, y, width, height) 형식으로 변환합니다.
+    const float screen_height = static_cast<float>(Engine::GetWindow().GetSize().y);
+
+    // Raylib의 화면 좌표계 (Y-down)에 맞게 y 좌표를 변환합니다.
+    float screen_rect_x = left;
+    float screen_rect_y = screen_height - top_engine; // 화면의 Y 좌표는 위에서부터 시작
+    float screen_rect_width = right - left;
+    float screen_rect_height = top_engine - bottom_engine;
+
+    return { screen_rect_x, screen_rect_y, screen_rect_width, screen_rect_height };
+}
+
 void CS230::RectCollision::Draw(Math::TransformationMatrix display_matrix) {
     const double render_height = rlGetFramebufferHeight();
 

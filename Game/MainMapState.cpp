@@ -1,10 +1,11 @@
-// Game/MainMapState.cpp
 #include "MainMapState.h"
 #include "BattleMap.h"
 #include "States.h"
 #include "SquirrelGen.h"
 #include "SnakeGen.h"
 #include "LinearMovement.h"
+#include "../Engine/Collision.h"
+#include "../Engine/ShowCollision.h"
 #include "../Engine/Camera.h"
 #include <cmath>
 
@@ -29,16 +30,15 @@ void MainMapState::Load() {
         Engine::GetLogger().LogError("MainMapState: tile33 not found during Load.");
         return;
     }
-
-    // Vec2.h 수정 덕분에 타입 변환 코드가 필요 없습니다.
-    player1 = new SquirrelGen(gameMap.GetTiles()[0].center);
-    player2 = new SnakeGen(tile33->center);
+    player1 = new SquirrelGen({ (double)gameMap.GetTiles()[0].center.x, (double)gameMap.GetTiles()[0].center.y });
+    player2 = new SnakeGen({ (double)tile33->center.x, (double)tile33->center.y });
     GetGSComponent<CS230::GameObjectManager>()->Add(player1);
     GetGSComponent<CS230::GameObjectManager>()->Add(player2);
-    player1->SetScale({ 0.5, 0.5 });
-    player2->SetScale({ 0.5, 0.5 });
+    player1->SetScale({ 0.3, 0.3 });
+    player2->SetScale({ 0.3, 0.3 });
     generalSelected = false;
     movableTiles.clear();
+    startingTile = nullptr;
 }
 
 void MainMapState::Update(double dt) {
@@ -46,52 +46,53 @@ void MainMapState::Update(double dt) {
     Vector2 mouse = GetMousePosition();
     Turn turn = turnManager.GetCurrentTurn();
     CS230::Camera* camera = GetGSComponent<CS230::Camera>();
+
     if (camera != nullptr) {
-        auto& input = Engine::GetInput(); // 입력 시스템에 대한 참조
-        Math::vec2 camera_offset;         // 이번 프레임에 이동할 거리
+        auto& input = Engine::GetInput();
+        Math::vec2 camera_offset;
 
-        if (input.KeyDown(CS230::Input::Keys::Up)) {
-            camera_offset.y += camera_speed * dt;
-        }
-        if (input.KeyDown(CS230::Input::Keys::Down)) {
-            camera_offset.y -= camera_speed * dt;
-        }
-        if (input.KeyDown(CS230::Input::Keys::Left)) {
-            camera_offset.x -= camera_speed * dt;
-        }
-        if (input.KeyDown(CS230::Input::Keys::Right)) {
-            camera_offset.x += camera_speed * dt;
-        }
-
-        // 현재 카메라 위치에 이동할 거리를 더해 새로운 위치로 설정
+        if (input.KeyDown(CS230::Input::Keys::Up)) { camera_offset.y += camera_speed * dt; }
+        if (input.KeyDown(CS230::Input::Keys::Down)) { camera_offset.y -= camera_speed * dt; }
+        if (input.KeyDown(CS230::Input::Keys::Left)) { camera_offset.x -= camera_speed * dt; }
+        if (input.KeyDown(CS230::Input::Keys::Right)) { camera_offset.x += camera_speed * dt; }
         Math::vec2 camera_pos = camera->GetPosition();
         camera->SetPosition(camera_pos + camera_offset);
     }
+
     if (!turnManager.IsTransitioning()) {
         CS230::GameObject* currentGeneral = (turn == Turn::P1) ? player1 : player2;
         LinearMovement* currentMovement = currentGeneral->GetGOComponent<LinearMovement>();
 
         if (turnManager.CanMove()) {
             if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && !currentMovement->IsMoving()) {
-                // Vec2.h 수정 덕분에 GetPosition()의 결과를 바로 사용할 수 있습니다.
-                if (CheckCollisionPointCircle(mouse, currentGeneral->GetPosition(), 50)) {
-                    generalSelected = !generalSelected;
-                    if (generalSelected) {
-                        // GetFootPosition()의 결과도 바로 사용 가능합니다.
-                        HexTile* from = gameMap.GetTileAtPosition(currentMovement->GetFootPosition());
-                        movableTiles = gameMap.GetMovableTiles(from);
-                    }
-                    else {
-                        movableTiles.clear();
+                CS230::RectCollision* collisionComp = currentGeneral->GetGOComponent<CS230::RectCollision>();
+
+                if (collisionComp != nullptr && camera != nullptr) {
+                    Rectangle click_box = collisionComp->ToRaylibScreenRect(camera->GetMatrix());
+                    if (CheckCollisionPointRec(mouse, click_box)) {
+                        generalSelected = !generalSelected;
+                        if (generalSelected) {
+                            startingTile = gameMap.GetTileAtPosition(currentMovement->GetFootPosition());
+                            movableTiles = gameMap.GetMovableTiles(startingTile);
+                        }
+                        else {
+                            movableTiles.clear();
+                            startingTile = nullptr;
+                        }
                     }
                 }
-                else if (generalSelected) {
+
+                if (generalSelected && (collisionComp == nullptr || !CheckCollisionPointRec(mouse, collisionComp->ToRaylibScreenRect(camera->GetMatrix())))) {
+                    const int screen_height = GetScreenHeight();
+                    const Math::TransformationMatrix& camera_matrix = camera->GetMatrix();
                     for (auto& tile : movableTiles) {
-                        if (CheckCollisionPointCircle(mouse, tile.center, radiusX * 0.8f)) {
-                            // tile.center (Vector2)도 MoveTo(Math::vec2)에 바로 전달 가능합니다.
-                            currentMovement->MoveTo(tile.center);
+                        Math::vec2 transformed_pos = camera_matrix * Math::vec2(tile.center);
+                        Vector2 screen_pos = { (float)transformed_pos.x, screen_height - (float)transformed_pos.y };
+                        if (CheckCollisionPointCircle(mouse, screen_pos, 35.0f)) {
+                            currentMovement->MoveTo({ (double)tile.center.x, (double)tile.center.y });
                             generalSelected = false;
                             movableTiles.clear();
+                            startingTile = nullptr;
                             turnManager.Move();
                             break;
                         }
@@ -100,18 +101,16 @@ void MainMapState::Update(double dt) {
             }
         }
 
-        // 턴 종료 버튼 로직
         Rectangle endTurnButton = { 1260, 750, 110, 40 };
         if (CheckCollisionPointRec(mouse, endTurnButton) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
             turnManager.EndTurn();
             generalSelected = false;
             movableTiles.clear();
+            startingTile = nullptr;
         }
 
-        GOM->CollisionTest();
     }
     else {
-        // 턴 전환 화면에서 START 버튼 클릭 로직
         Rectangle startButton = { screenWidth / 2.0f - 100, screenHeight / 2.0f + 50, 200, 60 };
         if (CheckCollisionPointRec(mouse, startButton) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
             turnManager.StartTurn();
@@ -124,49 +123,65 @@ void MainMapState::Update(double dt) {
 void MainMapState::Draw() {
     ClearBackground(RAYWHITE);
     CS230::Camera* camera = GetGSComponent<CS230::Camera>();
-    Math::TransformationMatrix camera_matrix; // 기본 행렬 (카메라가 없을 경우 대비)
+    Math::TransformationMatrix camera_matrix;
     if (camera != nullptr) {
         camera_matrix = camera->GetMatrix();
     }
-    if (!turnManager.IsTransitioning()) {
-        // ========== 게임 플레이 화면 그리기 ==========
+    const int screen_height = GetScreenHeight();
 
-        // 1. 현재 턴인 장군의 위치 타일 찾기
+    if (!turnManager.IsTransitioning()) {
         CS230::GameObject* currentGeneral = (turnManager.GetCurrentTurn() == Turn::P1) ? player1 : player2;
+        CS230::GameObject* enemyGeneral = (turnManager.GetCurrentTurn() == Turn::P1) ? player2 : player1;
         HexTile* currentTile = nullptr;
         if (currentGeneral != nullptr) {
-            LinearMovement* currentMovement = currentGeneral->GetGOComponent<LinearMovement>();
-            currentTile = gameMap.GetTileAtPosition(currentMovement->GetFootPosition());
+            currentTile = gameMap.GetTileAtPosition(currentGeneral->GetGOComponent<LinearMovement>()->GetFootPosition());
         }
 
-        // 2. 맵 그리기 (찾아낸 타일을 시야의 중심으로 전달)
         gameMap.Draw(currentTile, camera_matrix);
 
-        // 3. 이동 가능 범위 그리기 (선택 사항)
         if (generalSelected) {
+            if (startingTile != nullptr) {
+                Math::vec2 transformed_pos = camera_matrix * Math::vec2(startingTile->center);
+                Vector2 screen_pos = { (float)transformed_pos.x, screen_height - (float)transformed_pos.y };
+                DrawCircleV(screen_pos, 30, Fade(GREEN, 0.5f));
+            }
             for (const auto& tile : movableTiles) {
-                DrawCircleV(tile.center, 30, Fade(BLUE, 0.4f));
+                Math::vec2 transformed_pos = camera_matrix * Math::vec2(tile.center);
+                Vector2 screen_pos = { (float)transformed_pos.x, screen_height - (float)transformed_pos.y };
+                DrawCircleV(screen_pos, 30, Fade(BLUE, 0.4f));
             }
         }
 
-        // 4. 모든 유닛(장군) 그리기
-        GetGSComponent<CS230::GameObjectManager>()->DrawAll(camera_matrix);
+        if (currentGeneral != nullptr) {
+            currentGeneral->Draw(camera_matrix);
+        }
 
-        // 5. UI 그리기
+        // 2. 상대방 플레이어는 시야에 있을 때만 그립니다.
+        if (currentGeneral != nullptr && enemyGeneral != nullptr) {
+            // 각 유닛의 타일 위치를 가져옵니다.
+            HexTile* generalTile = currentTile; // 위에서 이미 계산한 값 재사용
+            HexTile* enemyTile = gameMap.GetTileAtPosition(enemyGeneral->GetGOComponent<LinearMovement>()->GetFootPosition());
+
+            // 두 유닛이 모두 유효한 타일 위에 있고, 서로 이웃 타일(또는 같은 타일)에 있다면
+            if (generalTile != nullptr && enemyTile != nullptr &&
+                gameMap.IsNeighborTile(generalTile->x, generalTile->y, enemyTile->x, enemyTile->y)) {
+                // 상대방 플레이어를 그립니다.
+                enemyGeneral->Draw(camera_matrix);
+            }
+        }
+        //GetGSComponent<CS230::GameObjectManager>()->DrawAll(camera_matrix);
+
         Rectangle endTurnButton = { 1260, 750, 110, 40 };
         DrawRectangleRec(endTurnButton, LIGHTGRAY);
         DrawText("TurnEnd", endTurnButton.x + 10, endTurnButton.y + 10, 20, BLACK);
 
     }
     else {
-        // 턴 전환 화면 그리기
         DrawRectangle(0, 0, screenWidth, screenHeight, Fade(GRAY, 0.8f));
-
         Turn turn = turnManager.GetCurrentTurn();
         const char* turnText = (turn == Turn::P1) ? "PLAYER 1 TURN" : "PLAYER 2 TURN";
         int textWidth = MeasureText(turnText, 60);
         DrawText(turnText, screenWidth / 2 - textWidth / 2, screenHeight / 2 - 100, 60, DARKBLUE);
-
         Rectangle startButton = { screenWidth / 2.0f - 100, screenHeight / 2.0f + 50, 200, 60 };
         Vector2 mouse = GetMousePosition();
         bool hovering = CheckCollisionPointRec(mouse, startButton);

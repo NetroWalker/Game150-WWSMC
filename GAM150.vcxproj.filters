@@ -13,9 +13,6 @@
     <ClCompile Include="Game\map.cpp">
       <Filter>Game</Filter>
     </ClCompile>
-    <ClCompile Include="Game\General.cpp">
-      <Filter>Game</Filter>
-    </ClCompile>
     <ClCompile Include="Game\Soldier.cpp">
       <Filter>Game</Filter>
     </ClCompile>
@@ -112,9 +109,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game\map.h">
-      <Filter>Game</Filter>
-    </ClInclude>
-    <ClInclude Include="Game\General.h">
       <Filter>Game</Filter>
     </ClInclude>
     <ClInclude Include="Game\Soldier.h">

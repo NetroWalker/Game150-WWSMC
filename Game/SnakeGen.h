@@ -17,5 +17,5 @@ public:
 	void Update(double dt) override;
 	void Draw(Math::TransformationMatrix camera_matrix)override;
 	bool CanCollideWith(GameObjectTypes other_object)override;
-
+	
 };
