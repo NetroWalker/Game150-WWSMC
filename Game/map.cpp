@@ -104,28 +104,27 @@ void Map::DrawHexagon(Color color) {
     }
 }
 
-void Map::Draw(const std::set<HexTile*>& visibleTiles, const Math::TransformationMatrix& camera_matrix) {
+void Map::Draw(const std::map<HexTile*, TileType>& visionMap, const Math::TransformationMatrix& camera_matrix) {
     const int screen_height = GetScreenHeight();
 
     for (const auto& tile_to_draw : tiles) {
-        Texture2D texture_to_use = hidden_tile_texture;
-
+        Texture2D texture_to_use;
+        auto it = visionMap.find(const_cast<HexTile*>(&tile_to_draw));
         // ===== 수정된 시야 확인 로직 =====
         // 현재 그리려는 타일이 visibleTiles 목록에 포함되어 있는지 확인합니다.
         // C++20 부터는 set.contains(&tile_to_draw) 를 사용할 수 있습니다.
-        if (visibleTiles.count(const_cast<HexTile*>(&tile_to_draw))) {
-            // 포함되어 있다면, 타일 타입에 맞는 텍스처를 선택합니다.
-            switch (tile_to_draw.type) {
-            case TileType::Grass:
-                texture_to_use = grass_tile_texture;
-                break;
-            case TileType::Water:
-                texture_to_use = water_tile_texture;
-                break;
-            case TileType::Stone:
-                texture_to_use = stone_tile_texture;
-                break;
+        if (it != visionMap.end()) {
+            // 2. 시야 지도에 있다면, 지도에 지정된 타입으로 텍스처 선택
+            TileType type_to_draw = it->second;
+            switch (type_to_draw) {
+            case TileType::Grass: texture_to_use = grass_tile_texture; break;
+            case TileType::Water: texture_to_use = water_tile_texture; break;
+            case TileType::Stone: texture_to_use = stone_tile_texture; break;
             }
+        }
+        else {
+            // 3. 시야 지도에 없다면, 안 보이는 타일 텍스처 사용
+            texture_to_use = hidden_tile_texture;
         }
         // ==============================
 

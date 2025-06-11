@@ -1,12 +1,12 @@
-﻿// Game/mode0.h
-#pragma once
+﻿#pragma once
 #include "raylib.h"
 #include "map.h"
 #include "../Engine/GameState.h"
 #include <vector>
 #include <string>
+#include <set>
 
-// 클래스 전방 선언: 헤더 파일 간의 불필요한 포함 관계를 줄입니다.
+// 전방 선언
 class SquirrelGen;
 class SnakeGen;
 struct HexTile;
@@ -14,7 +14,7 @@ struct HexTile;
 class Mode0 : public CS230::GameState {
 public:
     Mode0(Vector2 center, float radiusX, float radiusY);
-    ~Mode0(); // 가상 소멸자 권장
+    ~Mode0() override;
 
     void Load() override;
     void Update(double dt) override;
@@ -23,13 +23,13 @@ public:
     std::string GetName() override { return "Mode0"; }
 
 private:
+    Font dialogueFont;
     void SetDialogueStep(int step);
 
-    Map tutorialMap; // 포인터 대신 객체로 변경
-    SquirrelGen* tutorialGeneral = nullptr; // 로딩 전까지 nullptr로 초기화
-    SnakeGen* staticGeneral = nullptr;   // 로딩 전까지 nullptr로 초기화
+    Map tutorialMap;
+    SquirrelGen* tutorialGeneral = nullptr;
+    SnakeGen* staticGeneral = nullptr;
 
-    // 나머지 멤버 변수들은 대부분 그대로 사용합니다.
     bool generalSelected = false;
     std::vector<HexTile> movableTiles;
     float radiusX;
