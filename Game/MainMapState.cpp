@@ -27,6 +27,17 @@ MainMapState::~MainMapState() {
 }
 
 void MainMapState::Load() {
+
+
+    //victory = false;
+    //generalSelected = false;
+    //movableTiles.clear();
+    //startingTile = nullptr;
+    //// 턴 매니저 리셋: P1 START 모드
+    //turnManager = TurnManager();
+    //turnManager.SetTurn(Turn::P1);
+    //turnManager.SetTransition(true);
+
     Engine::GetLogger().LogEvent(GetName() + " Load");
     AddGSComponent(new CS230::Camera({ {0,0}, {0,0} }));
     AddGSComponent(new CS230::GameObjectManager());
@@ -76,13 +87,14 @@ void MainMapState::Load() {
 }
 
 void MainMapState::Update(double dt) {
-    if (victory) {
-        if (Engine::GetInput().KeyJustPressed(CS230::Input::Keys::Escape)) {
-            // 메인 메뉴로 돌아가기
-            Engine::GetGameStateManager().SetNextGameState(STATE_MENU);
-        }
-        return;  // 더 이상의 로직은 수행하지 않음
-    }
+//    if (victory) {
+//    if (Engine::GetInput().KeyJustPressed(CS230::Input::Keys::Escape)) {
+//        victory = false;  // 놔두면 다시 돌아왔을 때 전투 플래그가 살아있음
+//        // 즉시 메인 메뉴로 전환
+//        Engine::GetGameStateManager().SetNextGameState(STATE_MENU);
+//    }
+//    return;  // victory 모드에선 그 외 로직 건너뛰기
+//}
 
 
     if (notification_timer > 0) {
