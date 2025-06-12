@@ -55,4 +55,6 @@ private:
     float radiusX, radiusY;
     static constexpr int MAX_CASTLES = 5;
     static constexpr int MIN_CASRLES = 1;
+
+    bool victory = false;
 };

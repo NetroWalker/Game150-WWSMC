@@ -76,6 +76,15 @@ void MainMapState::Load() {
 }
 
 void MainMapState::Update(double dt) {
+    if (victory) {
+        if (Engine::GetInput().KeyJustPressed(CS230::Input::Keys::Escape)) {
+            // 메인 메뉴로 돌아가기
+            Engine::GetGameStateManager().SetNextGameState(STATE_MENU);
+        }
+        return;  // 더 이상의 로직은 수행하지 않음
+    }
+
+
     if (notification_timer > 0) {
         notification_timer -= dt;
         if (notification_timer <= 0) notification_message.clear();
@@ -255,6 +264,45 @@ void MainMapState::Update(double dt) {
         }
     }
     GOM->UpdateAll(dt);
+    // --- 1) 이동 컴포넌트 가져오기 ---
+    // ─── 여기에 넣기 (turn/currentGeneral 이 살아 있는 범위)
+    if (!turnManager.IsTransitioning()) {
+        // ① 턴과 장군 포인터 다시 가져오기
+        Turn turn = turnManager.GetCurrentTurn();
+        CS230::GameObject* currentGeneral = (turn == Turn::P1) ? player1 : player2;
+
+        // ② 적 성 리스트
+        auto& enemyCastles = (turn == Turn::P1) ? player2_castles : player1_castles;
+
+        // ③ 이동이 끝난 시점에만 체크
+        auto movement = currentGeneral->GetGOComponent<LinearMovement>();
+        if (movement && !movement->IsMoving()) {
+            HexTile* generalTile = gameMap.GetTileAtPosition(movement->GetFootPosition());
+            if (generalTile) {
+                for (Castle* castle : enemyCastles) {
+                    HexTile* castleTile = gameMap.GetTileAtPosition(castle->GetPosition());
+                    if (castleTile
+                        && generalTile->x == castleTile->x
+                        && generalTile->y == castleTile->y)
+                    {
+                        Engine::GetLogger().LogEvent(
+                            "Tile-Collision: " +
+                            currentGeneral->TypeName() +
+                            " ↔ " +
+                            castle->TypeName()
+                        );
+                        castle->ResolveCollision(currentGeneral);
+                        currentGeneral->ResolveCollision(castle);
+
+                        victory = true;                           // ← 여기를 추가
+                        notification_message = "You Win!";        // 옵션: 간단한 메시지
+                        notification_timer = 3.0;
+                        break;
+                    }
+                }
+            }
+        }
+    }
 }
 
 void MainMapState::Draw() {
