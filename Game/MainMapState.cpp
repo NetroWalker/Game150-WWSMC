@@ -44,8 +44,18 @@ void MainMapState::Load() {
 
     this->player1 = new SquirrelGen(p1_start_pos);
     this->player2 = new SnakeGen(p2_start_pos);
-    Castle* initial_castle1 = new Castle(p1_start_pos, "Assets/castle_me.spt");
-    Castle* initial_castle2 = new Castle(p2_start_pos, "Assets/castle_enemy.spt");
+    // 플레이어1 성
+    Castle* initial_castle1 = new Castle(
+        p1_start_pos,
+        /*isSnake=*/false,
+        "Assets/castle_me.spt"
+    );
+    // 플레이어2 성
+    Castle* initial_castle2 = new Castle(
+        p2_start_pos,
+        /*isSnake=*/true,
+        "Assets/castle_enemy.spt"
+    );
 
     player1_castles.push_back(initial_castle1);
     player2_castles.push_back(initial_castle2);
@@ -134,8 +144,17 @@ void MainMapState::Update(double dt) {
                     int next_castle_cost = friendly_castles.size() * 10;
                     if (current_player_resources->SpendResources(next_castle_cost)) {
                         Engine::GetLogger().LogEvent("Player built a castle! Cost: " + std::to_string(next_castle_cost));
-                        const char* spt_path = (turn == Turn::P1) ? "Assets/castle_me.spt" : "Assets/castle_enemy.spt";
-                        Castle* new_castle = new Castle(build_tile->center, spt_path);
+
+                        bool isSnakeCastle = (turn != Turn::P1);
+                        std::string spt_path = isSnakeCastle
+                            ? "Assets/castle_enemy.spt"
+                            : "Assets/castle_me.spt";
+                        Castle* new_castle = new Castle(
+                            build_tile->center,
+                            isSnakeCastle,
+                            spt_path
+                        );
+
                         new_castle->SetScale({ 0.7, 0.7 });
                         friendly_castles.push_back(new_castle);
                         GOM->Add(new_castle);

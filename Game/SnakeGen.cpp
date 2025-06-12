@@ -32,6 +32,7 @@ bool SnakeGen::CanCollideWith(GameObjectTypes other_object)
 {
 	switch (other_object) {
 	case GameObjectTypes::SquirrelGen:
+	case GameObjectTypes::SquirrelCastle:
 		return true;
 	default:
 		return false;
