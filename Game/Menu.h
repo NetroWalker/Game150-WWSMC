@@ -28,4 +28,6 @@ private:
     Rectangle tutorialButton;
     Rectangle mainMapButton;
     Texture2D backgroundImage;
+    Texture2D startbutton;
+    Texture2D tutorialbutton;
 };
