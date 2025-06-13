@@ -31,7 +31,7 @@ public:
     Math::vec2 GetOriginalPosition() const;
 
     void SetState(SoldierState new_state);
-    SoldierState GetState();
+    SoldierState GetState() const;
 
     void SetTileList(std::vector<PlacementTile*>* tile_list);
 

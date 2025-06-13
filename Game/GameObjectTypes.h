@@ -6,8 +6,11 @@ enum class GameObjectTypes {
 	Squirrel,
     SnakeGen,
 	Snake,
+	Castle,
 	Soldier,
 	PlacementTile,
 	WaitingZone,
-    Count
+    Count,
+	Button,
+	Unit
 };

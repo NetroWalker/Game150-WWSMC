@@ -115,6 +115,12 @@
     <ClCompile Include="Game\PlacementTile.cpp">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="Game\UnitProduction.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\UnitButton.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game\map.h">
@@ -232,6 +238,14 @@
       <Filter>Game</Filter>
     </ClInclude>
     <ClInclude Include="Game\GameObjectTypes.h" />
+    <ClInclude Include="Game\GameObjectTypes.h" />
+    <ClInclude Include="Game\UnitProduction.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\GameObjectTypes.h" />
+    <ClInclude Include="Game\UnitButton.h">
+      <Filter>Game</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game\Background.h">

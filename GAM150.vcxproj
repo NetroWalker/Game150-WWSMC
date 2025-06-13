@@ -54,6 +54,8 @@
     <ClCompile Include="Game\Splash.cpp" />
     <ClCompile Include="Game\Squirrel.cpp" />
     <ClCompile Include="Game\SquirrelGen.cpp" />
+    <ClCompile Include="Game\UnitButton.cpp" />
+    <ClCompile Include="Game\UnitProduction.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -99,6 +101,8 @@
     <ClInclude Include="Game\Squirrel.h" />
     <ClInclude Include="Game\SquirrelGen.h" />
     <ClInclude Include="Game\States.h" />
+    <ClInclude Include="Game\UnitButton.h" />
+    <ClInclude Include="Game\UnitProduction.h" />
     <ClInclude Include="Game\WaitingZone.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

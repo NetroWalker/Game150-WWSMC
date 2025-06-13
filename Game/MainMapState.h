@@ -3,6 +3,7 @@
 #include "map.h"
 #include "../Engine/TurnManager.h"
 #include "../Engine/GameObjectManager.h"
+#include "UnitProduction.h"
 #include <vector>
 #include <set>
 #include <string>
@@ -26,10 +27,14 @@ public:
     void Unload() override;
     std::string GetName() override { return "MainMapState"; }
 
+    bool isProducingUnit = false;
+    bool unit_production_ui_initialized = false;
 private:
     float camera_speed = 500.0f;
     Map gameMap;
     TurnManager turnManager;
+    Turn turn;
+    UnitProduction unit_production_ui;
 
     // ∞¥√º ∆˜¿Œ≈Õ
     CS230::GameObject* player1 = nullptr;

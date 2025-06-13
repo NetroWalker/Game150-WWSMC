@@ -167,7 +167,7 @@ void Soldier::SetState(SoldierState new_state) {
     }
 }
 
-SoldierState Soldier::GetState() {
+SoldierState Soldier::GetState() const {
     return state;
 }
 

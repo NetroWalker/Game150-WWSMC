@@ -1,13 +1,10 @@
 ﻿//Battlemap.cpp
 #include "../Engine/Engine.h"
 #include "../Engine/ShowCollision.h"
-#include "../Engine/TurnManager.h"
 #include "BattleMap.h"
 #include "Background.h"
 #include "Fonts.h"
 #include "States.h"
-
-#include <iostream>
 
 BattleMap::BattleMap() {}
 
@@ -202,8 +199,8 @@ void BattleMap::Update(double dt) {
 	else if (!isTransition && isReady()) {
 		if (attack_count < 4) {
 			if (current_p1->GetPosition().x < 1300 && current_p2->GetPosition().x > 1700) {
-				auto pos1 = current_p1->GetPosition();
-				auto pos2 = current_p2->GetPosition();
+				Math::vec2 pos1 = current_p1->GetPosition();
+				Math::vec2 pos2 = current_p2->GetPosition();
 				current_p1->SetPosition({ pos1.x + move_speed * dt, pos1.y });
 				current_p2->SetPosition({ pos2.x - move_speed * dt, pos2.y });
 				if (current_p1->GetPosition().x > 1300 && current_p2->GetPosition().x < 1700) {
@@ -226,20 +223,20 @@ void BattleMap::Update(double dt) {
 			battle_timer += dt;
 			if (battle_timer < 1.0) {
 				if (current_p1->win(current_p2->GetType())) {
-					auto pos1 = current_p1->GetPosition();
-					auto pos2 = current_p2->GetPosition();
+					Math::vec2 pos1 = current_p1->GetPosition();
+					Math::vec2 pos2 = current_p2->GetPosition();
 					current_p1->SetPosition({ pos1.x - move_speed * dt, pos1.y });
 					current_p2->SetPosition({ pos2.x + move_speed * dt, pos2.y + move_speed * dt });
 				}
 				else if (current_p2->win(current_p1->GetType())) {
-					auto pos1 = current_p1->GetPosition();
-					auto pos2 = current_p2->GetPosition();
+					Math::vec2 pos1 = current_p1->GetPosition();
+					Math::vec2 pos2 = current_p2->GetPosition();
 					current_p1->SetPosition({ pos1.x - move_speed * dt, pos1.y + move_speed * dt });
 					current_p2->SetPosition({ pos2.x + move_speed * dt, pos2.y });
 				}
 				else {
-					auto pos1 = current_p1->GetPosition();
-					auto pos2 = current_p2->GetPosition();
+					Math::vec2 pos1 = current_p1->GetPosition();
+					Math::vec2 pos2 = current_p2->GetPosition();
 					current_p1->SetPosition({ pos1.x - move_speed * dt, pos1.y + move_speed * dt });
 					current_p2->SetPosition({ pos2.x + move_speed * dt, pos2.y + move_speed * dt });
 				}
@@ -421,7 +418,7 @@ void BattleMap::LoadSoldiers() {
 	}
 }
 
-bool BattleMap::isReady() {
+bool BattleMap::isReady() const {
 	return p1_ready && p2_ready;
 }
 
