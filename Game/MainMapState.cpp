@@ -79,6 +79,20 @@ void MainMapState::SetBattleOutcome(BattleOutcome outcome) {
     this->battle_ended = true;
 }
 
+void MainMapState::GetPos()
+{
+	auto& session = GameSession::GetInstance();
+	if (session.player1 != nullptr) {
+		Math::vec2 p1_pos = session.player1->GetPosition();
+		Engine::GetLogger().LogEvent("Player 1 Position: " + std::to_string(p1_pos.x) + ", " + std::to_string(p1_pos.y));
+        
+	}
+	if (session.player2 != nullptr) {
+		Math::vec2 p2_pos = session.player2->GetPosition();
+		Engine::GetLogger().LogEvent("Player 2 Position: " + std::to_string(p2_pos.x) + ", " + std::to_string(p2_pos.y));
+	}
+}
+
 void MainMapState::HandleBattleAftermath() {
     Engine::GetLogger().LogEvent("Handling battle aftermath...");
     auto& session = GameSession::GetInstance();
@@ -153,6 +167,7 @@ void MainMapState::HandleBattleAftermath() {
 }
 
 void MainMapState::Update(double dt) {
+    GetPos();
     auto& session = GameSession::GetInstance();
 
     if (session.player1_castles.empty()) {
@@ -361,10 +376,26 @@ void MainMapState::Update(double dt) {
                 session.player2_resources->AddResources(castles_to_update.size() * 2);
             }
             turnManager.EndTurn();
+
+            // 2) �� �� �屺 ��ġ�� ī�޶� �̵� (ȭ�� �߾ӿ� ���߱�)
+            if (camera) {
+                bool isP1Turn = (turnManager.GetCurrentTurn() == Turn::P1);
+                Math::vec2 target = isP1Turn
+                    ? session.player1->GetPosition()
+                    : session.player2->GetPosition();
+                // ȭ�� ũ���� ���ݸ�ŭ �������� ���� �߾� ����
+                Math::vec2 camPos = {
+                    target.x - screenWidth * 0.5f,
+                    target.y - screenHeight * 0.5f
+                };
+                camera->SetPosition(camPos);
+            }
+
+            // 3) ���� ���� �ʱ�ȭ
             generalSelected = false;
             movableTiles.clear();
             startingTile = nullptr;
-        }
+        }//������
 
         auto* movement = currentGeneral->GetGOComponent<LinearMovement>();
         if (movement && !movement->IsMoving()) {

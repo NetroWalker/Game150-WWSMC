@@ -8,7 +8,7 @@
 #include <set>
 #include "States.h" 
 #include <string>
-#include "../Engine/TurnManager.h" 
+//#include "../Engine/TurnManager.h" 
 
 // ���� ����
 namespace CS230 { class GameObject; }
@@ -32,6 +32,7 @@ public:
     void SetBattleOutcome(BattleOutcome outcome);
     bool isProducingUnit = false;
     bool unit_production_ui_initialized = false;
+    void GetPos();
 private:
     void HandleBattleAftermath();
     bool godMode = false;
@@ -57,4 +58,5 @@ private:
     bool victory = false;
 
     bool shouldUnloadUnitProduction = false;
+
 };
