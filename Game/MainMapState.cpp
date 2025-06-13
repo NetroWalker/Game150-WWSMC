@@ -9,7 +9,7 @@
 #include "Castle.h"
 #include "Material.h"
 #include "../Engine/Camera.h"
-#include "GameSession.h" // GameSession Çì´õ Æ÷ÇÔ
+#include "GameSession.h" // GameSession ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 #include <cmath>
 #include "UnitProduction.h"
 
@@ -18,12 +18,12 @@ MainMapState::MainMapState(int sw, int sh) :
     radiusX(200.0f), radiusY(200.0f),
     gameMap(Vector2{ screenWidth / 2.0f - ((8 - 1) * 200.0f * 1.5f) / 2.0f,
                       screenHeight / 2.0f - ((10 - 1) * 200.0f * sqrtf(3.0f) * 0.5f) / 2.0f },
-        200.0f, 200.0f, 8, 10, false), // autoTileÀº Load¿¡¼­ Á¦¾î
+        200.0f, 200.0f, 8, 10, false), // autoTileï¿½ï¿½ Loadï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     generalSelected(false), godMode(false), battle_ended(false), victory(false), notification_timer(0.0)
 {
 }
 
-// MainMapState´Â ´õ ÀÌ»ó µ¥ÀÌÅÍ¸¦ ¼ÒÀ¯ÇÏÁö ¾ÊÀ¸¹Ç·Î ¼Ò¸êÀÚ´Â ºñ¾îÀÖ½À´Ï´Ù.
+// MainMapStateï¿½ï¿½ ï¿½ï¿½ ï¿½Ì»ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Í¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ ï¿½Ò¸ï¿½ï¿½Ú´ï¿½ ï¿½ï¿½ï¿½ï¿½Ö½ï¿½ï¿½Ï´ï¿½.
 MainMapState::~MainMapState() {
 }
 
@@ -33,7 +33,7 @@ void MainMapState::Load() {
 
     auto& session = GameSession::GetInstance();
 
-    // ÃÖÃÊ ·Îµå ½Ã¿¡¸¸ ÇÙ½É °ÔÀÓ °´Ã¼µéÀ» »ý¼ºÇÕ´Ï´Ù.
+    // ï¿½ï¿½ï¿½ï¿½ ï¿½Îµï¿½ ï¿½Ã¿ï¿½ï¿½ï¿½ ï¿½Ù½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ã¼ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
     if (session.player1 == nullptr) {
         gameMap.SetPoint();
         HexTile* tile_end = gameMap.GetTileAt(7, 9);
@@ -81,10 +81,10 @@ void MainMapState::HandleBattleAftermath() {
     if (session.current_battle_type == GameSession::BattleType::Siege && session.castle_under_siege != nullptr) {
         Castle* sieged_castle = session.castle_under_siege;
 
-        // ¼º ÁÖÀÎÀÌ ´©±¸ÀÎÁö È®ÀÎ
+        // ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ È®ï¿½ï¿½
         bool is_p1_castle_owner = (std::find(session.player1_castles.begin(), session.player1_castles.end(), sieged_castle) != session.player1_castles.end());
 
-        // ¼º ÁÖÀÎÀÌ ÆÐ¹èÇß´ÂÁö È®ÀÎ
+        // ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ð¹ï¿½ï¿½ß´ï¿½ï¿½ï¿½ È®ï¿½ï¿½
         bool defender_lost = (is_p1_castle_owner && battle_outcome == BattleOutcome::P2_WINS) ||
             (!is_p1_castle_owner && battle_outcome == BattleOutcome::P1_WINS);
             
@@ -93,7 +93,7 @@ void MainMapState::HandleBattleAftermath() {
             notification_message = "The castle has fallen!";
             notification_timer = 3.0;
 
-            // ÇØ´ç ¼ºÀ» GOM°ú ¼ÒÀ¯ÀÚ ¸ñ·Ï¿¡¼­ ¸ðµÎ Á¦°Å
+            // ï¿½Ø´ï¿½ ï¿½ï¿½ï¿½ï¿½ GOMï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ï¿ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
             session.gom.Remove(sieged_castle);
             if (is_p1_castle_owner) {
                 session.player1_castles.erase(std::remove(session.player1_castles.begin(), session.player1_castles.end(), sieged_castle), session.player1_castles.end());
@@ -103,7 +103,7 @@ void MainMapState::HandleBattleAftermath() {
             }
         }
 
-        // ÀüÅõ ÄÁÅØ½ºÆ® ÃÊ±âÈ­
+        // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ø½ï¿½Æ® ï¿½Ê±ï¿½È­
         session.current_battle_type = GameSession::BattleType::Field;
         session.castle_under_siege = nullptr;
     }
@@ -205,7 +205,7 @@ void MainMapState::Update(double dt) {
         Math::vec2 camera_pos = camera->GetPosition();
         camera->SetPosition(camera_pos + camera_offset);
     }
-
+    Vector2 mouse = GetMousePosition();
     if (!turnManager.IsTransitioning()) {
         Turn turn = turnManager.GetCurrentTurn();
         CS230::GameObject* currentGeneral = (turn == Turn::P1) ? session.player1 : session.player2;
@@ -218,10 +218,10 @@ void MainMapState::Update(double dt) {
             notification_message = "Resources Doubled!";
             notification_timer = 1.5;
         }
-        std::vector<Castle*>& currentCastles = (turn == Turn::P1) ? player1_castles : player2_castles;
-        Stone* currentResources = (turn == Turn::P1) ? player1_resources : player2_resources;
+        std::vector<Castle*>& currentCastles = (turn == Turn::P1) ? session.player1_castles : session.player2_castles;
+        Stone* currentResources = (turn == Turn::P1) ? session.player1_resources : session.player2_resources;
 
-        Vector2 mouse = GetMousePosition();
+        
         CS230::Camera* camera = GetGSComponent<CS230::Camera>();
         const Math::TransformationMatrix& camMatrix = camera->GetMatrix();
 
@@ -255,10 +255,10 @@ void MainMapState::Update(double dt) {
                     }
                     else {
                         if (turn == Turn::P1) {
-                            unit_production_ui.SetTarget(player1, &dynamic_cast<SquirrelGen*>(player1)->GetSoldierRoster(), currentResources);
+                            unit_production_ui.SetTarget(session.player1, &dynamic_cast<SquirrelGen*>(session.player1)->GetSoldierRoster(), currentResources);
                         }
                         else {
-                            unit_production_ui.SetTarget(player2, &dynamic_cast<SnakeGen*>(player2)->GetSoldierRoster(), currentResources);
+                            unit_production_ui.SetTarget(session.player2, &dynamic_cast<SnakeGen*>(session.player2)->GetSoldierRoster(), currentResources);
                         }
                         unit_production_ui.Init();
                         unit_production_ui.LoadRoster();
@@ -312,7 +312,6 @@ void MainMapState::Update(double dt) {
             }
         }
 
-        Vector2 mouse = GetMousePosition();
         if (turnManager.CanMove() && IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && !currentGeneral->GetGOComponent<LinearMovement>()->IsMoving()) {
             bool clickedOnGeneral = false;
             if (auto* collisionComp = currentGeneral->GetGOComponent<CS230::RectCollision>(); collisionComp && camera) {
@@ -349,12 +348,12 @@ void MainMapState::Update(double dt) {
 
         Rectangle endTurnButton = { (float)screenWidth - 120, (float)screenHeight - 50, 110, 40 };
         if (CheckCollisionPointRec(mouse, endTurnButton) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-            std::vector<Castle*>& castles_to_update = (turnManager.GetCurrentTurn() == Turn::P1) ? player1_castles : player2_castles;
+            std::vector<Castle*>& castles_to_update = (turnManager.GetCurrentTurn() == Turn::P1) ? session.player1_castles : session.player2_castles;
             if (turnManager.GetCurrentTurn() == Turn::P1) {
-                player1_resources->AddResources(castles_to_update.size() * 2);
+                session.player1_resources->AddResources(castles_to_update.size() * 2);
             }
             else {
-                player2_resources->AddResources(castles_to_update.size() * 2);
+                session.player2_resources->AddResources(castles_to_update.size() * 2);
             }
             turnManager.EndTurn();
             generalSelected = false;
@@ -371,7 +370,6 @@ void MainMapState::Update(double dt) {
                     HexTile* castleTile = gameMap.GetTileAtPosition(castle->GetPosition());
                     if (castleTile && generalTile->x == castleTile->x && generalTile->y == castleTile->y) {
 
-                        // [¼öÁ¤] Áï½Ã ½Â¸® ´ë½Å, ¼º ÀüÅõ »óÅÂ¸¦ ±â·ÏÇÏ°í ÀüÅõ ¾ÀÀ¸·Î ÀüÈ¯ÇÕ´Ï´Ù.
                         Engine::GetLogger().LogEvent("Siege battle initiated against castle!");
                         session.current_battle_type = GameSession::BattleType::Siege;
                         session.castle_under_siege = castle;
@@ -389,10 +387,12 @@ void MainMapState::Update(double dt) {
         }
     }
     else {
-        Vector2 mouse = GetMousePosition();
         if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
             Rectangle startButton = { screenWidth / 2.0f - 100, screenHeight / 2.0f + 50, 200, 60 };
             if (CheckCollisionPointRec(mouse, startButton)) {
+                std::vector<Castle*>& castles_to_update = (turnManager.GetCurrentTurn() == Turn::P1) ? session.player1_castles : session.player2_castles;
+                Stone* resources_to_update = (turnManager.GetCurrentTurn() == Turn::P1) ? session.player1_resources : session.player2_resources;
+                resources_to_update->AddResources(castles_to_update.size() * 2);
                 turnManager.StartTurn();
             }
         }
@@ -507,7 +507,6 @@ void MainMapState::Draw() {
     }
 }
 
-// MainMapState´Â ´õ ÀÌ»ó µ¥ÀÌÅÍ¸¦ ¼ÒÀ¯/°ü¸®ÇÏÁö ¾ÊÀ¸¹Ç·Î Unload´Â ºñ¾îÀÖ½À´Ï´Ù.
 void MainMapState::Unload() {
     Engine::GetLogger().LogEvent(GetName() + " Unload");
 }
