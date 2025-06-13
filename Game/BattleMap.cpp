@@ -6,18 +6,18 @@
 #include "Background.h"
 #include "Fonts.h"
 #include "States.h"
-
+#include "MainMapState.h"
 #include <iostream>
 
 BattleMap::BattleMap() {}
+void BattleMap::LoadSoldiersForTurn(Turn attacking_turn) {
+	this->attacking_turn = attacking_turn;
+}
 
 void BattleMap::Load() {
 	AddGSComponent(new Background());
 	AddGSComponent(new CS230::GameObjectManager());
 	AddGSComponent(new CS230::Camera({{ 0.0, 0.0 }, {static_cast<double>(Engine::GetWindow().GetSize().x), static_cast<double>(Engine::GetWindow().GetSize().y)} }));
-#ifdef _DEBUG
-	//AddGSComponent(new CS230::ShowCollision());
-#endif
 	auto background = Engine::GetGameStateManager().GetGSComponent<Background>();
 	background->Add("Assets/Battlemap.png", 1);
 
@@ -54,6 +54,8 @@ void BattleMap::Load() {
 	update_title_text("P1 Placement");
 	update_button_text("READY!");
 	update_score_text(0, 0);
+	turnmanager.SetTurn(this->attacking_turn);
+	turnmanager.SetTransition(true);
 
 	turnmanager.SetTurn(Turn::P1);
 	turnmanager.SetTransition(true);
@@ -79,7 +81,35 @@ void BattleMap::Update(double dt) {
 		static_cast<float>(button_text->GetSize().x),
 		static_cast<float>(button_text->GetSize().y)
 	};
+	if (battle_finished) {
+		end_timer += dt;
 
+		if (end_timer > 3.0) { // 3초 후 맵으로 돌아감
+
+			// 1. MainMapState의 인스턴스를 가져옵니다.
+			MainMapState* main_map = dynamic_cast<MainMapState*>(Engine::GetGameStateManager().GetGameState(STATE_MAIN_MAP));
+
+			if (main_map != nullptr) {
+				// 2. 승/패/무승부를 결정합니다.
+				BattleOutcome outcome;
+				if (p1_score > p2_score) {
+					outcome = BattleOutcome::P1_WINS;
+				}
+				else if (p2_score > p1_score) {
+					outcome = BattleOutcome::P2_WINS;
+				}
+				else {
+					outcome = BattleOutcome::DRAW; // 무승부
+				}
+
+				// 3. MainMapState에 전투 결과를 알립니다.
+				main_map->SetBattleOutcome(outcome);
+			}
+
+			// 4. MainMapState로 전환합니다.
+			Engine::GetGameStateManager().SetNextGameState(STATE_MAIN_MAP);
+		}
+	}
 	// P1 Placement Turn
 	if (currentTurn == Turn::P1 && isTransition && !isReady()) {
 		update_title_text("P1 Placement");

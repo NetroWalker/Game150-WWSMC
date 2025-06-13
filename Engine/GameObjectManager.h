@@ -21,7 +21,7 @@ namespace CS230 {
     public:
         void Add(GameObject* object);
         void Unload();
-
+        void Remove(GameObject* object);
         void UpdateAll(double dt);
         void DrawAll(Math::TransformationMatrix camera_matrix);
         void Update(double dt) override;

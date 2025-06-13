@@ -19,9 +19,11 @@ public:
     }
 
     void LoadSoldiers();
+    void LoadSoldiersForTurn(Turn attacking_turn);
     void StartBattle();
 
 private:
+    Turn attacking_turn = Turn::P1;
     double background_width = 3000;
     Math::vec2 Waiting_pos1 = { 150, 50 };
     Math::vec2 Waiting_pos2 = { 2400, 50 };

@@ -15,7 +15,7 @@ MainMapState::MainMapState(int sw, int sh) :
     screenWidth(sw), screenHeight(sh),
     radiusX(200.0f), radiusY(200.0f),
     gameMap(Vector2{ screenWidth / 2.0f - ((8 - 1) * 200.0f * 1.5f) / 2.0f,
-                     screenHeight / 2.0f - ((10 - 1) * 200.0f * sqrtf(3.0f) * 0.5f) / 2.0f },
+                      screenHeight / 2.0f - ((10 - 1) * 200.0f * sqrtf(3.0f) * 0.5f) / 2.0f },
         200.0f, 200.0f, 8, 10, true),
     generalSelected(false)
 {
@@ -81,20 +81,96 @@ void MainMapState::Load() {
     initial_castle1->SetScale({ 0.7, 0.7 });
     initial_castle2->SetScale({ 0.7, 0.7 });
 
+    this->victory = false;
+
     generalSelected = false;
     movableTiles.clear();
     startingTile = nullptr;
 }
+void MainMapState::SetBattleOutcome(BattleOutcome outcome) {
+    this->battle_outcome = outcome;
+    this->battle_ended = true;
+}
+
+// =================================================================================================
+// MODIFIED: HandleBattleAftermath()
+// Implemented resource transfer and castle destruction logic.
+// =================================================================================================
+void MainMapState::HandleBattleAftermath() {
+    Engine::GetLogger().LogEvent("Handling battle aftermath...");
+
+    auto respawn_player = [&](CS230::GameObject* player, std::vector<Castle*>& castles) {
+        if (castles.empty()) {
+            this->victory = true; // No castles left, the other player wins.
+        }
+        else {
+            player->SetPosition(castles[0]->GetPosition()); // Respawn at the first available castle.
+        }
+        };
+
+    switch (battle_outcome) {
+    case BattleOutcome::P1_WINS:
+        notification_message = "Player 1 Won! Player 2's castle destroyed.";
+        notification_timer = 3.0;
+
+        // Transfer resources from P2 to P1
+        player1_resources->AddResources(player2_resources->GetStoneCount());
+        player2_resources->SpendResources(player2_resources->GetStoneCount());
+
+        // Destroy one of P2's castles
+        if (!player2_castles.empty()) {
+            Castle* destroyed_castle = player2_castles.back();
+            GetGSComponent<CS230::GameObjectManager>()->Remove(destroyed_castle);
+            player2_castles.pop_back();
+        }
+
+        // Respawn P2 and check for victory condition
+        respawn_player(player2, player2_castles);
+        break;
+
+    case BattleOutcome::P2_WINS:
+        notification_message = "Player 2 Won! Player 1's castle destroyed.";
+        notification_timer = 3.0;
+
+        // Transfer resources from P1 to P2
+        player2_resources->AddResources(player1_resources->GetStoneCount());
+        player1_resources->SpendResources(player1_resources->GetStoneCount());
+
+        // Destroy one of P1's castles
+        if (!player1_castles.empty()) {
+            Castle* destroyed_castle = player1_castles.back();
+            GetGSComponent<CS230::GameObjectManager>()->Remove(destroyed_castle);
+            player1_castles.pop_back();
+        }
+
+        // Respawn P1 and check for victory condition
+        respawn_player(player1, player1_castles);
+        break;
+
+    case BattleOutcome::DRAW:
+        notification_message = "Draw! Both generals retreat.";
+        notification_timer = 3.0;
+        respawn_player(player1, player1_castles);
+        respawn_player(player2, player2_castles);
+        break;
+    }
+    battle_ended = false; // Reset the flag
+}
+
 
 void MainMapState::Update(double dt) {
-//    if (victory) {
-//    if (Engine::GetInput().KeyJustPressed(CS230::Input::Keys::Escape)) {
-//        victory = false;  // 놔두면 다시 돌아왔을 때 전투 플래그가 살아있음
-//        // 즉시 메인 메뉴로 전환
-//        Engine::GetGameStateManager().SetNextGameState(STATE_MENU);
-//    }
-//    return;  // victory 모드에선 그 외 로직 건너뛰기
-//}
+    if (battle_ended) {
+        HandleBattleAftermath();
+    }
+
+    // =================================================================================================
+    // MODIFIED: Victory Condition Check
+    // Changed to transition to the ending state instead of waiting for input.
+    // =================================================================================================
+    if (victory) {
+        Engine::GetGameStateManager().SetNextGameState(STATE_ENDING);
+        return; // Stop further updates once the game is won
+    }
 
 
     if (notification_timer > 0) {
@@ -131,7 +207,7 @@ void MainMapState::Update(double dt) {
                 current_player_resources->AddResources(currentAmount);
             }
             else {
-                current_player_resources->AddResources(1); // 자원이 0일 경우 1을 추가
+                current_player_resources->AddResources(1);
             }
             notification_message = "Resources Doubled!";
             notification_timer = 1.5;
@@ -196,9 +272,7 @@ void MainMapState::Update(double dt) {
                     clickedOnGeneral = true;
                     if (generalSelected) {
                         startingTile = gameMap.GetTileAtPosition(currentGeneral->GetGOComponent<LinearMovement>()->GetFootPosition());
-                        movableTiles.clear(); // 일단 비움
-
-                        // ===== 수정: 갓 모드 이동 범위 계산 =====
+                        movableTiles.clear();
                         if (godMode) {
                             // 갓 모드: 모든 타일로 이동 가능
                             const auto& allTiles = gameMap.GetTiles();
@@ -220,27 +294,18 @@ void MainMapState::Update(double dt) {
                 }
             }
             if (generalSelected && !clickedOnGeneral) {
-                // ===== 수정된 부분 시작 =====
                 const int screen_height = GetScreenHeight();
                 const Math::TransformationMatrix& camera_matrix = camera->GetMatrix();
 
                 for (auto& tile : movableTiles) {
-                    // 1. 타일의 월드 좌표를 가져옵니다.
                     Math::vec2 world_pos = tile.center;
-
-                    // 2. 카메라의 영향을 받은 화면 좌표로 변환합니다. (Draw 함수와 동일한 로직)
                     Math::vec2 transformed_pos = camera_matrix * world_pos;
                     Vector2 screen_pos = {
                         (float)transformed_pos.x,
                         screen_height - (float)transformed_pos.y
                     };
-
-                    // 3. 변환된 '화면 좌표'를 기준으로 클릭을 확인합니다.
                     if (CheckCollisionPointCircle(mouse, screen_pos, 35.0f)) {
-
-                        // 이동 명령은 '월드 좌표'로 해야 합니다.
                         currentGeneral->GetGOComponent<LinearMovement>()->MoveTo(tile.center);
-
                         generalSelected = false;
                         movableTiles.clear();
                         startingTile = nullptr;
@@ -276,41 +341,40 @@ void MainMapState::Update(double dt) {
         }
     }
     GOM->UpdateAll(dt);
-    // --- 1) 이동 컴포넌트 가져오기 ---
-    // ─── 여기에 넣기 (turn/currentGeneral 이 살아 있는 범위)
+
     if (!turnManager.IsTransitioning()) {
-        // ① 턴과 장군 포인터 다시 가져오기
         Turn turn = turnManager.GetCurrentTurn();
         CS230::GameObject* currentGeneral = (turn == Turn::P1) ? player1 : player2;
-
-        // ② 적 성 리스트
+        CS230::GameObject* enemyGeneral = (turn == Turn::P1) ? player2 : player1;
         auto& enemyCastles = (turn == Turn::P1) ? player2_castles : player1_castles;
-
-        // ③ 이동이 끝난 시점에만 체크
         auto movement = currentGeneral->GetGOComponent<LinearMovement>();
+
         if (movement && !movement->IsMoving()) {
             HexTile* generalTile = gameMap.GetTileAtPosition(movement->GetFootPosition());
             if (generalTile) {
+                // Check for capturing an enemy castle
                 for (Castle* castle : enemyCastles) {
                     HexTile* castleTile = gameMap.GetTileAtPosition(castle->GetPosition());
-                    if (castleTile
-                        && generalTile->x == castleTile->x
-                        && generalTile->y == castleTile->y)
-                    {
-                        Engine::GetLogger().LogEvent(
-                            "Tile-Collision: " +
-                            currentGeneral->TypeName() +
-                            " ↔ " +
-                            castle->TypeName()
-                        );
+                    if (castleTile && generalTile->x == castleTile->x && generalTile->y == castleTile->y) {
+                        Engine::GetLogger().LogEvent("Tile-Collision: " + currentGeneral->TypeName() + " <-> " + castle->TypeName());
                         castle->ResolveCollision(currentGeneral);
                         currentGeneral->ResolveCollision(castle);
-
-                        victory = true;                           // ← 여기를 추가
-                        notification_message = "You Win!";        // 옵션: 간단한 메시지
+                        victory = true; // Set victory flag
+                        notification_message = "You Win!";
                         notification_timer = 3.0;
-                        break;
+                        return; // Exit update to allow state change
                     }
+                }
+
+                // =================================================================================================
+                // NEW: General vs. General Collision Check
+                // Checks if generals are on the same tile and initiates battle.
+                // =================================================================================================
+                HexTile* enemyGeneralTile = gameMap.GetTileAtPosition(enemyGeneral->GetGOComponent<LinearMovement>()->GetFootPosition());
+                if (enemyGeneralTile && generalTile->x == enemyGeneralTile->x && generalTile->y == enemyGeneralTile->y) {
+                    Engine::GetLogger().LogEvent("Generals have met! Entering battle...");
+                    Engine::GetGameStateManager().SetNextGameState(STATE_BATTLE_MAP); // Change to battle state
+                    return; // Stop further updates this frame
                 }
             }
         }
@@ -318,7 +382,8 @@ void MainMapState::Update(double dt) {
 }
 
 void MainMapState::Draw() {
-    ClearBackground(RAYWHITE);
+    unsigned int back_color = 0xFF9EB251;
+    ClearBackground((Color) back_color);
     CS230::Camera* camera = GetGSComponent<CS230::Camera>();
     Math::TransformationMatrix camera_matrix;
     if (camera != nullptr) camera_matrix = camera->GetMatrix();
@@ -330,23 +395,18 @@ void MainMapState::Draw() {
         std::vector<Castle*>& friendlyCastles = (current_turn == Turn::P1) ? player1_castles : player2_castles;
         std::vector<Castle*>& enemyCastles = (current_turn == Turn::P1) ? player2_castles : player1_castles;
 
-        // ===== 1. '시야 지도' 생성 =====
         std::map<HexTile*, TileType> visionMap;
-
-        // 헬퍼 람다 함수: 특정 위치 주변의 시야를 지도에 추가
         auto addVisionToMap = [&](HexTile* source_tile, bool is_castle_vision) {
             if (source_tile == nullptr) return;
 
-            // 시야 중심 타일 처리
-            if (is_castle_vision) visionMap[source_tile] = TileType::Water;
+            if (is_castle_vision) visionMap[source_tile] = TileType::Stone;
             else if (visionMap.find(source_tile) == visionMap.end()) visionMap[source_tile] = source_tile->type;
 
-            // 주변 타일 처리
             auto neighbors = gameMap.GetMovableTiles(source_tile);
             for (const auto& neighbor : neighbors) {
                 HexTile* neighbor_ptr = gameMap.GetTileAt(neighbor.x, neighbor.y);
                 if (is_castle_vision) {
-                    visionMap[neighbor_ptr] = TileType::Water;
+                    visionMap[neighbor_ptr] = TileType::Stone;
                 }
                 else {
                     if (visionMap.find(neighbor_ptr) == visionMap.end()) {
@@ -356,25 +416,16 @@ void MainMapState::Draw() {
             }
             };
 
-        // ===== 2. 규칙에 따라 시야 지도 채우기 =====
-        // 우선순위가 높은 성의 시야부터 추가
         for (Castle* castle : friendlyCastles) {
             addVisionToMap(gameMap.GetTileAtPosition(castle->GetPosition()), true);
         }
-        // 그 다음 장군의 시야 추가 (겹치는 부분은 덮어쓰지 않음)
         addVisionToMap(gameMap.GetTileAtPosition(currentGeneral->GetGOComponent<LinearMovement>()->GetFootPosition()), false);
-
-        // ===== 3. 완성된 시야 지도로 맵 그리기 =====
         gameMap.Draw(visionMap, camera_matrix);
 
         if (generalSelected) {
-            const int screen_height = GetScreenHeight(); // Y축 변환을 위해 화면 높이 가져오기
-
-            // 1. '이동 전' 타일 (녹색 원) 그리기
+            const int screen_height = GetScreenHeight();
             if (startingTile != nullptr) {
-                // 월드 좌표를 카메라 행렬로 변환
                 Math::vec2 transformed_pos = camera_matrix * Math::vec2(startingTile->center);
-                // 최종 화면 좌표 계산 (Y축 뒤집기 포함)
                 Vector2 screen_pos = {
                     (float)transformed_pos.x,
                     screen_height - (float)transformed_pos.y

@@ -10,12 +10,12 @@ SnakeGen::SnakeGen(Math::vec2 position) : CS230::GameObject(position)
 }
 
 void SnakeGen::ResolveCollision(GameObject* other_object) {
-	Math::vec2 my_tile = this->GetPosition();
-	Math::vec2 enemy_tile = other_object->GetPosition();
-	if (other_object->Type() == GameObjectTypes::SquirrelGen && (my_tile == enemy_tile)) {
-		//start battl map
-		Engine::GetGameStateManager().SetNextGameState(STATE_BATTLE_MAP);
-	}
+	//Math::vec2 my_tile = this->GetPosition();
+	//Math::vec2 enemy_tile = other_object->GetPosition();
+	//if (other_object->Type() == GameObjectTypes::SquirrelGen && (my_tile == enemy_tile)) {
+	//	//start battl map
+	//	Engine::GetGameStateManager().SetNextGameState(STATE_BATTLE_MAP);
+	//}
 }
 
 void SnakeGen::Update(double dt)
