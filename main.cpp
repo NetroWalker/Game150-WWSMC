@@ -10,6 +10,7 @@
 #include "Game/BattleMap.h"
 #include "Engine/Window.h"
 #include "Game/GameSession.h"
+#include "Game/StateEnding.h"
 
 int main() {
     Engine& engine = Engine::Instance();
@@ -21,13 +22,14 @@ int main() {
     Mode0* tutorialState = new Mode0({ (double)CS230::Window::default_width / 2.0, (double)CS230::Window::default_height / 2.0 }, 200.0f, 200.0f);
     MainMapState* mainMapState = new MainMapState(CS230::Window::default_width, CS230::Window::default_height);
     BattleMap* battleMapState = new BattleMap();
+    StateEnding* endState = new StateEnding();
 
     engine.GetGameStateManager().AddGameState(*splashState);      // 인덱스 0
     engine.GetGameStateManager().AddGameState(*menuState);         // 인덱스 1
     engine.GetGameStateManager().AddGameState(*tutorialState);     // 인덱스 2
     engine.GetGameStateManager().AddGameState(*mainMapState);      // 인덱스 3
     engine.GetGameStateManager().AddGameState(*battleMapState);    // 인덱스 4
-
+    engine.GetGameStateManager().AddGameState(*endState);
     // 폰트 추가
     engine.AddFont("Assets/Font_Simple.png");
     engine.AddFont("Assets/Font_Outlined.png");
@@ -47,6 +49,7 @@ int main() {
     delete tutorialState;
     delete mainMapState;
     delete battleMapState;
+    delete endState;
 
     return 0;
 }
