@@ -45,8 +45,8 @@ void MainMapState::Load() {
 
     this->player1 = new SquirrelGen(p1_start_pos);
     this->player2 = new SnakeGen(p2_start_pos);
-    Castle* initial_castle1 = new Castle(p1_start_pos, "Assets/castle_me.spt");
-    Castle* initial_castle2 = new Castle(p2_start_pos, "Assets/castle_enemy.spt");
+    Castle* initial_castle1 = new Castle(p1_start_pos, "Assets/castle_me.spt", Team::P1);
+    Castle* initial_castle2 = new Castle(p2_start_pos, "Assets/castle_enemy.spt", Team::P2);
 
     player1_castles.push_back(initial_castle1);
     player2_castles.push_back(initial_castle2);
@@ -124,7 +124,7 @@ void MainMapState::Update(double dt) {
                             notification_timer = 2.0;
                         }
                         else {
-                            unit_production_ui.SetTarget(castle, &castle->GetSoldierRoster(), currentResources);
+                            unit_production_ui.SetTarget(castle, &castle->GetSoldierRoster(), currentResources, turnManager.GetCurrentTurn());
                             unit_production_ui.Init();
                             unit_production_ui.LoadRoster();
                             isProducingUnit = true;
@@ -145,10 +145,10 @@ void MainMapState::Update(double dt) {
                     }
                     else {
                         if (turn == Turn::P1) {
-                            unit_production_ui.SetTarget(player1, &dynamic_cast<SquirrelGen*>(player1)->GetSoldierRoster(), currentResources);
+                            unit_production_ui.SetTarget(player1, &dynamic_cast<SquirrelGen*>(player1)->GetSoldierRoster(), currentResources, turnManager.GetCurrentTurn());
                         }
                         else {
-                            unit_production_ui.SetTarget(player2, &dynamic_cast<SnakeGen*>(player2)->GetSoldierRoster(), currentResources);
+                            unit_production_ui.SetTarget(player2, &dynamic_cast<SnakeGen*>(player2)->GetSoldierRoster(), currentResources, turnManager.GetCurrentTurn());
                         }
                         unit_production_ui.Init();
                         unit_production_ui.LoadRoster();
@@ -188,7 +188,8 @@ void MainMapState::Update(double dt) {
                     if (current_player_resources->SpendResources(next_castle_cost)) {
                         Engine::GetLogger().LogEvent("Player built a castle! Cost: " + std::to_string(next_castle_cost));
                         const char* spt_path = (turn == Turn::P1) ? "Assets/castle_me.spt" : "Assets/castle_enemy.spt";
-                        Castle* new_castle = new Castle(build_tile->center, spt_path);
+                        Team team_owner = (turn == Turn::P1) ? Team::P1 : Team::P2;
+                        Castle* new_castle = new Castle(build_tile->center, spt_path, team_owner);
                         new_castle->SetScale({ 0.7, 0.7 });
                         friendly_castles.push_back(new_castle);
                         GOM->Add(new_castle);

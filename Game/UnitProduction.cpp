@@ -96,7 +96,7 @@ void UnitProduction::ProductUnit(const Vector2& mouse_pos) {
 		return;
 	}
 
-	if (turnmanager.GetCurrentTurn() == Turn::P1) {
+	if (turn == Turn::P1) {
 		animal = Animals::Squirrel;
 	}
 	else {
@@ -193,6 +193,8 @@ void UnitProduction::SaveRoster() {
 void UnitProduction::LoadRoster() {
 	if (!target_roster) return;
 
+	soldiers.clear();
+
 	for (auto* old : *target_roster) {
 		Soldier* new_soldier = new Soldier({ 0, 0 }, old->GetAnimal(), old->GetType());
 		soldiers.push_back(new_soldier);
@@ -209,8 +211,9 @@ void UnitProduction::DrawButton() {
 	DrawRectangleRec(ranged_button, BLACK);
 }
 
-void UnitProduction::SetTarget(CS230::GameObject* target, std::vector<Soldier*>* roster, Stone* resource_ptr) {
+void UnitProduction::SetTarget(CS230::GameObject* target, std::vector<Soldier*>* roster, Stone* resource_ptr, Turn current_turn) {
 	selected_target = target;
 	target_roster = roster;
 	current_resource = resource_ptr;
+	turn = current_turn;
 }

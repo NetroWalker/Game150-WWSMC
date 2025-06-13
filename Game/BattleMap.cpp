@@ -6,6 +6,14 @@
 #include "Fonts.h"
 #include "States.h"
 
+std::vector<Soldier*>* BattleMap::temp_roster1 = nullptr;
+std::vector<Soldier*>* BattleMap::temp_roster2 = nullptr;
+
+void BattleMap::SetCombatRosters(std::vector<Soldier*>* r1, std::vector<Soldier*>* r2) {
+	temp_roster1 = r1;
+	temp_roster2 = r2;
+}
+
 BattleMap::BattleMap() {}
 
 void BattleMap::Load() {
@@ -401,19 +409,33 @@ void BattleMap::LoadSoldiers() {
 		{ Waiting_pos2.x - 800, Waiting_pos2.y },
 	};
 
-	for (int i = 0; i < 5; ++i) {
-		auto* s = new Soldier(squirrelPositions[i], Animals::Squirrel, static_cast<SoldierTypes>(i % 3));
+
+	if (!temp_roster1->empty() && (*temp_roster1)[0]->GetAnimal() == Animals::Squirrel) {
+		p1_soldiers = *temp_roster1;
+		p2_soldiers = *temp_roster2;
+	}
+	else {
+		p1_soldiers = *temp_roster2;
+		p2_soldiers = *temp_roster1;
+	}
+
+	for (int i = 0; i < p1_soldiers.size() && i < 5; ++i) {
+		auto* s = p1_soldiers[i];
 		s->SetTileList(&tiles);
+		s->SetPosition(squirrelPositions[i]);
+		s->SetOriginalPosition(squirrelPositions[i]);
+		s->SetState(SoldierState::InQueue);
 		object->Add(s);
-		p1_soldiers.push_back(s);
 		soldiers.push_back(s);
 	}
 
-	for (int i = 0; i < 5; ++i) {
-		auto* s = new Soldier(snakePositions[i], Animals::Snake, static_cast<SoldierTypes>(i % 3));
+	for (int i = 0; i < p2_soldiers.size() && i < 5; ++i) {
+		auto* s = p2_soldiers[i];
 		s->SetTileList(&tiles);
+		s->SetPosition(snakePositions[i]);
+		s->SetOriginalPosition(snakePositions[i]);
+		s->SetState(SoldierState::InQueue);
 		object->Add(s);
-		p2_soldiers.push_back(s);
 		soldiers.push_back(s);
 	}
 }

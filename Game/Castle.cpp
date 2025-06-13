@@ -4,7 +4,7 @@
 #include "Material.h"
 #include "../Engine/Collision.h"
 
-Castle::Castle(Math::vec2 position, const std::string& spt_file_path) : CS230::GameObject(position) {
+Castle::Castle(Math::vec2 position, const std::string& spt_file_path, Team owner) : CS230::GameObject(position), owner(owner) {
     auto* sprite = new CS230::Sprite(spt_file_path, this);
     AddGOComponent(sprite);
 
@@ -15,4 +15,8 @@ Castle::Castle(Math::vec2 position, const std::string& spt_file_path) : CS230::G
 
 std::vector<Soldier*>& Castle::GetSoldierRoster() {
     return soldier_roster;
+}
+
+Team Castle::GetOwner() const {
+    return owner;
 }
