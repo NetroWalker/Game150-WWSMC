@@ -39,3 +39,6 @@ bool SquirrelGen::CanCollideWith(GameObjectTypes other_object)
 	}
 }
 
+std::vector<Soldier*>& SquirrelGen::GetSoldierRoster() {
+	return soldier_roster;
+}

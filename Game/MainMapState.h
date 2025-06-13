@@ -3,13 +3,14 @@
 #include "map.h"
 #include "../Engine/TurnManager.h"
 #include "../Engine/GameObjectManager.h"
+#include "UnitProduction.h"
 #include <vector>
 #include <set>
 #include "States.h" 
 #include <string>
 #include "../Engine/TurnManager.h" 
 
-// Àü¹æ ¼±¾ð
+// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 namespace CS230 { class GameObject; }
 class SquirrelGen;
 class SnakeGen;
@@ -29,14 +30,18 @@ public:
     std::string GetName() override { return "MainMapState"; }
 
     void SetBattleOutcome(BattleOutcome outcome);
+    bool isProducingUnit = false;
+    bool unit_production_ui_initialized = false;
 private:
     void HandleBattleAftermath();
     bool godMode = false;
     float camera_speed = 500.0f;
     Map gameMap;
     TurnManager turnManager;
+    Turn turn;
+    UnitProduction unit_production_ui;
 
-    // UI »óÅÂ °ü¸®
+    // UI ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     bool generalSelected = false;
     std::vector<HexTile> movableTiles;
     HexTile* startingTile = nullptr;

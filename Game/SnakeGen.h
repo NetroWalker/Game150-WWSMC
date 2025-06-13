@@ -2,6 +2,7 @@
 #pragma once
 #include"../Engine/GameObject.h"
 #include"GameObjectTypes.h"
+#include "Soldier.h"
 
 class SnakeGen : public CS230::GameObject {
 public:
@@ -17,5 +18,9 @@ public:
 	void Update(double dt) override;
 	void Draw(Math::TransformationMatrix camera_matrix)override;
 	bool CanCollideWith(GameObjectTypes other_object)override;
-	
+
+	std::vector<Soldier*>& GetSoldierRoster();
+
+private:
+	std::vector<Soldier*> soldier_roster;
 };

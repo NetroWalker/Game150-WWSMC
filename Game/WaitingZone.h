@@ -11,7 +11,7 @@ public:
         AddGOComponent(new CS230::Sprite("Assets/WaitingZone.spt", this));
     }
 
-    void Update(double dt) override {}
+    void Update([[maybe_unused]]double dt) override {}
     void Draw(Math::TransformationMatrix camera_matrix) override {
         CS230::GameObject::Draw(camera_matrix);
     }

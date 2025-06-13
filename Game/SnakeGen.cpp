@@ -2,6 +2,7 @@
 #include "States.h"
 #include "../Engine/Engine.h"
 #include "LinearMovement.h"
+
 SnakeGen::SnakeGen(Math::vec2 position) : CS230::GameObject(position)
 {
 	AddGOComponent(new CS230::Sprite("Assets/SnakeGen.spt", this));
@@ -37,4 +38,8 @@ bool SnakeGen::CanCollideWith(GameObjectTypes other_object)
 	default:
 		return false;
 	}
+}
+
+std::vector<Soldier*>& SnakeGen::GetSoldierRoster() {
+	return soldier_roster;
 }

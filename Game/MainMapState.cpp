@@ -11,6 +11,7 @@
 #include "../Engine/Camera.h"
 #include "GameSession.h" // GameSession 헤더 포함
 #include <cmath>
+#include "UnitProduction.h"
 
 MainMapState::MainMapState(int sw, int sh) :
     screenWidth(sw), screenHeight(sh),
@@ -173,6 +174,16 @@ void MainMapState::Update(double dt) {
     }
 
 
+    if (!isProducingUnit && unit_production_ui_initialized) {
+        unit_production_ui.Unload();
+        unit_production_ui_initialized = false;
+
+    }
+    if (isProducingUnit) {
+        unit_production_ui.Update(dt);
+        return;
+    }
+
     if (notification_timer > 0) {
         notification_timer -= dt;
         if (notification_timer <= 0) notification_message.clear();
@@ -207,6 +218,57 @@ void MainMapState::Update(double dt) {
             notification_message = "Resources Doubled!";
             notification_timer = 1.5;
         }
+        std::vector<Castle*>& currentCastles = (turn == Turn::P1) ? player1_castles : player2_castles;
+        Stone* currentResources = (turn == Turn::P1) ? player1_resources : player2_resources;
+
+        Vector2 mouse = GetMousePosition();
+        CS230::Camera* camera = GetGSComponent<CS230::Camera>();
+        const Math::TransformationMatrix& camMatrix = camera->GetMatrix();
+
+        for (Castle* castle : currentCastles) {
+            if (auto* col = castle->GetGOComponent<CS230::RectCollision>()) {
+                if (CheckCollisionPointRec(mouse, col->ToRaylibScreenRect(camMatrix))) {
+                    if (Engine::GetInput().KeyJustPressed(CS230::Input::Keys::P)) {
+                        if (currentResources->GetStoneCount() < 10) {
+                            notification_message = "Not enough resources!";
+                            notification_timer = 2.0;
+                        }
+                        else {
+                            unit_production_ui.SetTarget(castle, &castle->GetSoldierRoster(), currentResources);
+                            unit_production_ui.Init();
+                            unit_production_ui.LoadRoster();
+                            isProducingUnit = true;
+                            unit_production_ui_initialized = true;
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+
+        if (auto* col = currentGeneral->GetGOComponent<CS230::RectCollision>()) {
+            if (CheckCollisionPointRec(mouse, col->ToRaylibScreenRect(camMatrix))) {
+                if (Engine::GetInput().KeyJustPressed(CS230::Input::Keys::P)) {
+                    if (currentResources->GetStoneCount() < 0) {
+                        notification_message = "Not enough resources!";
+                        notification_timer = 2.0;
+                    }
+                    else {
+                        if (turn == Turn::P1) {
+                            unit_production_ui.SetTarget(player1, &dynamic_cast<SquirrelGen*>(player1)->GetSoldierRoster(), currentResources);
+                        }
+                        else {
+                            unit_production_ui.SetTarget(player2, &dynamic_cast<SnakeGen*>(player2)->GetSoldierRoster(), currentResources);
+                        }
+                        unit_production_ui.Init();
+                        unit_production_ui.LoadRoster();
+                        isProducingUnit = true;
+                        return;
+                    }
+                }
+            }
+        }
+
         if (Engine::GetInput().KeyJustPressed(CS230::Input::Keys::B)) {
             std::vector<Castle*>& friendly_castles = (turn == Turn::P1) ? session.player1_castles : session.player2_castles;
             Stone* current_player_resources = (turn == Turn::P1) ? session.player1_resources : session.player2_resources;
@@ -287,6 +349,13 @@ void MainMapState::Update(double dt) {
 
         Rectangle endTurnButton = { (float)screenWidth - 120, (float)screenHeight - 50, 110, 40 };
         if (CheckCollisionPointRec(mouse, endTurnButton) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+            std::vector<Castle*>& castles_to_update = (turnManager.GetCurrentTurn() == Turn::P1) ? player1_castles : player2_castles;
+            if (turnManager.GetCurrentTurn() == Turn::P1) {
+                player1_resources->AddResources(castles_to_update.size() * 2);
+            }
+            else {
+                player2_resources->AddResources(castles_to_update.size() * 2);
+            }
             turnManager.EndTurn();
             generalSelected = false;
             movableTiles.clear();
@@ -324,9 +393,6 @@ void MainMapState::Update(double dt) {
         if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
             Rectangle startButton = { screenWidth / 2.0f - 100, screenHeight / 2.0f + 50, 200, 60 };
             if (CheckCollisionPointRec(mouse, startButton)) {
-                std::vector<Castle*>& castles_to_update = (turnManager.GetCurrentTurn() == Turn::P1) ? session.player1_castles : session.player2_castles;
-                Stone* resources_to_update = (turnManager.GetCurrentTurn() == Turn::P1) ? session.player1_resources : session.player2_resources;
-                resources_to_update->AddResources(castles_to_update.size() * 2);
                 turnManager.StartTurn();
             }
         }
@@ -338,6 +404,12 @@ void MainMapState::Update(double dt) {
 void MainMapState::Draw() {
     auto& session = GameSession::GetInstance();
     ClearBackground(Color{ 158, 178, 81, 255 });
+    if (isProducingUnit) {
+        unit_production_ui.Draw();
+        return;
+    }
+
+    ClearBackground(RAYWHITE);
     CS230::Camera* camera = GetGSComponent<CS230::Camera>();
     Math::TransformationMatrix camera_matrix;
     if (camera != nullptr) camera_matrix = camera->GetMatrix();

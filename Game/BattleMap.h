@@ -1,4 +1,5 @@
 ﻿// BattleMap.h
+#pragma once
 #include "../Engine/GameState.h"
 #include "../Engine/TurnManager.h"
 #include "../Engine/Camera.h"
@@ -29,9 +30,10 @@ private:
     Math::vec2 Waiting_pos2 = { 2400, 50 };
     Math::vec2 Place_pos = { 100, 50 };
     Math::vec2 Battle_pos = { 100, 50 };
+
     bool p1_ready = false;
     bool p2_ready = false;
-    bool isReady();
+    bool isReady() const;
     int p1_score = 0;
     int p2_score = 0;
     double move_speed = 1500;

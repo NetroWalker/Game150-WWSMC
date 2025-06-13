@@ -6,10 +6,12 @@ enum class GameObjectTypes {
 	Squirrel,
     SnakeGen,
 	Snake,
-	SquirrelCastle,   // ← 추가
-	SnakeCastle,      // 성충돌을 위한
+	SquirrelCastle,
+	SnakeCastle,
 	Soldier,
 	PlacementTile,
 	WaitingZone,
-    Count
+    Count,
+	Button,
+	Unit
 };

@@ -4,6 +4,8 @@
 #include "GameObjectTypes.h"
 #include "../Engine/Engine.h"
 
+#include <vector>
+#include "Soldier.h"
 
 class Castle : public CS230::GameObject {
 public:
@@ -11,11 +13,11 @@ public:
 
     GameObjectTypes Type() override;
     std::string TypeName() override;
-
-
     bool CanCollideWith(GameObjectTypes other) override;
-
     void ResolveCollision(CS230::GameObject* other) override;
+    std::vector<Soldier*>& GetSoldierRoster();
+
 private:
     bool isSnake;
+    std::vector<Soldier*> soldier_roster;
 };

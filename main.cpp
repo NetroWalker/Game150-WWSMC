@@ -8,6 +8,7 @@
 #include "Game/Mode0.h"
 #include "Game/MainMapState.h"
 #include "Game/BattleMap.h"
+#include "Game/UnitProduction.h"
 #include "Engine/Window.h"
 #include "Game/GameSession.h"
 #include "Game/StateEnding.h"
