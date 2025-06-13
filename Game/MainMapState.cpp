@@ -9,7 +9,7 @@
 #include "Castle.h"
 #include "Material.h"
 #include "../Engine/Camera.h"
-#include "GameSession.h" // GameSession ��� ����
+#include "GameSession.h" 
 #include <cmath>
 #include "UnitProduction.h"
 
@@ -18,12 +18,11 @@ MainMapState::MainMapState(int sw, int sh) :
     radiusX(200.0f), radiusY(200.0f),
     gameMap(Vector2{ screenWidth / 2.0f - ((8 - 1) * 200.0f * 1.5f) / 2.0f,
                       screenHeight / 2.0f - ((10 - 1) * 200.0f * sqrtf(3.0f) * 0.5f) / 2.0f },
-        200.0f, 200.0f, 8, 10, false), // autoTile�� Load���� ����
+        200.0f, 200.0f, 8, 10, false), 
     generalSelected(false), godMode(false), battle_ended(false), victory(false), notification_timer(0.0)
 {
 }
 
-// MainMapState�� �� �̻� �����͸� �������� �����Ƿ� �Ҹ��ڴ� ����ֽ��ϴ�.
 MainMapState::~MainMapState() {
 }
 
@@ -33,7 +32,6 @@ void MainMapState::Load() {
 
     auto& session = GameSession::GetInstance();
 
-    // ���� �ε� �ÿ��� �ٽ� ���� ��ü���� �����մϴ�.
     if (session.player1 == nullptr) {
         gameMap.SetPoint();
         HexTile* tile_end = gameMap.GetTileAt(7, 9);
@@ -82,11 +80,8 @@ void MainMapState::HandleBattleAftermath() {
     auto& session = GameSession::GetInstance();
     if (session.current_battle_type == GameSession::BattleType::Siege && session.castle_under_siege != nullptr) {
         Castle* sieged_castle = session.castle_under_siege;
-
-        // �� ������ �������� Ȯ��
         bool is_p1_castle_owner = (std::find(session.player1_castles.begin(), session.player1_castles.end(), sieged_castle) != session.player1_castles.end());
 
-        // �� ������ �й��ߴ��� Ȯ��
         bool defender_lost = (is_p1_castle_owner && battle_outcome == BattleOutcome::P2_WINS) ||
             (!is_p1_castle_owner && battle_outcome == BattleOutcome::P1_WINS);
             
@@ -94,8 +89,6 @@ void MainMapState::HandleBattleAftermath() {
             Engine::GetLogger().LogEvent("Castle has fallen and is destroyed!");
             notification_message = "The castle has fallen!";
             notification_timer = 3.0;
-
-            // �ش� ���� GOM�� ������ ��Ͽ��� ��� ����
             session.gom.Remove(sieged_castle);
             if (is_p1_castle_owner) {
                 session.player1_castles.erase(std::remove(session.player1_castles.begin(), session.player1_castles.end(), sieged_castle), session.player1_castles.end());
@@ -104,8 +97,6 @@ void MainMapState::HandleBattleAftermath() {
                 session.player2_castles.erase(std::remove(session.player2_castles.begin(), session.player2_castles.end(), sieged_castle), session.player2_castles.end());
             }
         }
-
-        // ���� ���ؽ�Ʈ �ʱ�ȭ
         session.current_battle_type = GameSession::BattleType::Field;
         session.castle_under_siege = nullptr;
     }
