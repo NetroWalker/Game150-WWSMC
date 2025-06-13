@@ -63,6 +63,17 @@ void BattleMap::Load() {
 
 void BattleMap::Update(double dt) {
 	UpdateGSComponents(dt);
+	// 화면 흔들림 처리
+	if (shake_timer < shake_duration) {
+		shake_timer += dt;
+		float offsetX = static_cast<float>((rand() % 200 - 100) / 100.0) * shake_magnitude;
+		float offsetY = static_cast<float>((rand() % 200 - 100) / 100.0) * shake_magnitude;
+		camera->SetPosition({ original_camera_pos.x + offsetX, original_camera_pos.y + offsetY });
+	}
+	else if (shake_duration > 0.0f) {
+		camera->SetPosition(original_camera_pos);
+		shake_duration = 0.0f;
+	}
 
 	const Turn currentTurn = turnmanager.GetCurrentTurn();
 	const bool isTransition = turnmanager.IsTransitioning();
@@ -230,7 +241,7 @@ void BattleMap::Update(double dt) {
 		StartBattle();
 	}
 	else if (!isTransition && isReady()) {
-		if (attack_count < 4) {
+		if (attack_count < 2) {
 			if (current_p1->GetPosition().x < 1300 && current_p2->GetPosition().x > 1700) {
 				auto pos1 = current_p1->GetPosition();
 				auto pos2 = current_p2->GetPosition();
@@ -247,6 +258,8 @@ void BattleMap::Update(double dt) {
 			{
 				current_p1->GetGOComponent<CS230::Sprite>()->PlayAnimation(static_cast<int>(Soldier::Animations::Attack));
 				current_p2->GetGOComponent<CS230::Sprite>()->PlayAnimation(static_cast<int>(Soldier::Animations::Attack));
+				StartShake(0.3f, 10.0f); // 흔들림 추가
+
 				++attack_count;
 			}
 		}
@@ -498,4 +511,11 @@ void BattleMap::StartBattle() {
 
 	current_p1->SetPosition({ 500, 200 });
 	current_p2->SetPosition({ 2500, 200 });
+}
+
+void BattleMap::StartShake(float duration, float magnitude) {
+	shake_duration = duration;
+	shake_timer = 0.0f;
+	shake_magnitude = magnitude;
+	original_camera_pos = camera->GetPosition();
 }

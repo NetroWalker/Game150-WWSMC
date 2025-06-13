@@ -66,7 +66,14 @@ private:
     TurnManager turnmanager;
     std::vector<Soldier*> soldiers;
 
+    float shake_duration = 0.0f;
+    float shake_timer = 0.0f;
+    float shake_magnitude = 10.0f; // 흔들림 강도
+    Vector2 original_camera_pos;
+
     void update_title_text(const std::string& text);
     void update_button_text(const std::string& text);
     void update_score_text(int p1_score, int p2_score);
+    void StartShake(float duration, float magnitude);
+
 };
