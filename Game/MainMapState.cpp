@@ -47,7 +47,6 @@ void MainMapState::Load() {
         Math::vec2 p1_castle_pos = { p1_start_pos.x, p1_start_pos.y + y_offset/2 };
         Math::vec2 p2_castle_pos = { p2_start_pos.x, p2_start_pos.y + y_offset/2 };
 
-        // 보정된 위치로 성을 생성합니다.
         Castle* initial_castle1 = new Castle(p1_castle_pos, false, "Assets/castle_me.spt");
         Castle* initial_castle2 = new Castle(p2_castle_pos, true, "Assets/castle_enemy.spt");
         initial_castle1->SetScale({ 0.5, 0.5 });
@@ -303,11 +302,8 @@ void MainMapState::Update(double dt) {
                         bool isSnakeCastle = (turn != Turn::P1);
                         const char* spt_path = isSnakeCastle ? "Assets/castle_enemy.spt" : "Assets/castle_me.spt";
                         float y_offset = gameMap.radiusY * sqrtf(3.0f);
-
-                        // 장군이 서 있는 타일 위치에서 y좌표를 보정합니다.
                         Math::vec2 castle_pos = { build_tile->center.x, build_tile->center.y + y_offset };
 
-                        // 보정된 위치로 성을 생성합니다.
                         Castle* new_castle = new Castle(castle_pos, isSnakeCastle, spt_path);
                         new_castle->SetScale({ 0.5, 0.5 });
                         friendly_castles.push_back(new_castle);
