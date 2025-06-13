@@ -44,3 +44,7 @@ void Castle::ResolveCollision(CS230::GameObject* other) {
 std::vector<Soldier*>& Castle::GetSoldierRoster() {
     return soldier_roster;
 }
+
+Team Castle::GetOwner() const {
+    return owner;
+}

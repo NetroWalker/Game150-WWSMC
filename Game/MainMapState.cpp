@@ -253,7 +253,7 @@ void MainMapState::Update(double dt) {
                             notification_timer = 2.0;
                         }
                         else {
-                            unit_production_ui.SetTarget(castle, &castle->GetSoldierRoster(), currentResources);
+                            unit_production_ui.SetTarget(castle, &castle->GetSoldierRoster(), currentResources, turnManager.GetCurrentTurn());
                             unit_production_ui.Init();
                             unit_production_ui.LoadRoster();
                             isProducingUnit = true;

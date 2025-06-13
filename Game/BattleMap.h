@@ -1,5 +1,6 @@
 ﻿// BattleMap.h
 #pragma once
+#include "../Engine/GameObjectManager.h"
 #include "../Engine/GameState.h"
 #include "../Engine/TurnManager.h"
 #include "../Engine/Camera.h"
@@ -23,6 +24,8 @@ public:
     void LoadSoldiersForTurn(Turn attacking_turn);
     void StartBattle();
 
+    static void SetCombatRosters(std::vector<Soldier*>* p1_roster, std::vector<Soldier*>* p2_roster);
+
 private:
     Turn attacking_turn = Turn::P1;
     double background_width = 3000;
@@ -39,9 +42,11 @@ private:
     double move_speed = 1500;
     int placed_count = 0;
 
-
     std::vector<Soldier*> p1_soldiers;
     std::vector<Soldier*> p2_soldiers;
+    static std::vector<Soldier*>* temp_roster1;
+    static std::vector<Soldier*>* temp_roster2;
+
     int battle_index = 0;
     int attack_count = 0;
     double battle_timer = 0.0;
@@ -61,8 +66,6 @@ private:
     CS230::GameObjectManager* object = nullptr;
     std::vector<PlacementTile*> tiles;
     std::vector<WaitingZone*> zones;
-    //Turn turn;
-
     float offsetX = 0.0f;
     bool transitioning = false;
     TurnManager turnmanager;

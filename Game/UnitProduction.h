@@ -30,7 +30,7 @@ public:
     void LoadRoster();
 
     void DrawButton();
-    void SetTarget(CS230::GameObject* target, std::vector<Soldier*>* roster, Stone* resource_ptr);
+    void SetTarget(CS230::GameObject* target, std::vector<Soldier*>* roster, Stone* resource_ptr, Turn current_turn);
     void SetMainMap(MainMapState* ptr) { main_map_state = ptr; }
 
 private:
@@ -54,7 +54,7 @@ private:
     CS230::GameObjectManager* object = nullptr;
     std::vector<PlacementTile*> tiles;
     std::vector<WaitingZone*> zones;
-    //Turn turn;
+    Turn turn;
 
     float offsetX = 0.0f;
     bool transitioning = false;
