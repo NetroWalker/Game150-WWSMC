@@ -46,6 +46,8 @@ void MainMapState::Load() {
 
         Castle* initial_castle1 = new Castle(p1_start_pos, false, "Assets/castle_me.spt");
         Castle* initial_castle2 = new Castle(p2_start_pos, true, "Assets/castle_enemy.spt");
+        initial_castle1->SetScale({ 0.5, 0.5 });
+        initial_castle2->SetScale({ 0.5, 0.5 });
 
         session.player1_castles.push_back(initial_castle1);
         session.player2_castles.push_back(initial_castle2);
@@ -58,11 +60,9 @@ void MainMapState::Load() {
         session.player1_resources->AddResources(2);
         session.player1->SetScale({ 0.3, 0.3 });
         session.player2->SetScale({ 0.3, 0.3 });
-        initial_castle1->SetScale({ 0.5, 0.5 });
-        initial_castle2->SetScale({ 0.5, 0.5 });
+        
     }
 
-    // 이 상태(State)에서 사용하는 UI 관련 변수들은 매번 초기화합니다.
     this->victory = false;
     generalSelected = false;
     movableTiles.clear();
@@ -77,10 +77,38 @@ void MainMapState::SetBattleOutcome(BattleOutcome outcome) {
 void MainMapState::HandleBattleAftermath() {
     Engine::GetLogger().LogEvent("Handling battle aftermath...");
     auto& session = GameSession::GetInstance();
+    if (session.current_battle_type == GameSession::BattleType::Siege && session.castle_under_siege != nullptr) {
+        Castle* sieged_castle = session.castle_under_siege;
 
+        // 성 주인이 누구인지 확인
+        bool is_p1_castle_owner = (std::find(session.player1_castles.begin(), session.player1_castles.end(), sieged_castle) != session.player1_castles.end());
+
+        // 성 주인이 패배했는지 확인
+        bool defender_lost = (is_p1_castle_owner && battle_outcome == BattleOutcome::P2_WINS) ||
+            (!is_p1_castle_owner && battle_outcome == BattleOutcome::P1_WINS);
+            
+        if (defender_lost) {
+            Engine::GetLogger().LogEvent("Castle has fallen and is destroyed!");
+            notification_message = "The castle has fallen!";
+            notification_timer = 3.0;
+
+            // 해당 성을 GOM과 소유자 목록에서 모두 제거
+            session.gom.Remove(sieged_castle);
+            if (is_p1_castle_owner) {
+                session.player1_castles.erase(std::remove(session.player1_castles.begin(), session.player1_castles.end(), sieged_castle), session.player1_castles.end());
+            }
+            else {
+                session.player2_castles.erase(std::remove(session.player2_castles.begin(), session.player2_castles.end(), sieged_castle), session.player2_castles.end());
+            }
+        }
+
+        // 전투 컨텍스트 초기화
+        session.current_battle_type = GameSession::BattleType::Field;
+        session.castle_under_siege = nullptr;
+    }
     auto respawn_player = [&](CS230::GameObject* player, std::vector<Castle*>& castles) {
         if (castles.empty()) {
-            this->victory = true;
+            
         }
         else {
             player->SetPosition(castles[0]->GetPosition());
@@ -129,13 +157,21 @@ void MainMapState::HandleBattleAftermath() {
 void MainMapState::Update(double dt) {
     auto& session = GameSession::GetInstance();
 
-    if (battle_ended) {
-        HandleBattleAftermath();
-    }
-    if (victory) {
+    if (session.player1_castles.empty()) {
+        session.last_game_result = GameSession::GameResult::P2_Victory;
         Engine::GetGameStateManager().SetNextGameState(STATE_ENDING);
         return;
     }
+    if (session.player2_castles.empty()) {
+        session.last_game_result = GameSession::GameResult::P1_Victory;
+        Engine::GetGameStateManager().SetNextGameState(STATE_ENDING);
+        return;
+    }
+
+    if (battle_ended) {
+        HandleBattleAftermath();
+    }
+
 
     if (notification_timer > 0) {
         notification_timer -= dt;
@@ -171,7 +207,6 @@ void MainMapState::Update(double dt) {
             notification_message = "Resources Doubled!";
             notification_timer = 1.5;
         }
-
         if (Engine::GetInput().KeyJustPressed(CS230::Input::Keys::B)) {
             std::vector<Castle*>& friendly_castles = (turn == Turn::P1) ? session.player1_castles : session.player2_castles;
             Stone* current_player_resources = (turn == Turn::P1) ? session.player1_resources : session.player2_resources;
@@ -203,6 +238,7 @@ void MainMapState::Update(double dt) {
                         bool isSnakeCastle = (turn != Turn::P1);
                         const char* spt_path = isSnakeCastle ? "Assets/castle_enemy.spt" : "Assets/castle_me.spt";
                         Castle* new_castle = new Castle(build_tile->center, isSnakeCastle, spt_path);
+                        new_castle->SetScale({ 0.5, 0.5 });
                         friendly_castles.push_back(new_castle);
                         session.gom.Add(new_castle);
                     }
@@ -265,9 +301,12 @@ void MainMapState::Update(double dt) {
                 for (Castle* castle : enemyCastles) {
                     HexTile* castleTile = gameMap.GetTileAtPosition(castle->GetPosition());
                     if (castleTile && generalTile->x == castleTile->x && generalTile->y == castleTile->y) {
-                        victory = true;
-                        notification_message = "You Win!";
-                        notification_timer = 3.0;
+
+                        // [수정] 즉시 승리 대신, 성 전투 상태를 기록하고 전투 씬으로 전환합니다.
+                        Engine::GetLogger().LogEvent("Siege battle initiated against castle!");
+                        session.current_battle_type = GameSession::BattleType::Siege;
+                        session.castle_under_siege = castle;
+                        Engine::GetGameStateManager().SetNextGameState(STATE_BATTLE_MAP);
                         return;
                     }
                 }

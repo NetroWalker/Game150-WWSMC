@@ -15,4 +15,6 @@ public:
     }
 private:
     Texture2D endingImage; // 엔딩 이미지를 저장할 변수
+    Texture2D p1_wins_image;
+    Texture2D p2_wins_image;
 };

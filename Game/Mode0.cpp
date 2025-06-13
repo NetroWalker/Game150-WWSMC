@@ -34,7 +34,7 @@ void Mode0::Load() {
     GOM->Add(staticGeneral);
 
     chatWindowTexture = LoadTexture("Assets/chat_window.png");
-    dialogueFont = LoadFont("Assets/Font_Simple.png"); // 폰트 로드
+    dialogueFont = LoadFont("Assets/Font_Simple.png");
 
     tutorialTimer = 0.0f;
     chatAlpha = 0.0f;
