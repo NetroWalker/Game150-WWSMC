@@ -1,50 +1,35 @@
-﻿//menu.cpp
-#include"../Engine/Engine.h"
+﻿// menu.cpp
+#include "../Engine/Engine.h"
 #include "menu.h"
 #include "States.h"
 
-
-
 Menu::Menu(int screenWidth, int screenHeight)
     : screenWidth(screenWidth), screenHeight(screenHeight), backgroundImage() {
+    // 버튼 위치와 크기를 이미지 기준으로 수동 설정
+    mainMapButton = {
+        590,  // x
+        420,  // y
+        325,  // width
+        110    // height
+    };
+
+    tutorialButton = {
+        590,
+        290,
+        325,
+        110
+    };
 }
 
-Menu::~Menu() {
-    
-}
+Menu::~Menu() {}
 
-void Menu::Load()
-{
-    // 1. 모든 텍스처를 먼저 불러옵니다.
-    tutorialButtonTexture = LoadTexture("Assets/tutorial.png");
-    mainMapButtonTexture = LoadTexture("Assets/startbutton.png");
+void Menu::Load() {
     backgroundImage = LoadTexture("Assets/BeastCrossing.png");
-
-    // =============================================================
-    // ▼▼▼ 실제 이미지 크기를 기준으로 위치를 다시 계산합니다 ▼▼▼
-    // =============================================================
-
-    // 2. 버튼의 클릭 영역(Rectangle) 크기를 실제 텍스처 크기와 일치시킵니다.
-    tutorialButton.width = (float)tutorialButtonTexture.width;
-    tutorialButton.height = (float)tutorialButtonTexture.height;
-    mainMapButton.width = (float)mainMapButtonTexture.width;
-    mainMapButton.height = (float)mainMapButtonTexture.height;
-
-    // 3. 두 버튼의 전체 높이를 계산하여 세로 중앙 정렬을 위한 시작 Y좌표를 구합니다.
-    int buttonSpacing = 40; // 버튼 사이 간격
-    float totalButtonHeight = tutorialButton.height + mainMapButton.height + buttonSpacing;
-    float startY = screenHeight / 2.0f - totalButtonHeight / 2.0f;
-
-    // 4. 각 버튼의 최종 위치를 설정합니다.
-    tutorialButton.x = screenWidth / 2.0f - tutorialButton.width / 2.0f;
-    tutorialButton.y = startY;
-
-    mainMapButton.x = screenWidth / 2.0f - mainMapButton.width / 2.0f;
-    mainMapButton.y = startY + tutorialButton.height + buttonSpacing;
+    startbutton = LoadTexture("Assets/startbutton.png");
+    tutorialbutton = LoadTexture("Assets/tutorial.png");
 }
 
 void Menu::Update(double dt) {
-
     if (StartTutorialClicked()) {
         Engine::Instance().GetGameStateManager().SetNextGameState(STATE_TUTORIAL);
     }
@@ -53,48 +38,33 @@ void Menu::Update(double dt) {
     }
 }
 
-void Menu::Unload()
-{
-    UnloadTexture(tutorialButtonTexture);
-    UnloadTexture(mainMapButtonTexture);
+void Menu::Unload() {
     UnloadTexture(backgroundImage);
+    UnloadTexture(startbutton);
+    UnloadTexture(tutorialbutton);
 }
 
 void Menu::Draw() {
     DrawTexture(backgroundImage, 0, 0, WHITE);
 
-    Vector2 mousePos = GetMousePosition();
+    // 텍스처(배경 포함된 버튼 텍스트)도 같이 그리되, 사각형 버튼은 따로 클릭 영역용
+    DrawTexture(startbutton, 0, 0, WHITE);
+    DrawTexture(tutorialbutton, 0, 0, WHITE);
 
-    // --- 튜토리얼 버튼 그리기 ---
-    // 마우스가 버튼 위에 있는지 확인합니다.
-    if (CheckCollisionPointRec(mousePos, tutorialButton)) {
-        // 호버 상태: 밝은 회색 색조로 그립니다.
-        DrawRectangle(tutorialButton.x, tutorialButton.y, tutorialButton.width, tutorialButton.height ,RED);
-        DrawTexture(tutorialButtonTexture, (int)tutorialButton.x, (int)tutorialButton.y, LIGHTGRAY);
-    }
-    else {
-        // 기본 상태: 원래 색상(WHITE)으로 그립니다.
-        DrawTexture(tutorialButtonTexture, (int)tutorialButton.x, (int)tutorialButton.y, WHITE);
-    }
+    // 클릭 영역 표시 (디버그용/명확한 클릭 가능 영역 표시)
+    DrawRectangleRec(mainMapButton, Fade(LIGHTGRAY, 0.3f));
+    
 
-    // --- 메인 맵 버튼 그리기 ---
-    // 마우스가 버튼 위에 있는지 확인합니다.
-    if (CheckCollisionPointRec(mousePos, mainMapButton)) {
-        // 호버 상태: 밝은 회색 색조로 그립니다.
-        DrawTexture(mainMapButtonTexture, (int)mainMapButton.x, (int)mainMapButton.y, LIGHTGRAY);
-    }
-    else {
-        // 기본 상태: 원래 색상(WHITE)으로 그립니다.
-        DrawTexture(mainMapButtonTexture, (int)mainMapButton.x, (int)mainMapButton.y, WHITE);
-    }
+    DrawRectangleRec(tutorialButton, Fade(LIGHTGRAY, 0.3f));
+    
 }
 
 bool Menu::StartTutorialClicked() {
     Vector2 mousePos = GetMousePosition();
-    return CheckCollisionPointRec(mousePos, tutorialButton) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON);
+    return CheckCollisionPointRec(mousePos, mainMapButton) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON);
 }
 
 bool Menu::StartMainMapClicked() {
     Vector2 mousePos = GetMousePosition();
-    return CheckCollisionPointRec(mousePos, mainMapButton) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON);
+    return CheckCollisionPointRec(mousePos, tutorialButton) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON);
 }
