@@ -7,7 +7,7 @@
 #include <set>
 #include "States.h" 
 #include <string>
-#include "../Engine/TurnManager.h" 
+//#include "../Engine/TurnManager.h" 
 
 // 전방 선언
 namespace CS230 { class GameObject; }
@@ -29,6 +29,7 @@ public:
     std::string GetName() override { return "MainMapState"; }
 
     void SetBattleOutcome(BattleOutcome outcome);
+    void GetPos();
 private:
     void HandleBattleAftermath();
     bool godMode = false;
@@ -50,4 +51,6 @@ private:
     bool battle_ended = false;
     BattleOutcome battle_outcome;
     bool victory = false;
+
+
 };

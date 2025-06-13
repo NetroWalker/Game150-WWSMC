@@ -74,6 +74,20 @@ void MainMapState::SetBattleOutcome(BattleOutcome outcome) {
     this->battle_ended = true;
 }
 
+void MainMapState::GetPos()
+{
+	auto& session = GameSession::GetInstance();
+	if (session.player1 != nullptr) {
+		Math::vec2 p1_pos = session.player1->GetPosition();
+		Engine::GetLogger().LogEvent("Player 1 Position: " + std::to_string(p1_pos.x) + ", " + std::to_string(p1_pos.y));
+        
+	}
+	if (session.player2 != nullptr) {
+		Math::vec2 p2_pos = session.player2->GetPosition();
+		Engine::GetLogger().LogEvent("Player 2 Position: " + std::to_string(p2_pos.x) + ", " + std::to_string(p2_pos.y));
+	}
+}
+
 void MainMapState::HandleBattleAftermath() {
     Engine::GetLogger().LogEvent("Handling battle aftermath...");
     auto& session = GameSession::GetInstance();
@@ -155,6 +169,7 @@ void MainMapState::HandleBattleAftermath() {
 }
 
 void MainMapState::Update(double dt) {
+    GetPos();
     auto& session = GameSession::GetInstance();
 
     if (session.player1_castles.empty()) {
@@ -194,6 +209,7 @@ void MainMapState::Update(double dt) {
         Math::vec2 camera_pos = camera->GetPosition();
         camera->SetPosition(camera_pos + camera_offset);
     }
+    //카메라 이동 위쪽
 
     if (!turnManager.IsTransitioning()) {
         Turn turn = turnManager.GetCurrentTurn();
@@ -287,11 +303,28 @@ void MainMapState::Update(double dt) {
 
         Rectangle endTurnButton = { (float)screenWidth - 120, (float)screenHeight - 50, 110, 40 };
         if (CheckCollisionPointRec(mouse, endTurnButton) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+            // 1) 턴 전환
             turnManager.EndTurn();
+
+            // 2) 새 턴 장군 위치로 카메라 이동 (화면 중앙에 맞추기)
+            if (camera) {
+                bool isP1Turn = (turnManager.GetCurrentTurn() == Turn::P1);
+                Math::vec2 target = isP1Turn
+                    ? session.player1->GetPosition()
+                    : session.player2->GetPosition();
+                // 화면 크기의 절반만큼 오프셋을 빼서 중앙 정렬
+                Math::vec2 camPos = {
+                    target.x - screenWidth * 0.5f,
+                    target.y - screenHeight * 0.5f
+                };
+                camera->SetPosition(camPos);
+            }
+
+            // 3) 선택 상태 초기화
             generalSelected = false;
             movableTiles.clear();
             startingTile = nullptr;
-        }
+        }//턴종료
 
         auto* movement = currentGeneral->GetGOComponent<LinearMovement>();
         if (movement && !movement->IsMoving()) {
