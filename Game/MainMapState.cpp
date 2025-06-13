@@ -382,8 +382,7 @@ void MainMapState::Update(double dt) {
 }
 
 void MainMapState::Draw() {
-    unsigned int back_color = 0xFF9EB251;
-    ClearBackground((Color) back_color);
+    ClearBackground(Color(158, 178, 81, 255));
     CS230::Camera* camera = GetGSComponent<CS230::Camera>();
     Math::TransformationMatrix camera_matrix;
     if (camera != nullptr) camera_matrix = camera->GetMatrix();
@@ -456,7 +455,6 @@ void MainMapState::Draw() {
                 castle->Draw(camera_matrix);
             }
         }
-        GetGSComponent<CS230::GameObjectManager>()->DrawAll(camera_matrix);
 
         std::string p1_text = "P1 Stone: " + std::to_string(player1_resources->GetStoneCount());
         DrawText(p1_text.c_str(), 10, 10, 20, BLACK);
