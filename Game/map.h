@@ -31,7 +31,7 @@ public:
     const std::vector<HexTile>& GetTiles() const { return tiles; }
     HexTile* GetTileAt(int x, int y);
     HexTile* GetTileAtPosition(Vector2 pos);
-
+    std::vector<HexTile> GetAllNeighbors(HexTile* from);
 private:
     Texture2D grass_tile_texture;
     Texture2D water_tile_texture;

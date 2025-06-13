@@ -35,21 +35,34 @@ void Map::SetPoint() {
     float root3 = sqrt(3.0f);
     float xOffset = radiusX * 1.5f;
     float yOffset = radiusY * root3;
+    const float MAX_WATER_TILES_PERCENTAGE = 0.25f;
+    int maxWaterTiles = static_cast<int>((mapW * mapH) * MAX_WATER_TILES_PERCENTAGE);
 
+    int currentWaterCount = 0;
     for (int x = 0; x < mapW; x++) {
         for (int y = 0; y < mapH; y++) {
             float hexX = center.x + x * xOffset;
             float hexY = center.y + y * yOffset + ((x % 2) * (yOffset / 2.0f));
             float squashedHexY = hexY * squashFactor;
 
-            int random_type_index = rand() % 2;
-            TileType random_type = static_cast<TileType>(random_type_index);
+            TileType generated_type = TileType::Grass; // 기본값은 풀 타일
 
-            HexTile tile = { x, y, { hexX, squashedHexY }, random_type };
+            // 약 20% 확률로 물 타일 생성 시도
+            if ((rand() % 5) == 0) {
+                // 단, 최대 물 타일 개수를 넘지 않았을 경우에만 생성
+                if (currentWaterCount < maxWaterTiles) {
+                    generated_type = TileType::Water;
+                    currentWaterCount++; // 물 타일 카운터 증가
+                }
+            }
+
+            HexTile tile = { x, y, { hexX, squashedHexY }, generated_type };
             tiles.push_back(tile);
         }
     }
 }
+
+// in map.cpp
 
 std::vector<HexTile> Map::GetMovableTiles(HexTile* from) {
     std::vector<HexTile> result;
@@ -58,20 +71,67 @@ std::vector<HexTile> Map::GetMovableTiles(HexTile* from) {
     int x = from->x;
     int y = from->y;
 
-    if (x % 2 == 1) {
+    if (x % 2 == 1) { // 홀수 열
         int dx[] = { 0, +1, -1, -1,  0, +1 };
         int dy[] = { -1,  0,  0, +1, +1, +1 };
         for (int i = 0; i < 6; i++) {
             if (HexTile* t = this->GetTileAt(x + dx[i], y + dy[i])) {
-                result.push_back(*t);
+
+                // ===== 수정된 부분 시작 =====
+                // 타일이 물 타일이 아닌 경우에만 이동 가능한 타일로 추가합니다.
+                if (t->type != TileType::Water) {
+                    result.push_back(*t);
+                }
+                // ===== 수정된 부분 끝 =====
+
             }
         }
     }
-    else {
+    else { // 짝수 열
         int dx[] = { 0,  0, +1, -1, -1, +1 };
         int dy[] = { -1, +1,  0,  0, -1, -1 };
         for (int i = 0; i < 6; i++) {
             if (HexTile* t = this->GetTileAt(x + dx[i], y + dy[i])) {
+
+                // ===== 수정된 부분 시작 =====
+                // 타일이 물 타일이 아닌 경우에만 이동 가능한 타일로 추가합니다.
+                if (t->type != TileType::Water) {
+                    result.push_back(*t);
+                }
+                // ===== 수정된 부분 끝 =====
+
+            }
+        }
+    }
+    return result;
+}
+
+// in map.cpp
+
+// 이 함수를 GetMovableTiles 함수 아래에 추가하세요.
+std::vector<HexTile> Map::GetAllNeighbors(HexTile* from) {
+    std::vector<HexTile> result;
+    if (!from) return result;
+
+    int x = from->x;
+    int y = from->y;
+
+    if (x % 2 == 1) { // 홀수 열
+        int dx[] = { 0, +1, -1, -1,  0, +1 };
+        int dy[] = { -1,  0,  0, +1, +1, +1 };
+        for (int i = 0; i < 6; i++) {
+            if (HexTile* t = this->GetTileAt(x + dx[i], y + dy[i])) {
+                // 타일 종류와 상관없이 모든 이웃을 추가합니다.
+                result.push_back(*t);
+            }
+        }
+    }
+    else { // 짝수 열
+        int dx[] = { 0,  0, +1, -1, -1, +1 };
+        int dy[] = { -1, +1,  0,  0, -1, -1 };
+        for (int i = 0; i < 6; i++) {
+            if (HexTile* t = this->GetTileAt(x + dx[i], y + dy[i])) {
+                // 타일 종류와 상관없이 모든 이웃을 추가합니다.
                 result.push_back(*t);
             }
         }
@@ -126,9 +186,6 @@ void Map::Draw(const std::map<HexTile*, TileType>& visionMap, const Math::Transf
             // 3. 시야 지도에 없다면, 안 보이는 타일 텍스처 사용
             texture_to_use = hidden_tile_texture;
         }
-        // ==============================
-
-        // 그리기 로직은 그대로 유지
         Rectangle source = { 0, 0, (float)texture_to_use.width, (float)texture_to_use.height };
         Math::vec2 world_pos(tile_to_draw.center);
         Math::vec2 transformed_pos = camera_matrix * world_pos;

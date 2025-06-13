@@ -401,7 +401,7 @@ void MainMapState::Draw() {
             if (is_castle_vision) visionMap[source_tile] = TileType::Stone;
             else if (visionMap.find(source_tile) == visionMap.end()) visionMap[source_tile] = source_tile->type;
 
-            auto neighbors = gameMap.GetMovableTiles(source_tile);
+            auto neighbors = gameMap.GetAllNeighbors(source_tile);
             for (const auto& neighbor : neighbors) {
                 HexTile* neighbor_ptr = gameMap.GetTileAt(neighbor.x, neighbor.y);
                 if (is_castle_vision) {
