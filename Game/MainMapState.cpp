@@ -338,6 +338,8 @@ void MainMapState::Update(double dt) {
             bool clickedOnGeneral = false;
             if (auto* collisionComp = currentGeneral->GetGOComponent<CS230::RectCollision>(); collisionComp && camera) {
                 if (CheckCollisionPointRec(mouse, collisionComp->ToRaylibScreenRect(camera->GetMatrix()))) {
+                    if (turn == Turn::P1) AudioManager::PlaySquirrelGen();
+                    else AudioManager::PlaySnakeGen();
                     generalSelected = !generalSelected;
                     clickedOnGeneral = true;
                     if (generalSelected) {
@@ -373,10 +375,13 @@ void MainMapState::Update(double dt) {
             std::vector<Castle*>& castles_to_update = (turnManager.GetCurrentTurn() == Turn::P1) ? session.player1_castles : session.player2_castles;
             if (turnManager.GetCurrentTurn() == Turn::P1) {
                 session.player1_resources->AddResources(castles_to_update.size() * 2);
+                AudioManager::PlayPassingTurn();
             }
             else {
                 session.player2_resources->AddResources(castles_to_update.size() * 2);
+                AudioManager::PlayPassingTurn();
             }
+            
             turnManager.EndTurn();
 
             // 2) �� �� �屺 ��ġ�� ī�޶� �̵� (ȭ�� �߾ӿ� ���߱�)
@@ -407,7 +412,7 @@ void MainMapState::Update(double dt) {
                 for (Castle* castle : enemyCastles) {
                     HexTile* castleTile = gameMap.GetTileAtPosition(castle->GetPosition());
                     if (castleTile && generalTile->x == castleTile->x && generalTile->y == castleTile->y) {
-
+                        AudioManager::PlayStartBattle();
                         Engine::GetLogger().LogEvent("Siege battle initiated against castle!");
                         session.current_battle_type = GameSession::BattleType::Siege;
                         session.castle_under_siege = castle;
@@ -417,6 +422,7 @@ void MainMapState::Update(double dt) {
                 }
                 HexTile* enemyGeneralTile = gameMap.GetTileAtPosition(enemyGeneral->GetGOComponent<LinearMovement>()->GetFootPosition());
                 if (enemyGeneralTile && generalTile->x == enemyGeneralTile->x && generalTile->y == enemyGeneralTile->y) {
+                    AudioManager::PlayStartBattle();
                     Engine::GetLogger().LogEvent("Generals have met! Entering battle...");
                     Engine::GetGameStateManager().SetNextGameState(STATE_BATTLE_MAP);
                     return;

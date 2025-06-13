@@ -12,6 +12,7 @@
 #include "Engine/Window.h"
 #include "Game/GameSession.h"
 #include "Game/StateEnding.h"
+#include "Game/AudioManager.h"
 
 int main() {
     Engine& engine = Engine::Instance();
@@ -38,6 +39,7 @@ int main() {
     // 초기 상태를 Splash로 명시적으로 설정 (이 코드는 좋은 습관입니다)
     engine.GetGameStateManager().SetNextGameState(SPLASH);
     GameSession::GetInstance().Load();
+    AudioManager::Initialize();
     // 메인 루프
     while (!engine.HasGameEnded()) {
         engine.Update();
