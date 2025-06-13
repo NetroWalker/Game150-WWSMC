@@ -9,6 +9,7 @@
 #include "Game/MainMapState.h"
 #include "Game/BattleMap.h"
 #include "Engine/Window.h"
+#include "Game/GameSession.h"
 
 int main() {
     Engine& engine = Engine::Instance();
@@ -21,9 +22,6 @@ int main() {
     MainMapState* mainMapState = new MainMapState(CS230::Window::default_width, CS230::Window::default_height);
     BattleMap* battleMapState = new BattleMap();
 
-    // =================================================================
-    // ===== 여기가 가장 중요합니다! 원하는 실행 순서대로 추가해야 합니다. =====
-    // =================================================================
     engine.GetGameStateManager().AddGameState(*splashState);      // 인덱스 0
     engine.GetGameStateManager().AddGameState(*menuState);         // 인덱스 1
     engine.GetGameStateManager().AddGameState(*tutorialState);     // 인덱스 2
@@ -36,12 +34,12 @@ int main() {
 
     // 초기 상태를 Splash로 명시적으로 설정 (이 코드는 좋은 습관입니다)
     engine.GetGameStateManager().SetNextGameState(SPLASH);
-
+    GameSession::GetInstance().Load();
     // 메인 루프
     while (!engine.HasGameEnded()) {
         engine.Update();
     }
-
+    GameSession::GetInstance().Unload();
     // 게임 종료 및 메모리 해제
     engine.Stop();
     delete splashState;

@@ -36,18 +36,6 @@ private:
     Map gameMap;
     TurnManager turnManager;
 
-    // 객체 포인터
-    CS230::GameObject* player1 = nullptr;
-    CS230::GameObject* player2 = nullptr;
-
-    // 중앙 자원 관리자
-    Stone* player1_resources = nullptr;
-    Stone* player2_resources = nullptr;
-
-    // 성 목록 관리
-    std::vector<Castle*> player1_castles;
-    std::vector<Castle*> player2_castles;
-
     // UI 상태 관리
     bool generalSelected = false;
     std::vector<HexTile> movableTiles;

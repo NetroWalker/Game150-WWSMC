@@ -63,80 +63,49 @@ void Map::SetPoint() {
 }
 
 // in map.cpp
+// in map.cpp
 
-std::vector<HexTile> Map::GetMovableTiles(HexTile* from) {
+// [수정] GetAllNeighbors 함수를 아래 코드로 교체합니다.
+// 이웃 좌표 계산 오류를 수정하고 코드를 단순화했습니다.
+std::vector<HexTile> Map::GetAllNeighbors(HexTile* from) {
     std::vector<HexTile> result;
     if (!from) return result;
 
-    int x = from->x;
-    int y = from->y;
+    // 육각 타일의 6방향 이웃 오프셋을 정의합니다.
+    // 홀수 열과 짝수 열에 따라 y 오프셋이 달라집니다.
+    int dx[] = { 0,  1, 1, 0, -1, -1 };
+    int dy_even[] = { -1, -1, 0, 1,  0, -1 }; // 짝수 열(x)의 y 오프셋
+    int dy_odd[] = { -1,  0, 1, 1,  1,  0 }; // 홀수 열(x)의 y 오프셋
 
-    if (x % 2 == 1) { // 홀수 열
-        int dx[] = { 0, +1, -1, -1,  0, +1 };
-        int dy[] = { -1,  0,  0, +1, +1, +1 };
-        for (int i = 0; i < 6; i++) {
-            if (HexTile* t = this->GetTileAt(x + dx[i], y + dy[i])) {
+    bool is_odd_col = (from->x % 2 != 0);
+    const int* dy = is_odd_col ? dy_odd : dy_even;
 
-                // ===== 수정된 부분 시작 =====
-                // 타일이 물 타일이 아닌 경우에만 이동 가능한 타일로 추가합니다.
-                if (t->type != TileType::Water) {
-                    result.push_back(*t);
-                }
-                // ===== 수정된 부분 끝 =====
+    for (int i = 0; i < 6; i++) {
+        int neighbor_x = from->x + dx[i];
+        int neighbor_y = from->y + dy[i];
 
-            }
-        }
-    }
-    else { // 짝수 열
-        int dx[] = { 0,  0, +1, -1, -1, +1 };
-        int dy[] = { -1, +1,  0,  0, -1, -1 };
-        for (int i = 0; i < 6; i++) {
-            if (HexTile* t = this->GetTileAt(x + dx[i], y + dy[i])) {
-
-                // ===== 수정된 부분 시작 =====
-                // 타일이 물 타일이 아닌 경우에만 이동 가능한 타일로 추가합니다.
-                if (t->type != TileType::Water) {
-                    result.push_back(*t);
-                }
-                // ===== 수정된 부분 끝 =====
-
-            }
+        if (HexTile* t = this->GetTileAt(neighbor_x, neighbor_y)) {
+            result.push_back(*t);
         }
     }
     return result;
 }
 
-// in map.cpp
 
-// 이 함수를 GetMovableTiles 함수 아래에 추가하세요.
-std::vector<HexTile> Map::GetAllNeighbors(HexTile* from) {
-    std::vector<HexTile> result;
-    if (!from) return result;
+// [수정] GetMovableTiles 함수를 아래 코드로 교체합니다.
+// 이제 이 함수는 수정된 GetAllNeighbors를 호출한 뒤, 물 타일만 걸러냅니다.
+std::vector<HexTile> Map::GetMovableTiles(HexTile* from) {
+    // 1. 먼저 모든 이웃 타일을 가져옵니다.
+    std::vector<HexTile> all_neighbors = GetAllNeighbors(from);
+    std::vector<HexTile> movable_neighbors;
 
-    int x = from->x;
-    int y = from->y;
-
-    if (x % 2 == 1) { // 홀수 열
-        int dx[] = { 0, +1, -1, -1,  0, +1 };
-        int dy[] = { -1,  0,  0, +1, +1, +1 };
-        for (int i = 0; i < 6; i++) {
-            if (HexTile* t = this->GetTileAt(x + dx[i], y + dy[i])) {
-                // 타일 종류와 상관없이 모든 이웃을 추가합니다.
-                result.push_back(*t);
-            }
+    // 2. 그 중에서 물 타일이 아닌 것만 골라냅니다.
+    for (const auto& tile : all_neighbors) {
+        if (tile.type != TileType::Water) {
+            movable_neighbors.push_back(tile);
         }
     }
-    else { // 짝수 열
-        int dx[] = { 0,  0, +1, -1, -1, +1 };
-        int dy[] = { -1, +1,  0,  0, -1, -1 };
-        for (int i = 0; i < 6; i++) {
-            if (HexTile* t = this->GetTileAt(x + dx[i], y + dy[i])) {
-                // 타일 종류와 상관없이 모든 이웃을 추가합니다.
-                result.push_back(*t);
-            }
-        }
-    }
-    return result;
+    return movable_neighbors;
 }
 
 bool Map::IsPointInHexagon(Vector2 point) const {

@@ -21,6 +21,8 @@ public:
     bool StartMainMapClicked();
 
 private:
+    Texture2D tutorialButtonTexture;
+    Texture2D mainMapButtonTexture;
     int screenWidth;
     int screenHeight;
     Rectangle tutorialButton;

@@ -42,6 +42,7 @@
     <ClCompile Include="Game\Background.cpp" />
     <ClCompile Include="Game\BattleMap.cpp" />
     <ClCompile Include="Game\Castle.cpp" />
+    <ClCompile Include="Game\GameSession.cpp" />
     <ClCompile Include="Game\LinearMovement.cpp" />
     <ClCompile Include="Game\MainMapState.cpp" />
     <ClCompile Include="Game\map.cpp" />
@@ -54,6 +55,7 @@
     <ClCompile Include="Game\Splash.cpp" />
     <ClCompile Include="Game\Squirrel.cpp" />
     <ClCompile Include="Game\SquirrelGen.cpp" />
+    <ClCompile Include="Game\StateEnding.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -84,6 +86,7 @@
     <ClInclude Include="Game\BattleMap.h" />
     <ClInclude Include="Game\Castle.h" />
     <ClInclude Include="Game\GameObjectTypes.h" />
+    <ClInclude Include="Game\GameSession.h" />
     <ClInclude Include="Game\LinearMovement.h" />
     <ClInclude Include="Game\Fonts.h" />
     <ClInclude Include="Game\GameObjectTypes.h" />
@@ -98,6 +101,7 @@
     <ClInclude Include="Game\Splash.h" />
     <ClInclude Include="Game\Squirrel.h" />
     <ClInclude Include="Game\SquirrelGen.h" />
+    <ClInclude Include="Game\StateEnding.h" />
     <ClInclude Include="Game\States.h" />
     <ClInclude Include="Game\WaitingZone.h" />
   </ItemGroup>

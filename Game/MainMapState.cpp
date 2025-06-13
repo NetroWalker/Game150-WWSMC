@@ -9,6 +9,7 @@
 #include "Castle.h"
 #include "Material.h"
 #include "../Engine/Camera.h"
+#include "GameSession.h" // GameSession 헤더 포함
 #include <cmath>
 
 MainMapState::MainMapState(int sw, int sh) :
@@ -16,95 +17,73 @@ MainMapState::MainMapState(int sw, int sh) :
     radiusX(200.0f), radiusY(200.0f),
     gameMap(Vector2{ screenWidth / 2.0f - ((8 - 1) * 200.0f * 1.5f) / 2.0f,
                       screenHeight / 2.0f - ((10 - 1) * 200.0f * sqrtf(3.0f) * 0.5f) / 2.0f },
-        200.0f, 200.0f, 8, 10, true),
-    generalSelected(false)
+        200.0f, 200.0f, 8, 10, false), // autoTile은 Load에서 제어
+    generalSelected(false), godMode(false), battle_ended(false), victory(false), notification_timer(0.0)
 {
 }
 
+// MainMapState는 더 이상 데이터를 소유하지 않으므로 소멸자는 비어있습니다.
 MainMapState::~MainMapState() {
-    delete player1_resources;
-    delete player2_resources;
 }
 
 void MainMapState::Load() {
-
-
-    //victory = false;
-    //generalSelected = false;
-    //movableTiles.clear();
-    //startingTile = nullptr;
-    //// 턴 매니저 리셋: P1 START 모드
-    //turnManager = TurnManager();
-    //turnManager.SetTurn(Turn::P1);
-    //turnManager.SetTransition(true);
-
     Engine::GetLogger().LogEvent(GetName() + " Load");
     AddGSComponent(new CS230::Camera({ {0,0}, {0,0} }));
-    AddGSComponent(new CS230::GameObjectManager());
-    CS230::GameObjectManager* GOM = GetGSComponent<CS230::GameObjectManager>();
 
-    player1_resources = new Stone();
-    player2_resources = new Stone();
+    auto& session = GameSession::GetInstance();
 
-    gameMap.SetPoint();
-    HexTile* tile_end = gameMap.GetTileAt(7, 9);
-    if (!tile_end) { return; }
+    // 최초 로드 시에만 핵심 게임 객체들을 생성합니다.
+    if (session.player1 == nullptr) {
+        gameMap.SetPoint();
+        HexTile* tile_end = gameMap.GetTileAt(7, 9);
+        if (!tile_end) { return; }
 
-    Math::vec2 p1_start_pos = gameMap.GetTiles()[0].center;
-    Math::vec2 p2_start_pos = tile_end->center;
+        Math::vec2 p1_start_pos = gameMap.GetTiles()[0].center;
+        Math::vec2 p2_start_pos = tile_end->center;
 
-    this->player1 = new SquirrelGen(p1_start_pos);
-    this->player2 = new SnakeGen(p2_start_pos);
-    // 플레이어1 성
-    Castle* initial_castle1 = new Castle(
-        p1_start_pos,
-        /*isSnake=*/false,
-        "Assets/castle_me.spt"
-    );
-    // 플레이어2 성
-    Castle* initial_castle2 = new Castle(
-        p2_start_pos,
-        /*isSnake=*/true,
-        "Assets/castle_enemy.spt"
-    );
+        session.player1 = new SquirrelGen(p1_start_pos);
+        session.player2 = new SnakeGen(p2_start_pos);
 
-    player1_castles.push_back(initial_castle1);
-    player2_castles.push_back(initial_castle2);
+        Castle* initial_castle1 = new Castle(p1_start_pos, false, "Assets/castle_me.spt");
+        Castle* initial_castle2 = new Castle(p2_start_pos, true, "Assets/castle_enemy.spt");
 
-    GOM->Add(initial_castle1);
-    GOM->Add(initial_castle2);
-    GOM->Add(player1);
-    GOM->Add(player2);
-    player1_resources->AddResources(2);
-    player1->SetScale({ 0.3, 0.3 });
-    player2->SetScale({ 0.3, 0.3 });
-    initial_castle1->SetScale({ 0.7, 0.7 });
-    initial_castle2->SetScale({ 0.7, 0.7 });
+        session.player1_castles.push_back(initial_castle1);
+        session.player2_castles.push_back(initial_castle2);
 
+        session.gom.Add(initial_castle1);
+        session.gom.Add(initial_castle2);
+        session.gom.Add(session.player1);
+        session.gom.Add(session.player2);
+
+        session.player1_resources->AddResources(2);
+        session.player1->SetScale({ 0.3, 0.3 });
+        session.player2->SetScale({ 0.3, 0.3 });
+        initial_castle1->SetScale({ 0.5, 0.5 });
+        initial_castle2->SetScale({ 0.5, 0.5 });
+    }
+
+    // 이 상태(State)에서 사용하는 UI 관련 변수들은 매번 초기화합니다.
     this->victory = false;
-
     generalSelected = false;
     movableTiles.clear();
     startingTile = nullptr;
 }
+
 void MainMapState::SetBattleOutcome(BattleOutcome outcome) {
     this->battle_outcome = outcome;
     this->battle_ended = true;
 }
 
-// =================================================================================================
-// MODIFIED: HandleBattleAftermath()
-// Implemented resource transfer and castle destruction logic.
-// =================================================================================================
 void MainMapState::HandleBattleAftermath() {
     Engine::GetLogger().LogEvent("Handling battle aftermath...");
+    auto& session = GameSession::GetInstance();
 
     auto respawn_player = [&](CS230::GameObject* player, std::vector<Castle*>& castles) {
         if (castles.empty()) {
-            this->victory = true; // No castles left, the other player wins.
+            this->victory = true;
         }
         else {
-            player->SetPosition(castles[0]->GetPosition()); // Respawn at the first available castle.
+            player->SetPosition(castles[0]->GetPosition());
         }
         };
 
@@ -112,66 +91,51 @@ void MainMapState::HandleBattleAftermath() {
     case BattleOutcome::P1_WINS:
         notification_message = "Player 1 Won! Player 2's castle destroyed.";
         notification_timer = 3.0;
+        session.player1_resources->AddResources(session.player2_resources->GetStoneCount());
+        session.player2_resources->SpendResources(session.player2_resources->GetStoneCount());
 
-        // Transfer resources from P2 to P1
-        player1_resources->AddResources(player2_resources->GetStoneCount());
-        player2_resources->SpendResources(player2_resources->GetStoneCount());
-
-        // Destroy one of P2's castles
-        if (!player2_castles.empty()) {
-            Castle* destroyed_castle = player2_castles.back();
-            GetGSComponent<CS230::GameObjectManager>()->Remove(destroyed_castle);
-            player2_castles.pop_back();
+        if (!session.player2_castles.empty()) {
+            Castle* destroyed_castle = session.player2_castles.back();
+            session.gom.Remove(destroyed_castle);
+            session.player2_castles.pop_back();
         }
-
-        // Respawn P2 and check for victory condition
-        respawn_player(player2, player2_castles);
+        respawn_player(session.player2, session.player2_castles);
         break;
 
     case BattleOutcome::P2_WINS:
         notification_message = "Player 2 Won! Player 1's castle destroyed.";
         notification_timer = 3.0;
+        session.player2_resources->AddResources(session.player1_resources->GetStoneCount());
+        session.player1_resources->SpendResources(session.player1_resources->GetStoneCount());
 
-        // Transfer resources from P1 to P2
-        player2_resources->AddResources(player1_resources->GetStoneCount());
-        player1_resources->SpendResources(player1_resources->GetStoneCount());
-
-        // Destroy one of P1's castles
-        if (!player1_castles.empty()) {
-            Castle* destroyed_castle = player1_castles.back();
-            GetGSComponent<CS230::GameObjectManager>()->Remove(destroyed_castle);
-            player1_castles.pop_back();
+        if (!session.player1_castles.empty()) {
+            Castle* destroyed_castle = session.player1_castles.back();
+            session.gom.Remove(destroyed_castle);
+            session.player1_castles.pop_back();
         }
-
-        // Respawn P1 and check for victory condition
-        respawn_player(player1, player1_castles);
+        respawn_player(session.player1, session.player1_castles);
         break;
 
     case BattleOutcome::DRAW:
         notification_message = "Draw! Both generals retreat.";
         notification_timer = 3.0;
-        respawn_player(player1, player1_castles);
-        respawn_player(player2, player2_castles);
+        respawn_player(session.player1, session.player1_castles);
+        respawn_player(session.player2, session.player2_castles);
         break;
     }
-    battle_ended = false; // Reset the flag
+    battle_ended = false;
 }
 
-
 void MainMapState::Update(double dt) {
+    auto& session = GameSession::GetInstance();
+
     if (battle_ended) {
         HandleBattleAftermath();
     }
-
-    // =================================================================================================
-    // MODIFIED: Victory Condition Check
-    // Changed to transition to the ending state instead of waiting for input.
-    // =================================================================================================
     if (victory) {
         Engine::GetGameStateManager().SetNextGameState(STATE_ENDING);
-        return; // Stop further updates once the game is won
+        return;
     }
-
 
     if (notification_timer > 0) {
         notification_timer -= dt;
@@ -182,10 +146,8 @@ void MainMapState::Update(double dt) {
         notification_message = "God Mode " + std::string(godMode ? "ON" : "OFF");
         notification_timer = 2.0;
     }
-    CS230::GameObjectManager* GOM = GetGSComponent<CS230::GameObjectManager>();
-    Vector2 mouse = GetMousePosition();
-    CS230::Camera* camera = GetGSComponent<CS230::Camera>();
 
+    CS230::Camera* camera = GetGSComponent<CS230::Camera>();
     if (camera != nullptr) {
         auto& input = Engine::GetInput();
         Math::vec2 camera_offset;
@@ -199,23 +161,20 @@ void MainMapState::Update(double dt) {
 
     if (!turnManager.IsTransitioning()) {
         Turn turn = turnManager.GetCurrentTurn();
-        CS230::GameObject* currentGeneral = (turn == Turn::P1) ? player1 : player2;
+        CS230::GameObject* currentGeneral = (turn == Turn::P1) ? session.player1 : session.player2;
+        CS230::GameObject* enemyGeneral = (turn == Turn::P1) ? session.player2 : session.player1;
+
         if (godMode && Engine::GetInput().KeyJustPressed(CS230::Input::Keys::G)) {
-            Stone* current_player_resources = (turn == Turn::P1) ? player1_resources : player2_resources;
+            Stone* current_player_resources = (turn == Turn::P1) ? session.player1_resources : session.player2_resources;
             int currentAmount = current_player_resources->GetStoneCount();
-            if (currentAmount > 0) {
-                current_player_resources->AddResources(currentAmount);
-            }
-            else {
-                current_player_resources->AddResources(1);
-            }
+            current_player_resources->AddResources(currentAmount > 0 ? currentAmount : 1);
             notification_message = "Resources Doubled!";
             notification_timer = 1.5;
         }
 
         if (Engine::GetInput().KeyJustPressed(CS230::Input::Keys::B)) {
-            std::vector<Castle*>& friendly_castles = (turn == Turn::P1) ? player1_castles : player2_castles;
-            Stone* current_player_resources = (turn == Turn::P1) ? player1_resources : player2_resources;
+            std::vector<Castle*>& friendly_castles = (turn == Turn::P1) ? session.player1_castles : session.player2_castles;
+            Stone* current_player_resources = (turn == Turn::P1) ? session.player1_resources : session.player2_resources;
 
             if (friendly_castles.size() >= MAX_CASTLES) {
                 notification_message = "Cannot build: Maximum castles reached!";
@@ -223,8 +182,9 @@ void MainMapState::Update(double dt) {
             }
             else {
                 HexTile* build_tile = gameMap.GetTileAtPosition(currentGeneral->GetGOComponent<LinearMovement>()->GetFootPosition());
-                bool is_build_location_valid = true;
-                if (build_tile) {
+                bool is_build_location_valid = (build_tile != nullptr);
+
+                if (is_build_location_valid) {
                     for (Castle* existing_castle : friendly_castles) {
                         HexTile* existing_castle_tile = gameMap.GetTileAtPosition(existing_castle->GetPosition());
                         if (existing_castle_tile && gameMap.IsNeighborTile(existing_castle_tile->x, existing_castle_tile->y, build_tile->x, build_tile->y)) {
@@ -235,26 +195,16 @@ void MainMapState::Update(double dt) {
                         }
                     }
                 }
-                else { is_build_location_valid = false; }
 
                 if (is_build_location_valid) {
                     int next_castle_cost = friendly_castles.size() * 10;
                     if (current_player_resources->SpendResources(next_castle_cost)) {
                         Engine::GetLogger().LogEvent("Player built a castle! Cost: " + std::to_string(next_castle_cost));
-
                         bool isSnakeCastle = (turn != Turn::P1);
-                        std::string spt_path = isSnakeCastle
-                            ? "Assets/castle_enemy.spt"
-                            : "Assets/castle_me.spt";
-                        Castle* new_castle = new Castle(
-                            build_tile->center,
-                            isSnakeCastle,
-                            spt_path
-                        );
-
-                        new_castle->SetScale({ 0.7, 0.7 });
+                        const char* spt_path = isSnakeCastle ? "Assets/castle_enemy.spt" : "Assets/castle_me.spt";
+                        Castle* new_castle = new Castle(build_tile->center, isSnakeCastle, spt_path);
                         friendly_castles.push_back(new_castle);
-                        GOM->Add(new_castle);
+                        session.gom.Add(new_castle);
                     }
                     else {
                         notification_message = "Not enough resources! (Needed: " + std::to_string(next_castle_cost) + ")";
@@ -264,28 +214,17 @@ void MainMapState::Update(double dt) {
             }
         }
 
+        Vector2 mouse = GetMousePosition();
         if (turnManager.CanMove() && IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && !currentGeneral->GetGOComponent<LinearMovement>()->IsMoving()) {
             bool clickedOnGeneral = false;
-            if (auto collisionComp = currentGeneral->GetGOComponent<CS230::RectCollision>(); collisionComp && camera) {
+            if (auto* collisionComp = currentGeneral->GetGOComponent<CS230::RectCollision>(); collisionComp && camera) {
                 if (CheckCollisionPointRec(mouse, collisionComp->ToRaylibScreenRect(camera->GetMatrix()))) {
                     generalSelected = !generalSelected;
                     clickedOnGeneral = true;
                     if (generalSelected) {
                         startingTile = gameMap.GetTileAtPosition(currentGeneral->GetGOComponent<LinearMovement>()->GetFootPosition());
                         movableTiles.clear();
-                        if (godMode) {
-                            // 갓 모드: 모든 타일로 이동 가능
-                            const auto& allTiles = gameMap.GetTiles();
-                            for (const auto& tile : allTiles) {
-                                if (&tile != startingTile) {
-                                    movableTiles.push_back(tile);
-                                }
-                            }
-                        }
-                        else {
-                            // 일반 모드: 인접 타일만 이동 가능
-                            movableTiles = gameMap.GetMovableTiles(startingTile);
-                        }
+                        movableTiles = godMode ? gameMap.GetTiles() : gameMap.GetMovableTiles(startingTile);
                     }
                     else {
                         movableTiles.clear();
@@ -295,15 +234,9 @@ void MainMapState::Update(double dt) {
             }
             if (generalSelected && !clickedOnGeneral) {
                 const int screen_height = GetScreenHeight();
-                const Math::TransformationMatrix& camera_matrix = camera->GetMatrix();
-
                 for (auto& tile : movableTiles) {
-                    Math::vec2 world_pos = tile.center;
-                    Math::vec2 transformed_pos = camera_matrix * world_pos;
-                    Vector2 screen_pos = {
-                        (float)transformed_pos.x,
-                        screen_height - (float)transformed_pos.y
-                    };
+                    Math::vec2 transformed_pos = camera->GetMatrix() * tile.center;
+                    Vector2 screen_pos = { (float)transformed_pos.x, screen_height - (float)transformed_pos.y };
                     if (CheckCollisionPointCircle(mouse, screen_pos, 35.0f)) {
                         currentGeneral->GetGOComponent<LinearMovement>()->MoveTo(tile.center);
                         generalSelected = false;
@@ -324,124 +257,95 @@ void MainMapState::Update(double dt) {
             startingTile = nullptr;
         }
 
+        auto* movement = currentGeneral->GetGOComponent<LinearMovement>();
+        if (movement && !movement->IsMoving()) {
+            HexTile* generalTile = gameMap.GetTileAtPosition(movement->GetFootPosition());
+            if (generalTile) {
+                std::vector<Castle*>& enemyCastles = (turn == Turn::P1) ? session.player2_castles : session.player1_castles;
+                for (Castle* castle : enemyCastles) {
+                    HexTile* castleTile = gameMap.GetTileAtPosition(castle->GetPosition());
+                    if (castleTile && generalTile->x == castleTile->x && generalTile->y == castleTile->y) {
+                        victory = true;
+                        notification_message = "You Win!";
+                        notification_timer = 3.0;
+                        return;
+                    }
+                }
+                HexTile* enemyGeneralTile = gameMap.GetTileAtPosition(enemyGeneral->GetGOComponent<LinearMovement>()->GetFootPosition());
+                if (enemyGeneralTile && generalTile->x == enemyGeneralTile->x && generalTile->y == enemyGeneralTile->y) {
+                    Engine::GetLogger().LogEvent("Generals have met! Entering battle...");
+                    Engine::GetGameStateManager().SetNextGameState(STATE_BATTLE_MAP);
+                    return;
+                }
+            }
+        }
     }
     else {
+        Vector2 mouse = GetMousePosition();
         if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
             Rectangle startButton = { screenWidth / 2.0f - 100, screenHeight / 2.0f + 50, 200, 60 };
             if (CheckCollisionPointRec(mouse, startButton)) {
-                std::vector<Castle*>& castles_to_update = (turnManager.GetCurrentTurn() == Turn::P1) ? player1_castles : player2_castles;
-                if (turnManager.GetCurrentTurn() == Turn::P1) {
-                    player1_resources->AddResources(castles_to_update.size() * 2);
-                }
-                else {
-                    player2_resources->AddResources(castles_to_update.size() * 2);
-                }
+                std::vector<Castle*>& castles_to_update = (turnManager.GetCurrentTurn() == Turn::P1) ? session.player1_castles : session.player2_castles;
+                Stone* resources_to_update = (turnManager.GetCurrentTurn() == Turn::P1) ? session.player1_resources : session.player2_resources;
+                resources_to_update->AddResources(castles_to_update.size() * 2);
                 turnManager.StartTurn();
             }
         }
     }
-    GOM->UpdateAll(dt);
 
-    if (!turnManager.IsTransitioning()) {
-        Turn turn = turnManager.GetCurrentTurn();
-        CS230::GameObject* currentGeneral = (turn == Turn::P1) ? player1 : player2;
-        CS230::GameObject* enemyGeneral = (turn == Turn::P1) ? player2 : player1;
-        auto& enemyCastles = (turn == Turn::P1) ? player2_castles : player1_castles;
-        auto movement = currentGeneral->GetGOComponent<LinearMovement>();
-
-        if (movement && !movement->IsMoving()) {
-            HexTile* generalTile = gameMap.GetTileAtPosition(movement->GetFootPosition());
-            if (generalTile) {
-                // Check for capturing an enemy castle
-                for (Castle* castle : enemyCastles) {
-                    HexTile* castleTile = gameMap.GetTileAtPosition(castle->GetPosition());
-                    if (castleTile && generalTile->x == castleTile->x && generalTile->y == castleTile->y) {
-                        Engine::GetLogger().LogEvent("Tile-Collision: " + currentGeneral->TypeName() + " <-> " + castle->TypeName());
-                        castle->ResolveCollision(currentGeneral);
-                        currentGeneral->ResolveCollision(castle);
-                        victory = true; // Set victory flag
-                        notification_message = "You Win!";
-                        notification_timer = 3.0;
-                        return; // Exit update to allow state change
-                    }
-                }
-
-                // =================================================================================================
-                // NEW: General vs. General Collision Check
-                // Checks if generals are on the same tile and initiates battle.
-                // =================================================================================================
-                HexTile* enemyGeneralTile = gameMap.GetTileAtPosition(enemyGeneral->GetGOComponent<LinearMovement>()->GetFootPosition());
-                if (enemyGeneralTile && generalTile->x == enemyGeneralTile->x && generalTile->y == enemyGeneralTile->y) {
-                    Engine::GetLogger().LogEvent("Generals have met! Entering battle...");
-                    Engine::GetGameStateManager().SetNextGameState(STATE_BATTLE_MAP); // Change to battle state
-                    return; // Stop further updates this frame
-                }
-            }
-        }
-    }
+    session.gom.Update(dt);
 }
 
 void MainMapState::Draw() {
-    ClearBackground(Color(158, 178, 81, 255));
+    auto& session = GameSession::GetInstance();
+    ClearBackground(Color{ 158, 178, 81, 255 });
     CS230::Camera* camera = GetGSComponent<CS230::Camera>();
     Math::TransformationMatrix camera_matrix;
     if (camera != nullptr) camera_matrix = camera->GetMatrix();
 
     if (!turnManager.IsTransitioning()) {
         Turn current_turn = turnManager.GetCurrentTurn();
-        CS230::GameObject* currentGeneral = (current_turn == Turn::P1) ? player1 : player2;
-        CS230::GameObject* enemyGeneral = (current_turn == Turn::P1) ? player2 : player1;
-        std::vector<Castle*>& friendlyCastles = (current_turn == Turn::P1) ? player1_castles : player2_castles;
-        std::vector<Castle*>& enemyCastles = (current_turn == Turn::P1) ? player2_castles : player1_castles;
-
+        CS230::GameObject* currentGeneral = (current_turn == Turn::P1) ? session.player1 : session.player2;
+        CS230::GameObject* enemyGeneral = (current_turn == Turn::P1) ? session.player2 : session.player1;
+        std::vector<Castle*>& friendlyCastles = (current_turn == Turn::P1) ? session.player1_castles : session.player2_castles;
+        std::vector<Castle*>& enemyCastles = (current_turn == Turn::P1) ? session.player2_castles : session.player1_castles;
+        
         std::map<HexTile*, TileType> visionMap;
-        auto addVisionToMap = [&](HexTile* source_tile, bool is_castle_vision) {
+        auto addVisionToMap = [&](HexTile* source_tile) {
             if (source_tile == nullptr) return;
-
-            if (is_castle_vision) visionMap[source_tile] = TileType::Stone;
-            else if (visionMap.find(source_tile) == visionMap.end()) visionMap[source_tile] = source_tile->type;
-
+            if (visionMap.find(source_tile) == visionMap.end()) {
+                visionMap[source_tile] = source_tile->type;
+            }
             auto neighbors = gameMap.GetAllNeighbors(source_tile);
             for (const auto& neighbor : neighbors) {
                 HexTile* neighbor_ptr = gameMap.GetTileAt(neighbor.x, neighbor.y);
-                if (is_castle_vision) {
-                    visionMap[neighbor_ptr] = TileType::Stone;
-                }
-                else {
-                    if (visionMap.find(neighbor_ptr) == visionMap.end()) {
-                        visionMap[neighbor_ptr] = neighbor_ptr->type;
-                    }
+                if (neighbor_ptr != nullptr && visionMap.find(neighbor_ptr) == visionMap.end()) {
+                    visionMap[neighbor_ptr] = neighbor_ptr->type;
                 }
             }
             };
 
         for (Castle* castle : friendlyCastles) {
-            addVisionToMap(gameMap.GetTileAtPosition(castle->GetPosition()), true);
+            addVisionToMap(gameMap.GetTileAtPosition(castle->GetPosition()));
         }
-        addVisionToMap(gameMap.GetTileAtPosition(currentGeneral->GetGOComponent<LinearMovement>()->GetFootPosition()), false);
+        addVisionToMap(gameMap.GetTileAtPosition(currentGeneral->GetGOComponent<LinearMovement>()->GetFootPosition()));
+
         gameMap.Draw(visionMap, camera_matrix);
 
         if (generalSelected) {
             const int screen_height = GetScreenHeight();
             if (startingTile != nullptr) {
                 Math::vec2 transformed_pos = camera_matrix * Math::vec2(startingTile->center);
-                Vector2 screen_pos = {
-                    (float)transformed_pos.x,
-                    screen_height - (float)transformed_pos.y
-                };
+                Vector2 screen_pos = { (float)transformed_pos.x, screen_height - (float)transformed_pos.y };
                 DrawCircleV(screen_pos, 30, Fade(GREEN, 0.5f));
             }
-
             for (const auto& tile : movableTiles) {
                 Math::vec2 transformed_pos = camera_matrix * Math::vec2(tile.center);
-
-                Vector2 screen_pos = {
-                    (float)transformed_pos.x,
-                    screen_height - (float)transformed_pos.y
-                };
+                Vector2 screen_pos = { (float)transformed_pos.x, screen_height - (float)transformed_pos.y };
                 DrawCircleV(screen_pos, 30, Fade(BLUE, 0.4f));
             }
         }
+
         currentGeneral->Draw(camera_matrix);
         for (Castle* castle : friendlyCastles) castle->Draw(camera_matrix);
 
@@ -456,15 +360,15 @@ void MainMapState::Draw() {
             }
         }
 
-        std::string p1_text = "P1 Stone: " + std::to_string(player1_resources->GetStoneCount());
+        std::string p1_text = "P1 Stone: " + std::to_string(session.player1_resources->GetStoneCount());
         DrawText(p1_text.c_str(), 10, 10, 20, BLACK);
-        std::string p2_text = "P2 Stone: " + std::to_string(player2_resources->GetStoneCount());
+        std::string p2_text = "P2 Stone: " + std::to_string(session.player2_resources->GetStoneCount());
         int p2_text_width = MeasureText(p2_text.c_str(), 20);
         DrawText(p2_text.c_str(), screenWidth - p2_text_width - 10, 10, 20, BLACK);
 
-        std::string p1_castle_text = "Castles: " + std::to_string(player1_castles.size()) + " / " + std::to_string(MAX_CASTLES);
+        std::string p1_castle_text = "Castles: " + std::to_string(session.player1_castles.size()) + " / " + std::to_string(MAX_CASTLES);
         DrawText(p1_castle_text.c_str(), 10, 35, 20, BLACK);
-        std::string p2_castle_text = "Castles: " + std::to_string(player2_castles.size()) + " / " + std::to_string(MAX_CASTLES);
+        std::string p2_castle_text = "Castles: " + std::to_string(session.player2_castles.size()) + " / " + std::to_string(MAX_CASTLES);
         int p2_castle_width = MeasureText(p2_castle_text.c_str(), 20);
         DrawText(p2_castle_text.c_str(), screenWidth - p2_castle_width - 10, 35, 20, BLACK);
 
@@ -492,10 +396,7 @@ void MainMapState::Draw() {
     }
 }
 
+// MainMapState는 더 이상 데이터를 소유/관리하지 않으므로 Unload는 비어있습니다.
 void MainMapState::Unload() {
     Engine::GetLogger().LogEvent(GetName() + " Unload");
-    player1 = nullptr;
-    player2 = nullptr;
-    player1_castles.clear();
-    player2_castles.clear();
 }

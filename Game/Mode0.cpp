@@ -10,7 +10,7 @@
 #include <cmath>
 
 Mode0::Mode0(Vector2 center, float rX, float rY)
-    : tutorialMap(center, rX, rY, 3, 1, false), radiusX(rX)
+    : tutorialMap(center, rX, rY, 3, 1, false), radiusX(rX) 
 {
 }
 
