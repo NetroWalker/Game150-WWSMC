@@ -55,4 +55,6 @@ private:
     bool battle_ended = false;
     BattleOutcome battle_outcome;
     bool victory = false;
+
+    bool shouldUnloadUnitProduction = false;
 };

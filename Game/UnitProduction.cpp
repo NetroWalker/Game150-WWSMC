@@ -5,12 +5,7 @@
 #include "States.h"
 #include "UnitButton.h"
 #include "../Engine/Engine.h"
-
-bool* producing_flag = nullptr;
-
-void UnitProduction::SetIsProducingFlag(bool* flag_ptr) {
-	producing_flag = flag_ptr;
-}
+#include "MainMapState.h"
 
 UnitProduction::UnitProduction() {
 	float window_width = static_cast<float>(Engine::GetWindow().GetSize().x);
@@ -59,6 +54,8 @@ void UnitProduction::Init() {
 	zones.push_back(zone2);
 	object->Add(zone1);
 	object->Add(zone2);
+
+	LoadRoster();
 }
 
 void UnitProduction::Update(double dt) {
@@ -118,9 +115,13 @@ void UnitProduction::ProductUnit(const Vector2& mouse_pos) {
 	}
 	else if (CheckCollisionPointRec(mouse_pos, back_button)) {
 		SaveRoster();
-		if (producing_flag) {
-			*producing_flag = false;
+		Unload();
+
+		if (main_map_state) {
+			main_map_state->isProducingUnit = false;
+			main_map_state->unit_production_ui_initialized = false;
 		}
+		return;
 	}
 	else {
 		button_clicked = false;
@@ -142,12 +143,27 @@ void UnitProduction::ProductUnit(const Vector2& mouse_pos) {
 }
 
 void UnitProduction::Unload() {
-	tiles.clear();
-	zones.clear();
+	for (auto* soldier : soldiers) {
+		delete soldier;
+	}
 	soldiers.clear();
+
+	for (auto* tile : tiles) {
+		delete tile;
+	}
+	tiles.clear();
+
+	for (auto* zone : zones) {
+		delete zone;
+	}
+	zones.clear();
+
 	delete object;
 	delete camera;
 	delete background;
+	object = nullptr;
+	camera = nullptr;
+	background = nullptr;
 }
 
 void UnitProduction::WaitingUnit() {
@@ -168,7 +184,8 @@ void UnitProduction::SaveRoster() {
 
 	target_roster->clear();
 	for (auto* soldier : soldiers) {
-		target_roster->push_back(soldier);
+		Soldier* clone = new Soldier({ 0,0 }, soldier->GetAnimal(), soldier->GetType());
+		target_roster->push_back(clone);
 	}
 	soldiers.clear();
 }
@@ -176,10 +193,11 @@ void UnitProduction::SaveRoster() {
 void UnitProduction::LoadRoster() {
 	if (!target_roster) return;
 
-	for (auto* soldier : *target_roster) {
-		soldiers.push_back(soldier);
-		object->Add(soldier);
-		soldier->SetTileList(&tiles);
+	for (auto* old : *target_roster) {
+		Soldier* new_soldier = new Soldier({ 0, 0 }, old->GetAnimal(), old->GetType());
+		soldiers.push_back(new_soldier);
+		object->Add(new_soldier);
+		new_soldier->SetTileList(&tiles);
 	}
 	WaitingUnit();
 }

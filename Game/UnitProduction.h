@@ -13,6 +13,8 @@
 #include <vector>
 #include <string>
 
+class MainMapState;
+
 class UnitProduction {
 public:
     UnitProduction();
@@ -29,6 +31,7 @@ public:
 
     void DrawButton();
     void SetTarget(CS230::GameObject* target, std::vector<Soldier*>* roster, Stone* resource_ptr);
+    void SetMainMap(MainMapState* ptr) { main_map_state = ptr; }
 
 private:
     int soldier_max = 5;
@@ -59,6 +62,7 @@ private:
     std::vector<Soldier*> soldiers;
     SoldierTypes type;
     Animals animal;
+    MainMapState* main_map_state = nullptr;
 
     std::string notification_message;
     double notification_timer = 0.0;
@@ -66,7 +70,4 @@ private:
     CS230::GameObject* selected_target = nullptr;
     std::vector<Soldier*>* target_roster = nullptr;
     Stone* current_resource = nullptr;
-
-    void SetIsProducingFlag(bool* flag_ptr);
-
 };

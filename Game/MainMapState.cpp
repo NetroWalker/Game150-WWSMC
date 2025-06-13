@@ -68,6 +68,8 @@ void MainMapState::Load() {
     generalSelected = false;
     movableTiles.clear();
     startingTile = nullptr;
+
+    unit_production_ui.SetMainMap(this);
 }
 
 void MainMapState::SetBattleOutcome(BattleOutcome outcome) {
@@ -180,9 +182,14 @@ void MainMapState::Update(double dt) {
 
     }
     if (isProducingUnit) {
+        if (!unit_production_ui_initialized) {
+            unit_production_ui.Init();
+            unit_production_ui_initialized = true;
+        }
         unit_production_ui.Update(dt);
         return;
     }
+
 
     if (notification_timer > 0) {
         notification_timer -= dt;
