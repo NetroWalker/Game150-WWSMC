@@ -12,6 +12,7 @@
 #include "GameSession.h" 
 #include <cmath>
 #include "UnitProduction.h"
+#include "AudioManager.h"
 
 MainMapState::MainMapState(int sw, int sh) :
     screenWidth(sw), screenHeight(sh),
@@ -63,7 +64,7 @@ void MainMapState::Load() {
         session.player1_resources->AddResources(2);
         session.player1->SetScale({ 0.3, 0.3 });
         session.player2->SetScale({ 0.3, 0.3 });
-        
+        AudioManager::Initialize();
     }
 
     this->victory = false;
@@ -167,6 +168,7 @@ void MainMapState::HandleBattleAftermath() {
 }
 
 void MainMapState::Update(double dt) {
+    AudioManager::Update();
     GetPos();
     auto& session = GameSession::GetInstance();
 
@@ -545,4 +547,5 @@ void MainMapState::Draw() {
 
 void MainMapState::Unload() {
     Engine::GetLogger().LogEvent(GetName() + " Unload");
+    AudioManager::Unload();
 }

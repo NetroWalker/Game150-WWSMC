@@ -1,272 +1,95 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Game">
-      <UniqueIdentifier>{c9389b07-c52e-4542-b5e6-54ba85bfde8b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Engine">
-      <UniqueIdentifier>{97d235d7-e53f-4f1f-a5ff-57030877afaf}</UniqueIdentifier>
-    </Filter>
-  </ItemGroup>
-  <ItemGroup>
+    <ClCompile Include="Engine\Animation.cpp" />
+    <ClCompile Include="Engine\Camera.cpp" />
+    <ClCompile Include="Engine\Collision.cpp" />
+    <ClCompile Include="Engine\Engine.cpp" />
+    <ClCompile Include="Engine\Font.cpp" />
+    <ClCompile Include="Engine\GameObject.cpp" />
+    <ClCompile Include="Engine\GameObjectManager.cpp" />
+    <ClCompile Include="Engine\GameStateManager.cpp" />
+    <ClCompile Include="Engine\Input.cpp" />
+    <ClCompile Include="Engine\logger.cpp" />
+    <ClCompile Include="Engine\Matrix.cpp" />
+    <ClCompile Include="Engine\Rect.cpp" />
+    <ClCompile Include="Engine\ShowCollision.cpp" />
+    <ClCompile Include="Engine\Sprite.cpp" />
+    <ClCompile Include="Engine\Texture.cpp" />
+    <ClCompile Include="Engine\TextureManager.cpp" />
+    <ClCompile Include="Engine\Timer.cpp" />
+    <ClCompile Include="Engine\TurnManager.cpp" />
+    <ClCompile Include="Engine\Vec2.cpp" />
+    <ClCompile Include="Engine\Window.cpp" />
+    <ClCompile Include="Game\Background.cpp" />
+    <ClCompile Include="Game\BattleMap.cpp" />
+    <ClCompile Include="Game\Castle.cpp" />
+    <ClCompile Include="Game\GameSession.cpp" />
+    <ClCompile Include="Game\LinearMovement.cpp" />
+    <ClCompile Include="Game\MainMapState.cpp" />
+    <ClCompile Include="Game\map.cpp" />
+    <ClCompile Include="Game\Material.cpp" />
+    <ClCompile Include="Game\Menu.cpp" />
+    <ClCompile Include="Game\Mode0.cpp" />
+    <ClCompile Include="Game\SnakeGen.cpp" />
+    <ClCompile Include="Game\PlacementTile.cpp" />
+    <ClCompile Include="Game\Soldier.cpp" />
+    <ClCompile Include="Game\Splash.cpp" />
+    <ClCompile Include="Game\Squirrel.cpp" />
+    <ClCompile Include="Game\SquirrelGen.cpp" />
+    <ClCompile Include="Game\StateEnding.cpp" />
+    <ClCompile Include="Game\UnitButton.cpp" />
+    <ClCompile Include="Game\UnitProduction.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="Game\map.cpp">
-      <Filter>Game</Filter>
-    </ClCompile>
-    <ClCompile Include="Game\Soldier.cpp">
-      <Filter>Game</Filter>
-    </ClCompile>
-    <ClCompile Include="Game\BattleMap.cpp">
-      <Filter>Game</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\TurnManager.cpp">
-      <Filter>Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="Game\Mode0.cpp">
-      <Filter>Game</Filter>
-    </ClCompile>
-    <ClCompile Include="Game\Menu.cpp">
-      <Filter>Game</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Animation.cpp">
-      <Filter>Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Camera.cpp">
-      <Filter>Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Collision.cpp">
-      <Filter>Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Engine.cpp">
-      <Filter>Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Font.cpp">
-      <Filter>Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\GameObject.cpp">
-      <Filter>Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\GameObjectManager.cpp">
-      <Filter>Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\GameStateManager.cpp">
-      <Filter>Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Input.cpp">
-      <Filter>Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\logger.cpp">
-      <Filter>Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Matrix.cpp">
-      <Filter>Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Rect.cpp">
-      <Filter>Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\ShowCollision.cpp">
-      <Filter>Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Sprite.cpp">
-      <Filter>Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Texture.cpp">
-      <Filter>Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\TextureManager.cpp">
-      <Filter>Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Timer.cpp">
-      <Filter>Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Vec2.cpp">
-      <Filter>Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Window.cpp">
-      <Filter>Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="Game\MainMapState.cpp">
-      <Filter>Game</Filter>
-    </ClCompile>
-    <ClCompile Include="Game\Squirrel.cpp">
-      <Filter>Game</Filter>
-    </ClCompile>
-    <ClCompile Include="Game\SquirrelGen.cpp">
-      <Filter>Game</Filter>
-    </ClCompile>
-    <ClCompile Include="Game\SnakeGen.cpp">
-      <Filter>Game</Filter>
-    </ClCompile>
-    <ClCompile Include="Game\Splash.cpp">
-      <Filter>Game</Filter>
-    </ClCompile>
-    <ClCompile Include="Game\LinearMovement.cpp">
-      <Filter>Game</Filter>
-    </ClCompile>
-    <ClCompile Include="Game\Castle.cpp">
-      <Filter>Game</Filter>
-    </ClCompile>
-    <ClCompile Include="Game\Material.cpp">
-      <Filter>Game</Filter>
-    </ClCompile>
-    <ClCompile Include="Game\Background.cpp">
-      <Filter>Game</Filter>
-    </ClCompile>
-    <ClCompile Include="Game\PlacementTile.cpp">
-      <Filter>Game</Filter>
-    </ClCompile>
-    <ClCompile Include="Game\GameSession.cpp">
-      <Filter>Game</Filter>
-    </ClCompile>
-    <ClCompile Include="Game\StateEnding.cpp">
-    <ClCompile Include="Game\UnitProduction.cpp">
-      <Filter>Game</Filter>
-    </ClCompile>
-    <ClCompile Include="Game\UnitButton.cpp">
-      <Filter>Game</Filter>
-    </ClCompile>
+    <ClCompile Include="Game\AudioManager.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Game\map.h">
-      <Filter>Game</Filter>
-    </ClInclude>
-    <ClInclude Include="Game\Soldier.h">
-      <Filter>Game</Filter>
-    </ClInclude>
-    <ClInclude Include="Game\BattleMap.h">
-      <Filter>Game</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\TurnManager.h">
-      <Filter>Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Game\Mode0.h">
-      <Filter>Game</Filter>
-    </ClInclude>
-    <ClInclude Include="Game\Menu.h">
-      <Filter>Game</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Animation.h">
-      <Filter>Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Camera.h">
-      <Filter>Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Collision.h">
-      <Filter>Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Component.h">
-      <Filter>Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\ComponentManager.h">
-      <Filter>Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Engine.h">
-      <Filter>Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Font.h">
-      <Filter>Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\GameObject.h">
-      <Filter>Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\GameObjectManager.h">
-      <Filter>Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\GameState.h">
-      <Filter>Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\GameStateManager.h">
-      <Filter>Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Input.h">
-      <Filter>Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\logger.h">
-      <Filter>Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Matrix.h">
-      <Filter>Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Rect.h">
-      <Filter>Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\ShowCollision.h">
-      <Filter>Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Sprite.h">
-      <Filter>Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Texture.h">
-      <Filter>Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\TextureManager.h">
-      <Filter>Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Timer.h">
-      <Filter>Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Vec2.h">
-      <Filter>Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Window.h">
-      <Filter>Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Game\States.h">
-      <Filter>Game</Filter>
-    </ClInclude>
-    <ClInclude Include="Game\MainMapState.h">
-      <Filter>Game</Filter>
-    </ClInclude>
-    <ClInclude Include="Game\GameObjectTypes.h">
-      <Filter>Game</Filter>
-    </ClInclude>
-    <ClInclude Include="Game\Squirrel.h">
-      <Filter>Game</Filter>
-    </ClInclude>
-    <ClInclude Include="Game\SquirrelGen.h">
-      <Filter>Game</Filter>
-    </ClInclude>
-    <ClInclude Include="Game\SnakeGen.h">
-      <Filter>Game</Filter>
-    </ClInclude>
-    <ClInclude Include="Game\Splash.h">
-      <Filter>Game</Filter>
-    </ClInclude>
-    <ClInclude Include="Game\LinearMovement.h">
-      <Filter>Game</Filter>
-    </ClInclude>
-    <ClInclude Include="Game\Castle.h">
-      <Filter>Game</Filter>
-    </ClInclude>
-    <ClInclude Include="Game\Material.h">
-      <Filter>Game</Filter>
-    </ClInclude>
+    <ClInclude Include="Engine\Animation.h" />
+    <ClInclude Include="Engine\Camera.h" />
+    <ClInclude Include="Engine\Collision.h" />
+    <ClInclude Include="Engine\Component.h" />
+    <ClInclude Include="Engine\ComponentManager.h" />
+    <ClInclude Include="Engine\Engine.h" />
+    <ClInclude Include="Engine\Font.h" />
+    <ClInclude Include="Engine\GameObject.h" />
+    <ClInclude Include="Engine\GameObjectManager.h" />
+    <ClInclude Include="Engine\GameState.h" />
+    <ClInclude Include="Engine\GameStateManager.h" />
+    <ClInclude Include="Engine\Input.h" />
+    <ClInclude Include="Engine\logger.h" />
+    <ClInclude Include="Engine\Matrix.h" />
+    <ClInclude Include="Engine\Rect.h" />
+    <ClInclude Include="Engine\ShowCollision.h" />
+    <ClInclude Include="Engine\Sprite.h" />
+    <ClInclude Include="Engine\Texture.h" />
+    <ClInclude Include="Engine\TextureManager.h" />
+    <ClInclude Include="Engine\Timer.h" />
+    <ClInclude Include="Engine\TurnManager.h" />
+    <ClInclude Include="Engine\Vec2.h" />
+    <ClInclude Include="Engine\Window.h" />
+    <ClInclude Include="Game\Background.h" />
+    <ClInclude Include="Game\BattleMap.h" />
+    <ClInclude Include="Game\Castle.h" />
     <ClInclude Include="Game\GameObjectTypes.h" />
-    <ClInclude Include="Game\GameObjectTypes.h" />
-    <ClInclude Include="Game\GameSession.h">
-      <Filter>Game</Filter>
-    </ClInclude>
-    <ClInclude Include="Game\GameObjectTypes.h" />
-    <ClInclude Include="Game\StateEnding.h">
-    <ClInclude Include="Game\UnitProduction.h">
-      <Filter>Game</Filter>
-    </ClInclude>
-    <ClInclude Include="Game\UnitButton.h">
-      <Filter>Game</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="Game\Background.h">
-      <Filter>Game</Filter>
-    </ClInclude>
-    <ClInclude Include="Game\Fonts.h">
-      <Filter>Game</Filter>
-    </ClInclude>
-    <ClInclude Include="Game\WaitingZone.h">
-      <Filter>Game</Filter>
-    </ClInclude>
-    <ClInclude Include="Game\PlacementTile.h">
-      <Filter>Game</Filter>
-    </ClInclude>
+    <ClInclude Include="Game\GameSession.h" />
+    <ClInclude Include="Game\LinearMovement.h" />
+    <ClInclude Include="Game\Fonts.h" />
+    <ClInclude Include="Game\MainMapState.h" />
+    <ClInclude Include="Game\map.h" />
+    <ClInclude Include="Game\Material.h" />
+    <ClInclude Include="Game\Menu.h" />
+    <ClInclude Include="Game\Mode0.h" />
+    <ClInclude Include="Game\SnakeGen.h" />
+    <ClInclude Include="Game\PlacementTile.h" />
+    <ClInclude Include="Game\Soldier.h" />
+    <ClInclude Include="Game\Splash.h" />
+    <ClInclude Include="Game\Squirrel.h" />
+    <ClInclude Include="Game\SquirrelGen.h" />
+    <ClInclude Include="Game\StateEnding.h" />
+    <ClInclude Include="Game\States.h" />
+    <ClInclude Include="Game\UnitButton.h" />
+    <ClInclude Include="Game\UnitProduction.h" />
+    <ClInclude Include="Game\WaitingZone.h" />
+    <ClInclude Include="Game\AudioManager.h" />
   </ItemGroup>
 </Project>

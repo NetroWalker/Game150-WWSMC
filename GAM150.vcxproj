@@ -39,6 +39,7 @@
     <ClCompile Include="Engine\TurnManager.cpp" />
     <ClCompile Include="Engine\Vec2.cpp" />
     <ClCompile Include="Engine\Window.cpp" />
+    <ClCompile Include="Game\AudioManager.cpp" />
     <ClCompile Include="Game\Background.cpp" />
     <ClCompile Include="Game\BattleMap.cpp" />
     <ClCompile Include="Game\Castle.cpp" />
@@ -84,6 +85,7 @@
     <ClInclude Include="Engine\TurnManager.h" />
     <ClInclude Include="Engine\Vec2.h" />
     <ClInclude Include="Engine\Window.h" />
+    <ClInclude Include="Game\AudioManager.h" />
     <ClInclude Include="Game\Background.h" />
     <ClInclude Include="Game\BattleMap.h" />
     <ClInclude Include="Game\Castle.h" />
