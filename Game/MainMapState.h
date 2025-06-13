@@ -58,4 +58,6 @@ private:
     int screenWidth, screenHeight;
     float radiusX, radiusY;
     static constexpr int MAX_CASTLES = 5;
+
+    bool shouldUnloadUnitProduction = false;
 };
