@@ -32,13 +32,14 @@ public:
     HexTile* GetTileAt(int x, int y);
     HexTile* GetTileAtPosition(Vector2 pos);
     std::vector<HexTile> GetAllNeighbors(HexTile* from);
+
+    float radiusX, radiusY;
 private:
     Texture2D grass_tile_texture;
     Texture2D water_tile_texture;
     Texture2D stone_tile_texture;
     Texture2D hidden_tile_texture;
     Vector2 center;
-    float radiusX, radiusY;
     float squashFactor;
     bool autoTile;
     int mapW, mapH;
